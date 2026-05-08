@@ -1,0 +1,418 @@
+# `@stacklatte/chart-core`
+
+High-performance React Native trading charts — GPU-accelerated via [React Native Skia](https://shopify.github.io/react-native-skia/). Works on iOS, Android, and web.
+
+[![npm](https://img.shields.io/npm/v/@stacklatte/chart-core)](https://www.npmjs.com/package/@stacklatte/chart-core)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE.md)
+
+---
+
+## Install
+
+```sh
+npm install @stacklatte/chart-core @shopify/react-native-skia react-native-gesture-handler
+```
+
+Follow the setup guides for [react-native-skia](https://shopify.github.io/react-native-skia/docs/getting-started/installation) and [react-native-gesture-handler](https://docs.swmansion.com/react-native-gesture-handler/docs/fundamentals/installation).
+
+---
+
+## Peer dependencies
+
+| Package | Version |
+|---|---|
+| `react` | `>=19.0.0` |
+| `react-native` | `>=0.79.0` |
+| `@shopify/react-native-skia` | `>=2.0.0` |
+| `react-native-gesture-handler` | `>=2.0.0` |
+
+---
+
+## Candlestick chart
+
+Drop in OHLC candle data and get a GPU-rendered, pannable, zoomable chart in one component.
+
+```tsx
+import { SLChart } from '@stacklatte/chart-core';
+import type { Candle } from '@stacklatte/chart-core';
+import { useWindowDimensions } from 'react-native';
+
+const candles: Candle[] = [
+  { timestamp: 1700000000000, open: 42000, high: 43500, low: 41800, close: 43100 },
+  { timestamp: 1700003600000, open: 43100, high: 44200, low: 42900, close: 44000 },
+  // ...
+];
+
+export default function TradingScreen() {
+  const { width } = useWindowDimensions();
+  return (
+    <SLChart
+      data={candles}
+      width={width}
+      height={400}
+      theme="dark"
+    />
+  );
+}
+```
+
+---
+
+## Line chart
+
+```tsx
+<SLChart data={candles} width={width} height={400} chartType="line" theme="dark" />
+```
+
+---
+
+## Moving average overlays
+
+Calculate SMA and EMA outside the component and pass them in as `IndicatorLine` objects.
+
+```tsx
+import { SLChart, calcSMA, calcEMA } from '@stacklatte/chart-core';
+
+const sma20 = calcSMA(candles, 20, 'sma-20', '#F5A623');
+const ema9  = calcEMA(candles,  9, 'ema-9',  '#4a90e2');
+const ema21 = calcEMA(candles, 21, 'ema-21', '#50E3C2');
+
+<SLChart
+  data={candles}
+  indicators={[sma20, ema9, ema21].filter(Boolean)}
+  width={width}
+  height={400}
+/>
+```
+
+---
+
+## Bollinger Bands
+
+Bollinger Bands return three indicator lines (`upper`, `basis`, `lower`). Pass a `ShadedArea` to fill the region between the bands.
+
+```tsx
+import { SLChart, calcBollingerBands } from '@stacklatte/chart-core';
+
+const bb = calcBollingerBands(candles, 20, 2, {
+  upper: '#9B59B6',
+  basis: '#7F8C8D',
+  lower: '#9B59B6',
+});
+
+<SLChart
+  data={candles}
+  indicators={bb ? [bb.upper, bb.basis, bb.lower] : []}
+  shadedAreas={bb ? [{ fromId: 'bb-upper', toId: 'bb-lower', color: '#9B59B6', opacity: 0.1 }] : []}
+  width={width}
+  height={400}
+/>
+```
+
+---
+
+## RSI sub-panel
+
+Displays a Relative Strength Index panel below the main chart. RSI is computed internally using Wilder smoothing (period 14) on the visible candles.
+
+```tsx
+<SLChart
+  data={candles}
+  showRsiPanel
+  width={width}
+  height={480}   // extra height for the sub-panel
+/>
+```
+
+The panel includes 30/70 overbought/oversold threshold lines and a synchronized crosshair.
+
+---
+
+## MACD sub-panel
+
+MACD (12, 26, 9) — line, signal, and histogram bars — in a panel synchronized with the main chart.
+
+```tsx
+<SLChart
+  data={candles}
+  showMacdPanel
+  width={width}
+  height={480}
+/>
+```
+
+Run both panels at once:
+
+```tsx
+<SLChart
+  data={candles}
+  showRsiPanel
+  showMacdPanel
+  width={width}
+  height={560}
+/>
+```
+
+---
+
+## OHLC HUD
+
+An overlay that shows Open, High, Low, Close values for the currently inspected candle — and any indicator values at that timestamp.
+
+```tsx
+<SLChart
+  data={candles}
+  showOhlcHud
+  indicators={[ema9, ema21]}
+  width={width}
+  height={400}
+/>
+```
+
+When no touch is active, the HUD shows the latest candle. On tap or drag it locks to the touched candle.
+
+---
+
+## Crosshair callback
+
+```tsx
+<SLChart
+  data={candles}
+  showOhlcHud
+  onCrosshairChange={(candle) => {
+    if (candle) {
+      console.log(`Price: ${candle.close} at ${new Date(candle.timestamp).toISOString()}`);
+    }
+  }}
+  width={width}
+  height={400}
+/>
+```
+
+---
+
+## Zoom and pan
+
+Pinch to zoom and pan are built-in — no setup required.
+
+```tsx
+<SLChart
+  data={candles}
+  visibleDataPoints={60}   // candles visible at initial load
+  maxZoom={400}            // maximum candles visible (widest zoom out)
+  width={width}
+  height={400}
+/>
+```
+
+| Gesture | Action |
+|---|---|
+| 1-finger pan | Scroll the time axis |
+| 2-finger pinch | Zoom in/out around the focal point |
+| Tap or pan (with `showOhlcHud`) | Lock the crosshair to a candle |
+| Pan to the right edge | Re-engage live-follow mode |
+
+---
+
+## Live / streaming data
+
+The chart auto-follows new candles when the viewport is at the latest data. After the user scrolls away, increment `scrollToLatestTrigger` to snap back.
+
+```tsx
+const [candles, setCandles] = useState<Candle[]>(initialCandles);
+const [trigger, setTrigger] = useState(0);
+
+function onNewCandle(updatedCandles: Candle[]) {
+  setCandles(updatedCandles);
+  setTrigger(t => t + 1);   // snaps back to latest
+}
+
+<SLChart
+  data={candles}
+  scrollToLatestTrigger={trigger}
+  width={width}
+  height={400}
+/>
+```
+
+---
+
+## Themes
+
+### Built-in presets
+
+```tsx
+<SLChart data={candles} theme="dark"  width={width} height={400} />
+<SLChart data={candles} theme="light" width={width} height={400} />
+```
+
+### Custom theme
+
+Pass any `ChartThemeColors` object to override every color token.
+
+```tsx
+import type { ChartThemeColors } from '@stacklatte/chart-core';
+
+const myTheme: ChartThemeColors = {
+  background:    '#0d0d0d',
+  gridH:         '#1a1a1a',
+  gridV:         '#141414',
+  priceLabel:    '#999999',
+  timeLabel:     '#555555',
+  crosshair:     '#777777',
+  candleUp:      '#26a69a',
+  candleDown:    '#ef5350',
+  lineChart:     '#00e5ff',
+  rsiLine:       '#f1c40f',
+  rsiThreshold:  '#2a2a2a',
+  hudBackground: 'rgba(0,0,0,0.85)',
+  hudText:       '#ffffff',
+};
+
+<SLChart data={candles} theme={myTheme} width={width} height={400} />
+```
+
+---
+
+## All together
+
+```tsx
+import { SLChart, calcEMA, calcBollingerBands } from '@stacklatte/chart-core';
+import type { Candle, IndicatorLine, ShadedArea } from '@stacklatte/chart-core';
+import { useMemo, useState } from 'react';
+import { useWindowDimensions } from 'react-native';
+
+export default function TradingScreen({ candles }: { candles: Candle[] }) {
+  const { width } = useWindowDimensions();
+  const [trigger, setTrigger] = useState(0);
+
+  const { indicators, shadedAreas } = useMemo(() => {
+    const lines: IndicatorLine[]  = [];
+    const areas: ShadedArea[]     = [];
+
+    const ema9  = calcEMA(candles, 9,  'ema-9',  '#4a90e2');
+    const ema21 = calcEMA(candles, 21, 'ema-21', '#50E3C2');
+    if (ema9)  lines.push(ema9);
+    if (ema21) lines.push(ema21);
+
+    const bb = calcBollingerBands(candles, 20, 2, {
+      upper: '#9B59B6', basis: '#7F8C8D', lower: '#9B59B6',
+    });
+    if (bb) {
+      lines.push(bb.upper, bb.basis, bb.lower);
+      areas.push({ fromId: 'bb-upper', toId: 'bb-lower', color: '#9B59B6', opacity: 0.1 });
+    }
+
+    return { indicators: lines, shadedAreas: areas };
+  }, [candles]);
+
+  return (
+    <SLChart
+      data={candles}
+      indicators={indicators}
+      shadedAreas={shadedAreas}
+      width={width}
+      height={560}
+      theme="dark"
+      chartType="candle"
+      showOhlcHud
+      showRsiPanel
+      showMacdPanel
+      visibleDataPoints={60}
+      scrollToLatestTrigger={trigger}
+      onCrosshairChange={(c) => c && console.log('candle', c.close)}
+    />
+  );
+}
+```
+
+---
+
+## Standalone indicator calculators
+
+All calculators are exported for use outside the chart component — useful for displaying values in a separate UI element.
+
+```ts
+import { calcSMA, calcEMA, calcBollingerBands, calcRSI, calcMACD } from '@stacklatte/chart-core';
+import type { RsiPoint, MacdResult } from '@stacklatte/chart-core';
+
+const sma   = calcSMA(candles, 20, 'sma-20', '#F5A623');   // IndicatorLine | null
+const ema   = calcEMA(candles, 20, 'ema-20', '#4a90e2');   // IndicatorLine | null
+const bb    = calcBollingerBands(candles, 20, 2, colors);  // { upper, basis, lower } | null
+const rsi   = calcRSI(candles, 14);                        // RsiPoint[]
+const macd  = calcMACD(candles, 12, 26, 9);                // MacdResult | null
+```
+
+---
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `data` | `Candle[]` | required | OHLC candles sorted ascending by `timestamp` (ms) |
+| `width` | `number` | required | Canvas width in logical pixels |
+| `height` | `number` | required | Canvas height in logical pixels |
+| `theme` | `"dark" \| "light" \| ChartThemeColors` | `"dark"` | Color preset or full custom theme |
+| `chartType` | `"candle" \| "line"` | `"candle"` | Main series rendering style |
+| `indicators` | `IndicatorLine[]` | `[]` | Overlay lines (SMA, EMA, Bollinger Bands) |
+| `shadedAreas` | `ShadedArea[]` | `[]` | Filled band between two indicator lines |
+| `visibleDataPoints` | `number` | `60` | Number of candles visible at initial load |
+| `intervalMs` | `number` | auto | Milliseconds per candle — inferred from data if omitted |
+| `showGrid` | `boolean` | `true` | Horizontal and vertical grid lines |
+| `showOhlcHud` | `boolean` | `false` | OHLC info overlay |
+| `showRsiPanel` | `boolean` | `false` | RSI sub-panel |
+| `showMacdPanel` | `boolean` | `false` | MACD sub-panel |
+| `maxZoom` | `number` | data length | Maximum candles visible at once |
+| `hour12` | `boolean` | `false` | 12-hour (AM/PM) time axis |
+| `scrollToLatestTrigger` | `number` | — | Increment to snap to latest candle |
+| `onCrosshairChange` | `(candle: Candle \| null) => void` | — | Fires on crosshair lock/release |
+
+---
+
+## Data format
+
+```ts
+interface Candle {
+  timestamp: number; // Unix milliseconds, sorted ascending
+  open:      number;
+  high:      number;
+  low:       number;
+  close:     number;
+}
+```
+
+---
+
+## Architecture
+
+Each drawing concern is a separate Skia component. Swap or extend individual layers without touching the rest.
+
+| Layer | Renders |
+|---|---|
+| `AxisLayer` | Time/price grid lines and labels |
+| `CandlestickLayer` | OHLC wicks and bodies |
+| `LineLayer` | Close-price line |
+| `IndicatorLayer` | Single indicator polyline |
+| `ShadedAreaLayer` | Filled region between two series |
+| `RsiLayer` | RSI sub-panel with 30/70 threshold lines |
+| `MacdLayer` | MACD sub-panel (line, signal, histogram) |
+| `CrosshairLayer` | Dashed vertical + horizontal crosshair |
+| `OhlcHud` | OHLC info overlay |
+
+All layers are exported for custom compositions:
+
+```ts
+import { SLChart, AxisLayer, CandlestickLayer, IndicatorLayer } from '@stacklatte/chart-core';
+```
+
+---
+
+## Contributing
+
+Issues and PRs welcome. See the [monorepo README](../README.md) for setup instructions.
+
+---
+
+## License
+
+MIT — see [LICENSE.md](./LICENSE.md).
