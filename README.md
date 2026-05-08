@@ -4,7 +4,7 @@
 
 High-performance React Native trading charts. Open-source, MIT licensed.
 
-Built on [React Native Skia](https://shopify.github.io/react-native-skia/) for GPU-accelerated rendering at 60 fps on iOS, Android, and web.
+Built on [React Native Skia](https://shopify.github.io/react-native-skia/) for GPU-accelerated rendering at 60 fps on iOS, and Android.
 
 [![npm](https://img.shields.io/npm/v/@stacklatte/chart-core)](https://www.npmjs.com/package/@stacklatte/chart-core)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
