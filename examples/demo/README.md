@@ -1,5 +1,8 @@
 # Stacklatte Charts — Expo Demo
 
+![Demo](./assets/gifs/demo.gif)
+
+
 Interactive Expo demo app showcasing `@stacklatte/chart-core`.
 
 Features demonstrated:
