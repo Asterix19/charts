@@ -41,9 +41,7 @@ See the [full README](./chart-core/README.md) for all examples.
 
 ```
 ├── chart-core/    @stacklatte/chart-core — the chart package (components + core logic)
-└── examples/
-    ├── demo/      Expo demo app
-    └── ai-chart/  LLM → ChartConfig generation example
+└── examples/demo/      Expo demo app
 ```
 
 ---
