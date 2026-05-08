@@ -1,5 +1,7 @@
 # Stacklatte Charts
 
+![Demo](./assets/gifs/demo.gif)
+
 High-performance React Native trading charts. Open-source, MIT licensed.
 
 Built on [React Native Skia](https://shopify.github.io/react-native-skia/) for GPU-accelerated rendering at 60 fps on iOS, Android, and web.
