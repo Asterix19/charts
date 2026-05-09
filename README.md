@@ -66,21 +66,6 @@ npx expo start
 
 ---
 
-## Pro — coming soon
-
-Advanced trading tools built on the open-source core:
-
-- Trade replay
-- Strategy visualization
-- Entry / exit overlays
-- P&L visualization
-- Stop-loss / take-profit zones
-- Synchronized multi-chart layouts
-- Advanced drawing tools
-- Commercial support
-
----
-
 ## License
 
 MIT — see [LICENSE](./LICENSE).
