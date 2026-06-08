@@ -1,6 +1,6 @@
 # `@stacklatte/chart-core`
 
-High-performance React Native trading charts — GPU-accelerated via [React Native Skia](https://shopify.github.io/react-native-skia/). Works on iOS, Android, and web.
+High-performance React Native trading charts — GPU-accelerated via [React Native Skia](https://shopify.github.io/react-native-skia/). Works on iOS and Android.
 
 [![npm](https://img.shields.io/npm/v/@stacklatte/chart-core)](https://www.npmjs.com/package/@stacklatte/chart-core)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE.md)

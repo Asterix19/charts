@@ -78,7 +78,8 @@ export function compileChartConfig(
     opacity: area.opacity,
   }));
 
-  const showRsiPanel = config.subPanels.some((p) => p.type === 'rsi');
+  const rsiPanel = config.subPanels.find((p) => p.type === 'rsi');
+  const showRsiPanel = rsiPanel !== undefined;
 
   return {
     data,
@@ -89,6 +90,7 @@ export function compileChartConfig(
     theme: config.theme,
     showOhlcHud: config.hud.showOhlcHud,
     showRsiPanel,
+    rsiPeriod: rsiPanel?.params.period,
     chartType: config.priceDisplay,
   };
 }

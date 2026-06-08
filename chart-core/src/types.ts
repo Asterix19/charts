@@ -59,6 +59,8 @@ export interface ChartProps {
   theme?: ChartTheme | import('./theme').ChartThemeColors;
   showOhlcHud?: boolean;
   showRsiPanel?: boolean;
+  /** RSI lookback period. Default: 14. Only used when showRsiPanel is true. */
+  rsiPeriod?: number;
   showMacdPanel?: boolean;
   chartType?: ChartType;
   /** Increment this value to jump the viewport to the latest candle. */

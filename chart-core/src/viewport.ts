@@ -93,10 +93,14 @@ export function computePriceRange(visibleCandles: Candle[]): {
   priceMin: number;
   priceMax: number;
 } {
-  return {
-    priceMax: Math.max(...visibleCandles.map((d) => d.high)),
-    priceMin: Math.min(...visibleCandles.map((d) => d.low)),
-  };
+  if (visibleCandles.length === 0) return { priceMin: 0, priceMax: 1 };
+  let priceMax = -Infinity;
+  let priceMin = Infinity;
+  for (const c of visibleCandles) {
+    if (c.high > priceMax) priceMax = c.high;
+    if (c.low  < priceMin) priceMin = c.low;
+  }
+  return { priceMin, priceMax };
 }
 
 /**
@@ -164,6 +168,7 @@ export function computePinchZoom(
   min = 5,
   max = 300
 ): number {
+  if (initialDistance <= 0 || newDistance <= 0) return currentZoom;
   return Math.max(min, Math.min(max, currentZoom / (newDistance / initialDistance)));
 }
 

@@ -50,6 +50,7 @@ const SLChart: React.FC<ChartProps> = ({
   theme = 'dark',
   showOhlcHud = false,
   showRsiPanel = false,
+  rsiPeriod = 14,
   showMacdPanel = false,
   showGrid = true,
   chartType = 'candle',
@@ -173,17 +174,16 @@ const SLChart: React.FC<ChartProps> = ({
   // This keeps computation proportional to the visible candle count (~60–100
   // candles) rather than the full dataset (potentially 10 K+), regardless of
   // how much historical data is loaded.
-  const RSI_WARMUP  = 14;
   const MACD_WARMUP = 35; // slowPeriod(26) + signalPeriod(9)
 
   const visibleRsi = useMemo(() => {
     if (!showRsiPanel) return [];
     const slice = sortedData.slice(
-      Math.max(0, visibleStartIndex - RSI_WARMUP),
+      Math.max(0, visibleStartIndex - rsiPeriod),
       visibleEndIndex,
     );
-    return calcRSI(slice, RSI_WARMUP);
-  }, [showRsiPanel, sortedData, visibleStartIndex, visibleEndIndex]);
+    return calcRSI(slice, rsiPeriod);
+  }, [showRsiPanel, rsiPeriod, sortedData, visibleStartIndex, visibleEndIndex]);
 
   const visibleMacd = useMemo(() => {
     if (!showMacdPanel) return null;
