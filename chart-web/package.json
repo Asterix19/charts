@@ -1,43 +1,33 @@
 {
-  "name": "@stacklatte/chart-core",
-  "version": "2.0.0",
-  "description": "GPU-accelerated React Native trading chart (Skia): candlesticks, RSI/MACD/Bollinger, pinch-zoom, live streaming. Ships an LLM-safe declarative ChartConfig + JSON Schema so agents can generate charts without hallucinating props.",
+  "name": "@stacklatte/chart-web",
+  "version": "1.0.0",
+  "description": "React trading chart for the web — plain HTML5 Canvas 2D, no WASM, no react-native-web. Candlesticks, RSI/MACD/Bollinger, pinch-zoom, live streaming. Ships an LLM-safe declarative ChartConfig + JSON Schema so agents can generate charts without hallucinating props.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
-  "react-native": "./src/index.ts",
   "types": "./dist/index.d.ts",
   "sideEffects": false,
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "react-native": "./src/index.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.js",
       "default": "./dist/index.mjs"
-    },
-    "./core": {
-      "types": "./dist/core.d.ts",
-      "import": "./dist/core.mjs",
-      "require": "./dist/core.js",
-      "default": "./dist/core.mjs"
     }
   },
   "files": [
     "dist",
-    "src",
     "README.md",
     "LICENSE.md",
     "llms.txt"
   ],
   "scripts": {
-    "build": "tsup && tsc -p tsconfig.json --emitDeclarationOnly --declarationMap && npm run schema:generate",
+    "build": "tsup && tsc -p tsconfig.json --emitDeclarationOnly --declarationMap",
     "dev": "tsup --watch",
     "clean": "rm -rf dist",
     "prepublishOnly": "npm run lint && npm test && npm run build",
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "tsc --noEmit",
-    "schema:generate": "ts-json-schema-generator --path src/config.ts --type ChartConfig --no-type-check --out dist/ChartConfig.schema.json"
+    "lint": "tsc --noEmit"
   },
   "keywords": [
     "chart",
@@ -51,9 +41,10 @@
     "stock",
     "indicators",
     "technical-analysis",
-    "react-native",
-    "react-native-chart",
-    "skia",
+    "canvas",
+    "canvas2d",
+    "react",
+    "react-chart",
     "rsi",
     "macd",
     "bollinger-bands",
@@ -73,7 +64,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/Asterix19/charts",
-    "directory": "chart-core"
+    "directory": "chart-web"
   },
   "homepage": "https://stacklatte.com",
   "bugs": {
@@ -83,18 +74,20 @@
     "node": ">=18"
   },
   "peerDependencies": {
-    "@shopify/react-native-skia": ">=2.0.0",
     "react": ">=19.0.0",
-    "react-native": ">=0.79.0",
-    "react-native-gesture-handler": ">=2.0.0 || >=3.0.0"
+    "react-dom": ">=19.0.0"
+  },
+  "dependencies": {
+    "@stacklatte/chart-core": "^2.0.0"
   },
   "devDependencies": {
-    "@shopify/react-native-skia": "2.9.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/react": "~19.2.17",
+    "@types/react-dom": "~19.2.3",
+    "jsdom": "^29.1.1",
     "react": "19.2.7",
-    "react-native": "0.86.0",
-    "react-native-gesture-handler": "~3.1.0",
-    "ts-json-schema-generator": "^2.9.0",
+    "react-dom": "19.2.7",
     "tsup": "^8.5.1",
     "typescript": "^7.0.2",
     "vitest": "^4.1.10"

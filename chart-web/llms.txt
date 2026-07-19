@@ -1,0 +1,42 @@
+# @stacklatte/chart-web
+
+> React trading chart for plain web apps — HTML5 Canvas 2D, no WebAssembly, no `react-native-web`. Candlesticks, line charts, SMA/EMA/Bollinger Bands overlays, RSI/MACD sub-panels, pointer/wheel pan-zoom, crosshair inspection, live-streaming updates, dark/light themes — MIT licensed. Same engine, same props, same LLM-safe `ChartConfig` as `@stacklatte/chart-core` (the React Native version).
+
+## Install
+
+```sh
+npm install @stacklatte/chart-web
+```
+
+Only peers: `react >=19`, `react-dom >=19`. No native modules, no WASM runtime.
+
+## Minimal usage
+
+```tsx
+import { SLChart } from '@stacklatte/chart-web';
+import type { Candle } from '@stacklatte/chart-web';
+
+<SLChart data={candles /* Candle[]: {timestamp, open, high, low, close} */} width={800} height={400} theme="dark" />
+```
+
+`width`/`height` are plain CSS-pixel numbers — measure your container with `ResizeObserver` or similar; there's no native `useWindowDimensions`.
+
+## Generating config with an LLM
+
+Prefer emitting a `ChartConfig` document over hand-written props when a model is generating chart setup — every string field is a closed enum (no raw hex colors, no arbitrary interval strings), and `buildChartPipeline` throws a structured, itemized error if the document doesn't validate instead of rendering something silently wrong.
+
+```ts
+import { buildChartPipeline } from '@stacklatte/chart-web';
+const compiled = buildChartPipeline(config, candles); // -> spread into <SLChart {...compiled} width height />
+```
+
+The matching JSON Schema (draft-07, `additionalProperties: false` everywhere) is published at `../chart-core/dist/ChartConfig.schema.json` in the sibling `@stacklatte/chart-core` package (a dependency of this one) — use it directly as a structured-output / tool-call schema.
+
+## Full docs
+
+See [README.md](./README.md) for the complete prop table, every indicator/overlay example, gesture reference, theming, and the internal draw-layer architecture (`draw/mainPanel.ts`, `draw/axis.ts`, `draw/rsiPanel.ts`, etc.).
+
+## Related
+
+- Same API on React Native: [`@stacklatte/chart-core`](../chart-core/llms.txt) (Skia, GPU-accelerated)
+- Monorepo overview: [`../llms.txt`](../llms.txt)

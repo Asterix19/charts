@@ -7,6 +7,25 @@ High-performance React Native trading charts — GPU-accelerated via [React Nati
 
 ---
 
+## Why chart-core
+
+- **One component, not a kit.** Candlesticks, line series, SMA/EMA/Bollinger Bands overlays, RSI + MACD sub-panels, pinch-zoom, pan, crosshair inspection, and live-streaming updates all ship built in — you're not assembling them from a primitives library.
+- **Real indicator math.** RSI uses Wilder smoothing, MACD is seeded and aligned correctly (12/26/9), Bollinger Bands use an O(n) sliding window — not approximations. 183 unit tests cover the math directly, independent of rendering.
+- **GPU-rendered, not SVG.** Built on Skia via `react-native-skia` — smooth at 60fps with hundreds of visible candles and a live feed ticking underneath.
+- **LLM-safe declarative config.** `buildChartPipeline()` takes a versioned `ChartConfig` document — every color and interval is a closed enum, never a raw string an LLM can typo — and returns validated, ready-to-render props, or throws a precise, itemized error. A generated JSON Schema ships in `dist/ChartConfig.schema.json` for structured output / tool-calling. See [`llms.txt`](./llms.txt) for the quick path.
+- **Also available for the web.** [`@stacklatte/chart-web`](../chart-web) is the same engine, same props, rendered with Canvas 2D — no React Native required.
+
+| | chart-core / chart-web | General-purpose chart libs (Recharts, Victory) | Web-only trading chart libs |
+|---|---|---|---|
+| Candlesticks + OHLC | ✅ built in | 🛠 build it yourself | ✅ |
+| RSI / MACD / Bollinger | ✅ built in | ❌ | varies by plugin |
+| Pinch-zoom, pan, crosshair | ✅ built in | 🛠 manual | ✅ |
+| Native (iOS/Android) *and* web | ✅ two packages, one shared core | web only | web only |
+| Declarative config + JSON Schema | ✅ | ❌ | ❌ |
+| TypeScript, strict | ✅ | varies | varies |
+
+---
+
 ## Install
 
 ```sh
@@ -325,6 +344,51 @@ export default function TradingScreen({ candles }: { candles: Candle[] }) {
   );
 }
 ```
+
+---
+
+## Declarative config (`ChartConfig`) — and generating it with an LLM
+
+Every example above sets `SLChart` props directly. There's a second, declarative path: describe the chart as a versioned `ChartConfig` document and let `buildChartPipeline()` validate, normalize, and compile it into props for you.
+
+```ts
+import { buildChartPipeline, SLChart } from '@stacklatte/chart-core';
+import type { ChartConfig } from '@stacklatte/chart-core';
+
+const config: ChartConfig = {
+  version: '1',
+  theme: 'dark',
+  priceDisplay: 'candle',
+  interval: '1h',
+  overlays: [
+    { type: 'ema', id: 'ema-9', params: { period: 9 }, color: 'cyan' },
+    {
+      type: 'bollinger_bands',
+      params: { period: 20, stdDev: 2 },
+      bands: {
+        upper: { id: 'bb-upper', color: 'purple' },
+        lower: { id: 'bb-lower', color: 'purple' },
+        basis: { id: 'bb-basis', color: 'gray' },
+      },
+    },
+  ],
+  shadedAreas: [{ fromOverlayId: 'bb-upper', toOverlayId: 'bb-lower', color: 'purple', opacity: 0.15 }],
+  subPanels: [{ type: 'rsi', params: { period: 14 } }],
+  viewport: { visibleCandles: 100, followLive: true },
+  hud: { showOhlcHud: true },
+};
+
+const compiled = buildChartPipeline(config, candles);
+<SLChart {...compiled} width={width} height={560} />
+```
+
+This exists specifically so an LLM (or any code-generation step) can produce chart setup safely:
+
+- **Every string is a closed enum** — `theme`, `interval`, overlay `type`, and every `color` come from a fixed, named union (`PaletteColor`, `ChartInterval`, …). There's no raw hex, no arbitrary millisecond literal, no field an LLM can plausibly hallucinate a wrong-but-valid-looking value for.
+- **It fails loudly, not silently.** `buildChartPipeline` runs `validateChartConfig` first and throws one error listing every problem (`[code] path: message`) if the document doesn't match the schema — an agent gets something it can parse and self-correct from, instead of a chart that renders with subtly wrong data.
+- **A matching JSON Schema ships in the package** at `dist/ChartConfig.schema.json` (draft-07, `additionalProperties: false` throughout) — drop it straight into an LLM's structured-output or tool-call schema so the model *can only* produce a valid `ChartConfig` in the first place.
+
+See [`llms.txt`](./llms.txt) for a condensed reference aimed at coding agents.
 
 ---
 

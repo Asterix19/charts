@@ -1,7 +1,41 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm outdated *)"
+      "Bash(npm outdated *)",
+      "Bash(node -e \"const p=require\\('/Users/rasmus/projects/charts/node_modules/expo-router/package.json'\\); console.log\\(Object.keys\\(p.exports||{}\\).filter\\(k=>k.includes\\('bottom-tabs'\\)||k==='.'\\)\\)\")",
+      "Bash(node -e \"const p=require\\('/Users/rasmus/projects/charts/node_modules/expo-router/package.json'\\); console.log\\('has exports:', !!p.exports\\); console.log\\('main:', p.main\\); console.log\\('types:', p.types\\);\")",
+      "Bash(node -e \"console.log\\(require\\('/Users/rasmus/projects/charts/node_modules/expo-symbols/package.json'\\).version\\)\")",
+      "Bash(npx expo *)",
+      "Bash(node -e \"const p=require\\('/Users/rasmus/projects/charts/node_modules/ts-api-utils/package.json'\\); console.log\\(p.peerDependencies\\); console.log\\(p.version\\)\")",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const v=JSON.parse\\(d\\); console.log\\(v.filter\\(x=>x.startsWith\\('9.'\\)\\).slice\\(-10\\)\\); console.log\\(v.slice\\(-15\\)\\);}\\)\")",
+      "Bash(node -e \"console.log\\(require\\('./examples/demo/node_modules/eslint/package.json'\\).version\\)\")",
+      "Bash(node -e \"console.log\\(require\\('./node_modules/eslint/package.json'\\).version\\)\")",
+      "Bash(node -e \"const p=require\\('./node_modules/eslint-import-resolver-typescript/package.json'\\); console.log\\(p.version\\); console.log\\(p.dependencies\\); console.log\\(p.peerDependencies\\);\")",
+      "Bash(node -e \"const p=require\\('./node_modules/eslint-config-expo/node_modules/eslint-import-resolver-typescript/package.json'\\); console.log\\(p.version\\); console.log\\(p.dependencies\\);\")",
+      "Bash(node -e \"const r=require\\('./node_modules/eslint-config-expo/node_modules/eslint-import-resolver-typescript'\\); console.log\\(Object.keys\\(r\\)\\); console.log\\(typeof r.resolve, typeof r.interfaceVersion, r.interfaceVersion\\);\")",
+      "Bash(node -e ' *)",
+      "Bash(cp node_modules/eslint-module-utils/resolve.js /tmp/resolve.js.bak)",
+      "Bash(rm -f /tmp/resolver-debug.log)",
+      "Bash(npx --version)",
+      "Bash(node node_modules/.bin/expo lint)",
+      "Bash(node -e \"console.log\\(require\\('./node_modules/expo/package.json'\\).bin\\)\")",
+      "Bash(node /Users/rasmus/projects/charts/node_modules/.bin/expo lint)",
+      "Bash(env)",
+      "Bash(node -e \"console.log\\(process.env.NODE_COMPILE_CACHE\\)\")",
+      "Bash(pwd -P)",
+      "Bash(python3 -c \"import os; print\\(os.path.realpath\\('.'\\)\\)\")",
+      "Read(//Users/rasmus/projects/**)",
+      "Bash(cp /tmp/resolve.js.bak node_modules/eslint-module-utils/resolve.js)",
+      "Bash(find / -xdev \\\\\\( -path \"*/metro-cache/*\" -o -path \"*/.expo/*\" -o -path \"*/haste-map*\" \\\\\\) -iname \"*.js\" 2>/dev/null | xargs grep -l \"invalid interface loaded as resolver\" 2>/dev/null | head -5 *)",
+      "Read(//Users/rasmus/Library/Caches/**)",
+      "Read(//Users/rasmus/.cache/**)",
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(node -e \"console.log\\(require.resolve\\('esbuild/package.json'\\)\\)\")",
+      "Bash(./node_modules/.bin/esbuild /private/tmp/claude-501/-Users-rasmus-projects-charts/e959a455-191d-4148-9cdf-c652e5266a4f/scratchpad/chart-web-demo/entry.tsx --bundle --format=iife --platform=browser --jsx=automatic --outfile=/private/tmp/claude-501/-Users-rasmus-projects-charts/e959a455-191d-4148-9cdf-c652e5266a4f/scratchpad/chart-web-demo/bundle.js '--define:process.env.NODE_ENV=\"development\"')",
+      "Bash(./node_modules/.bin/esbuild .scratch-web-demo/entry.tsx --bundle --format=iife --platform=browser --jsx=automatic --outfile=.scratch-web-demo/bundle.js '--define:process.env.NODE_ENV=\"development\"')",
+      "Bash(./node_modules/.bin/esbuild .scratch-web-demo/entry.tsx --bundle --format=iife --platform=browser --jsx=automatic --minify --outfile=.scratch-web-demo/bundle.min.js '--define:process.env.NODE_ENV=\"production\"')",
+      "Bash(python3 -)",
+      "Bash(npm audit *)"
     ]
   }
 }
