@@ -4,6 +4,7 @@ export interface Candle {
   high: number;
   low: number;
   close: number;
+  volume?: number;
 }
 
 export interface IndicatorLine {
@@ -21,6 +22,29 @@ export interface ShadedArea {
 }
 
 export type TsPoint = { timestamp: number; value: number };
+
+/** Closed union of supported trade-marker kinds — same convention as OverlayType/ChartType. */
+export type MarkerKind =
+  | 'entry-long'
+  | 'exit-long'
+  | 'entry-short'
+  | 'exit-short'
+  | 'stop-loss'
+  | 'take-profit';
+
+/**
+ * A single point-in-time annotation drawn on the price panel (e.g. a
+ * backtest's entry/exit points). Rendered by MarkerLayer/draw/markers.ts
+ * using the same pixel math as the candle layer, so it stays in sync
+ * through pan/zoom/live updates with no external state.
+ */
+export interface ChartMarker {
+  timestamp: number;
+  price: number;
+  kind: MarkerKind;
+  /** Shown on hover/tap (or via the OHLC HUD, if showOhlcHud is on). */
+  label?: string;
+}
 
 export type RsiPoint = { timestamp: number; value: number };
 
@@ -46,6 +70,8 @@ export interface ChartProps {
   data: Candle[];
   indicators?: IndicatorLine[];
   shadedAreas?: ShadedArea[];
+  /** Trade/event markers drawn on the main price panel. */
+  markers?: ChartMarker[];
   width: number;
   height: number;
   /**
@@ -62,6 +88,8 @@ export interface ChartProps {
   /** RSI lookback period. Default: 14. Only used when showRsiPanel is true. */
   rsiPeriod?: number;
   showMacdPanel?: boolean;
+  /** Show a volume sub-panel below the main chart. Requires `data[].volume`. Default: false. */
+  showVolumePanel?: boolean;
   chartType?: ChartType;
   /** Increment this value to jump the viewport to the latest candle. */
   scrollToLatestTrigger?: number;

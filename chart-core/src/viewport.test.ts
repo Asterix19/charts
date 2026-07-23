@@ -74,6 +74,41 @@ describe('computeLayout', () => {
     const { rsiPanelHeight } = computeLayout(200, 150, true);
     expect(rsiPanelHeight).toBeGreaterThanOrEqual(60);
   });
+
+  it('volumePanelHeight is 0 when showVolumePanel is omitted (defaults false)', () => {
+    expect(computeLayout(500, 400, false).volumePanelHeight).toBe(0);
+  });
+
+  it('volumePanelHeight is 0 when showVolumePanel=false', () => {
+    expect(computeLayout(500, 800, false, false, false).volumePanelHeight).toBe(0);
+  });
+
+  it('volumePanelHeight is positive when showVolumePanel=true', () => {
+    const { volumePanelHeight } = computeLayout(500, 800, false, false, true);
+    expect(volumePanelHeight).toBeGreaterThanOrEqual(60);
+  });
+
+  it('mainChartHeight excludes the volume panel + gap when shown alone', () => {
+    const layout = computeLayout(500, 800, false, false, true);
+    expect(layout.mainChartHeight).toBe(
+      layout.innerHeight - layout.panelGap - layout.volumePanelHeight
+    );
+  });
+
+  it('rsi, macd, and volume panels can all be shown at once, each getting an equal share', () => {
+    const layout = computeLayout(500, 1000, true, true, true);
+    expect(layout.rsiPanelHeight).toBe(layout.macdPanelHeight);
+    expect(layout.macdPanelHeight).toBe(layout.volumePanelHeight);
+    expect(layout.mainChartHeight).toBe(
+      layout.innerHeight - 3 * (layout.panelGap + layout.volumePanelHeight)
+    );
+  });
+
+  it('adding the volume panel shrinks mainChartHeight relative to RSI-only', () => {
+    const rsiOnly = computeLayout(500, 800, true, false, false);
+    const rsiPlusVolume = computeLayout(500, 800, true, false, true);
+    expect(rsiPlusVolume.mainChartHeight).toBeLessThan(rsiOnly.mainChartHeight);
+  });
 });
 
 // ─── computeViewport ───────────────────────────────────────────────────────

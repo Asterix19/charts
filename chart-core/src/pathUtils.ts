@@ -47,3 +47,25 @@ export const buildSmoothPath = (pts: Point[]): SkPath | null => {
 
   return path;
 };
+
+/**
+ * Builds an isosceles triangle path centered at (cx, cy), `size` pixels tall,
+ * pointing up or down. Used by MarkerLayer for entry/exit trade markers.
+ */
+export const buildTrianglePath = (cx: number, cy: number, size: number, pointingUp: boolean): SkPath => {
+  const path = Skia.Path.Make();
+  const half = size / 2;
+
+  if (pointingUp) {
+    path.moveTo(cx, cy - half);
+    path.lineTo(cx + half, cy + half);
+    path.lineTo(cx - half, cy + half);
+  } else {
+    path.moveTo(cx, cy + half);
+    path.lineTo(cx + half, cy - half);
+    path.lineTo(cx - half, cy - half);
+  }
+
+  path.close();
+  return path;
+};

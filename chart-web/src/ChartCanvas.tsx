@@ -19,6 +19,7 @@ import {
   calcRSI,
   clampViewport,
   computeLayout,
+  filterByWindow,
   findIndicatorById,
   findIndicatorValue,
   getSeriesX,
@@ -36,7 +37,9 @@ import { drawAxis } from './draw/axis';
 import { drawCrosshairLines } from './draw/crosshair';
 import { drawMacdPanel } from './draw/macdPanel';
 import { drawCandles, drawCrosshairDot, drawLineSeries, drawShadedArea } from './draw/mainPanel';
+import { drawMarkers } from './draw/markers';
 import { drawRsiPanel } from './draw/rsiPanel';
+import { drawVolumePanel } from './draw/volumePanel';
 import OhlcHud from './components/OhlcHud';
 
 type Viewport = CandleViewport;
@@ -50,6 +53,7 @@ const SLChart: React.FC<ChartProps> = ({
   data,
   indicators,
   shadedAreas,
+  markers,
   width,
   height,
   intervalMs: intervalMsProp,
@@ -59,6 +63,7 @@ const SLChart: React.FC<ChartProps> = ({
   showRsiPanel = false,
   rsiPeriod = 14,
   showMacdPanel = false,
+  showVolumePanel = false,
   showGrid = true,
   chartType = 'candle',
   scrollToLatestTrigger,
@@ -76,8 +81,8 @@ const SLChart: React.FC<ChartProps> = ({
   );
 
   const {
-    padding, chartWidth, panelGap, rsiPanelHeight, macdPanelHeight, mainChartHeight, mainCanvasHeight,
-  } = computeLayout(width, height, showRsiPanel, showMacdPanel);
+    padding, chartWidth, panelGap, rsiPanelHeight, macdPanelHeight, volumePanelHeight, mainChartHeight, mainCanvasHeight,
+  } = computeLayout(width, height, showRsiPanel, showMacdPanel, showVolumePanel);
 
   const initialRange = Math.min(
     Math.max(MIN_VISIBLE_CANDLES, visibleDataPointsProp),
@@ -193,6 +198,13 @@ const SLChart: React.FC<ChartProps> = ({
     });
   }, [shadedAreas, indicators, visibleCandles, intervalMs]);
 
+  const visibleMarkers = useMemo(() => {
+    if (!markers?.length || !visibleCandles.length) return [];
+    const startTs = visibleCandles[0].timestamp;
+    const endTs = visibleCandles[visibleCandles.length - 1].timestamp;
+    return filterByWindow(markers, startTs, endTs);
+  }, [markers, visibleCandles]);
+
   const displayPriceRange = useMemo(() => {
     if (!visibleCandles.length) return { min: 0, max: 1 };
     const candleValues = visibleCandles.flatMap((c) => [c.high, c.low]);
@@ -242,6 +254,7 @@ const SLChart: React.FC<ChartProps> = ({
   const mainCanvasRef = useRef<HTMLCanvasElement>(null);
   const rsiCanvasRef = useRef<HTMLCanvasElement>(null);
   const macdCanvasRef = useRef<HTMLCanvasElement>(null);
+  const volumeCanvasRef = useRef<HTMLCanvasElement>(null);
 
   const panStartViewportRef = useRef<Viewport>(viewport);
   const pinchStartViewportRef = useRef<Viewport>(viewport);
@@ -457,6 +470,13 @@ const SLChart: React.FC<ChartProps> = ({
       drawShadedArea(ctx, top, bottom, area.color || '#888', area.opacity ?? 0.3);
     }
 
+    if (visibleMarkers.length > 0) {
+      drawMarkers(ctx, {
+        markers: visibleMarkers, candleData: visibleCandles, width: virtualWidth, height: mainChartHeight,
+        priceMin: displayPriceRange.min, priceMax: displayPriceRange.max, colors,
+      });
+    }
+
     ctx.restore();
 
     if (crosshairCandle !== null && crosshairX !== null && crosshairY !== null) {
@@ -477,6 +497,43 @@ const SLChart: React.FC<ChartProps> = ({
         drawCrosshairDot(ctx, { x: dotX, y: dotY }, line.color, 3);
       }
 
+      ctx.restore();
+    }
+
+    ctx.restore();
+  });
+
+  useLayoutEffect(() => {
+    const canvas = volumeCanvasRef.current;
+    if (!showVolumePanel || !canvas || !visibleCandles.length) return;
+    const ctx = getScaledContext(canvas, width, volumePanelHeight);
+    if (!ctx) return;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(padding.left, 0, chartWidth, volumePanelHeight);
+    ctx.clip();
+
+    ctx.save();
+    ctx.translate(padding.left + fractionalOffsetX, 0);
+    ctx.strokeStyle = colors.crosshair;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(chartWidth, 0);
+    ctx.stroke();
+    drawVolumePanel(ctx, { candleData: visibleCandles, width: virtualWidth, height: volumePanelHeight, colors });
+    ctx.restore();
+
+    if (crosshairCandle !== null && crosshairX !== null) {
+      ctx.save();
+      ctx.translate(padding.left + crosshairX, 0);
+      ctx.strokeStyle = colors.crosshair;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(0, volumePanelHeight);
+      ctx.stroke();
       ctx.restore();
     }
 
@@ -589,6 +646,13 @@ const SLChart: React.FC<ChartProps> = ({
           style={{ width, height: mainCanvasHeight, display: 'block', touchAction: 'none' }}
         />
       </div>
+
+      {showVolumePanel && (
+        <div style={{ width, height: panelGap + volumePanelHeight }}>
+          <div style={{ height: panelGap }} />
+          <canvas ref={volumeCanvasRef} style={{ width, height: volumePanelHeight, display: 'block' }} />
+        </div>
+      )}
 
       {showRsiPanel && (
         <div style={{ width, height: panelGap + rsiPanelHeight }}>

@@ -38,6 +38,12 @@ function formatPrice(n: number): string {
   return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+function formatVolume(n: number): string {
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(2) + 'M';
+  if (n >= 1_000) return (n / 1_000).toFixed(2) + 'K';
+  return n.toFixed(0);
+}
+
 const OhlcHud: React.FC<Props> = ({
   candle, isLive, theme, indicators, rsiValue, onDragStart, onDragEnd,
 }) => {
@@ -105,6 +111,7 @@ const OhlcHud: React.FC<Props> = ({
       <Row label="H" value={formatPrice(candle.high)}  colors={colors} />
       <Row label="L" value={formatPrice(candle.low)}   colors={colors} />
       <Row label="C" value={formatPrice(candle.close)} colors={colors} valueColor={closeColor} />
+      {candle.volume != null && <Row label="V" value={formatVolume(candle.volume)} colors={colors} />}
 
       {/* RSI */}
       {rsiValue != null && (

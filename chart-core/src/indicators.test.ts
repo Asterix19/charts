@@ -1,4 +1,4 @@
-import { calcRSI, calcSMA, calcEMA, calcBollingerBands } from './indicators';
+import { calcRSI, calcSMA, calcEMA, calcBollingerBands, computeVolumeYRange } from './indicators';
 import type { Candle } from './types';
 
 // ─── helpers ──────────────────────────────────────────────────────────────
@@ -249,5 +249,34 @@ describe('calcBollingerBands', () => {
     expect(result.upper.color).toBe('#U');
     expect(result.lower.color).toBe('#L');
     expect(result.basis.color).toBe('#B');
+  });
+});
+
+// ─── computeVolumeYRange ──────────────────────────────────────────────────
+// Volume panel range is always anchored at 0, padded 10% above the max.
+
+describe('computeVolumeYRange', () => {
+  const withVolume = (volumes: number[]): Candle[] =>
+    flatCandles(volumes.map(() => 100)).map((c, i) => ({ ...c, volume: volumes[i] }));
+
+  it('yMin is always 0', () => {
+    expect(computeVolumeYRange(withVolume([10, 20, 30])).yMin).toBe(0);
+  });
+
+  it('yMax is the max volume padded by 10%', () => {
+    expect(computeVolumeYRange(withVolume([10, 50, 30])).yMax).toBeCloseTo(55, 10);
+  });
+
+  it('treats missing volume as 0', () => {
+    const candles = flatCandles([100, 100]);
+    expect(computeVolumeYRange(candles).yMax).toBe(1);
+  });
+
+  it('falls back to yMax=1 when all volumes are 0', () => {
+    expect(computeVolumeYRange(withVolume([0, 0])).yMax).toBe(1);
+  });
+
+  it('returns yMax=1 for empty input', () => {
+    expect(computeVolumeYRange([])).toEqual({ yMin: 0, yMax: 1 });
   });
 });

@@ -11,7 +11,7 @@ This package renders the exact same chart engine as [`@stacklatte/chart-core`](.
 
 ## Why chart-web
 
-- **One component, not a kit.** Candlesticks, line series, SMA/EMA/Bollinger Bands overlays, RSI + MACD sub-panels, wheel/touch pan-zoom, crosshair inspection, and live-streaming updates all ship built in.
+- **One component, not a kit.** Candlesticks, line series, SMA/EMA/Bollinger Bands overlays, RSI + MACD + volume sub-panels, trade markers, wheel/touch pan-zoom, crosshair inspection, and live-streaming updates all ship built in.
 - **Real indicator math.** RSI uses Wilder smoothing, MACD is seeded and aligned correctly (12/26/9), Bollinger Bands use an O(n) sliding window — the same tested implementation `chart-core` uses, not a reimplementation that can drift.
 - **No WASM, no shim.** Plain `<canvas>` + `ctx.fillText` — no CanvasKit download, no `react-native-web` dependency graph. Only peers are `react` and `react-dom`.
 - **LLM-safe declarative config.** `buildChartPipeline()` takes a versioned `ChartConfig` document — every color and interval is a closed enum, never a raw string an LLM can typo — and returns validated, ready-to-render props, or throws a precise, itemized error. A generated JSON Schema ships alongside it for structured output / tool-calling. See [`llms.txt`](./llms.txt) for the quick path.
@@ -20,7 +20,8 @@ This package renders the exact same chart engine as [`@stacklatte/chart-core`](.
 | | chart-web / chart-core | General-purpose chart libs (Recharts, Victory) | Web-only trading chart libs |
 |---|---|---|---|
 | Candlesticks + OHLC | ✅ built in | 🛠 build it yourself | ✅ |
-| RSI / MACD / Bollinger | ✅ built in | ❌ | varies by plugin |
+| RSI / MACD / Bollinger / Volume | ✅ built in | ❌ | varies by plugin |
+| Trade markers (entry/exit/SL/TP) | ✅ built in, pan/zoom-synced | 🛠 build it yourself | varies |
 | Pan, wheel-zoom, touch-pinch, crosshair | ✅ built in | 🛠 manual | ✅ |
 | Native (iOS/Android) *and* web | ✅ two packages, one shared core | web only | web only |
 | Declarative config + JSON Schema | ✅ | ❌ | ❌ |
@@ -113,11 +114,42 @@ const bb = calcBollingerBands(candles, 20, 2, {
 
 ---
 
-## RSI / MACD sub-panels
+## RSI / MACD / volume sub-panels
 
 ```tsx
-<SLChart data={candles} showRsiPanel showMacdPanel width={800} height={560} />
+<SLChart data={candles} showRsiPanel showMacdPanel showVolumePanel width={800} height={720} />
 ```
+
+`showVolumePanel` reads `candle.volume` — add a `volume` field to your `Candle` data to enable it (see [Data format](#data-format)).
+
+---
+
+## Trade markers
+
+Annotate entries, exits, stop-losses, and take-profits directly on the price panel. Markers are positioned with the exact same pixel math as the candles, so they stay perfectly in sync through pan, zoom, and live updates — no external state to keep in sync yourself.
+
+```tsx
+import type { ChartMarker } from '@stacklatte/chart-web';
+
+const markers: ChartMarker[] = [
+  { timestamp: 1700003600000, price: 43100, kind: 'entry-long', label: 'Entry' },
+  { timestamp: 1700010800000, price: 44500, kind: 'take-profit' },
+  { timestamp: 1700014400000, price: 42800, kind: 'stop-loss' },
+];
+
+<SLChart data={candles} markers={markers} width={800} height={400} />
+```
+
+| `kind` | Shape | Default color |
+|---|---|---|
+| `entry-long` | ▲ | `candleUp` |
+| `exit-long` | ▼ | neutral (`markerNeutral`) |
+| `entry-short` | ▼ | `candleDown` |
+| `exit-short` | ▲ | neutral (`markerNeutral`) |
+| `stop-loss` | ✕ | `candleDown` |
+| `take-profit` | ● | `candleUp` |
+
+Markers render at a fixed pixel size regardless of zoom level, and are clipped to the visible time window automatically.
 
 ---
 
@@ -197,6 +229,7 @@ const myTheme: ChartThemeColors = {
   rsiThreshold:  '#2a2a2a',
   hudBackground: 'rgba(0,0,0,0.85)',
   hudText:       '#ffffff',
+  markerNeutral: '#64b5f6',
 };
 
 <SLChart data={candles} theme={myTheme} width={800} height={400} />
@@ -219,7 +252,8 @@ const config: ChartConfig = {
   interval: '1h',
   overlays: [{ type: 'ema', id: 'ema-9', params: { period: 9 }, color: 'cyan' }],
   shadedAreas: [],
-  subPanels: [{ type: 'rsi', params: { period: 14 } }],
+  subPanels: [{ type: 'rsi', params: { period: 14 } }, { type: 'volume' }],
+  markers: [{ timestamp: 1700003600000, price: 43100, kind: 'entry-long' }],
   viewport: { visibleCandles: 100, followLive: true },
   hud: { showOhlcHud: true },
 };
@@ -253,6 +287,7 @@ interface Candle {
   high:      number;
   low:       number;
   close:     number;
+  volume?:   number; // optional — enables showVolumePanel and the HUD's V row
 }
 ```
 
@@ -264,8 +299,10 @@ interface Candle {
 |---|---|
 | `draw/axis.ts` | Time/price grid lines and labels (native `ctx.fillText` — no DOM overlay needed) |
 | `draw/mainPanel.ts` | Candles, line series, indicator overlays, shaded areas, crosshair dot |
+| `draw/markers.ts` | Trade markers (entry/exit/stop-loss/take-profit) on the main panel |
 | `draw/rsiPanel.ts` | RSI sub-panel with 30/70 threshold lines |
 | `draw/macdPanel.ts` | MACD sub-panel (line, signal, histogram) |
+| `draw/volumePanel.ts` | Volume sub-panel (bars colored by candle direction) |
 | `draw/crosshair.ts` | Dashed crosshair lines |
 | `draw/path.ts` | Catmull-Rom smooth-path stroking/filling (the Canvas 2D equivalent of chart-core's Skia `pathUtils`) |
 | `components/OhlcHud.tsx` | Draggable OHLC info overlay |

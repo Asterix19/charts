@@ -229,3 +229,16 @@ export function computeMacdYRange(
   const pad = maxAbsValue * 0.15;
   return { yMin: -(maxAbsValue + pad), yMax: maxAbsValue + pad };
 }
+
+// ─── Volume ───────────────────────────────────────────────────────────────
+
+/**
+ * Compute the Y axis range for a volume panel.
+ *
+ * Always anchored at 0 (bars grow up from the bottom). The max is padded
+ * 10 % so the tallest bar doesn't touch the panel's top edge.
+ */
+export function computeVolumeYRange(candles: Candle[]): { yMin: number; yMax: number } {
+  const maxVolume = candles.reduce((max, c) => Math.max(max, c.volume ?? 0), 0);
+  return { yMin: 0, yMax: maxVolume > 0 ? maxVolume * 1.1 : 1 };
+}

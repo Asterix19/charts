@@ -73,6 +73,104 @@ describe('SLChart (web)', () => {
     expect(canvases.length).toBe(3);
   });
 
+  it('renders an extra canvas for the volume panel and draws one bar per visible candle', () => {
+    const candles = makeCandles(30).map((c) => ({ ...c, volume: 1000 }));
+    const { container } = render(
+      <SLChart data={candles} width={400} height={600} showVolumePanel />,
+    );
+
+    const canvases = container.querySelectorAll('canvas');
+    expect(canvases.length).toBe(2);
+
+    const ctx = contexts[contexts.length - 1];
+    expect(ctx.fillRect).toHaveBeenCalledTimes(candles.length);
+  });
+
+  it('renders 4 canvases when RSI, MACD, and volume panels are all shown together', () => {
+    const candles = makeCandles(60).map((c) => ({ ...c, volume: 1000 }));
+    const { container } = render(
+      <SLChart data={candles} width={400} height={900} showRsiPanel showMacdPanel showVolumePanel />,
+    );
+
+    expect(container.querySelectorAll('canvas').length).toBe(4);
+  });
+
+  it('draws trade markers without throwing', () => {
+    const candles = makeCandles(30);
+    expect(() =>
+      render(
+        <SLChart
+          data={candles}
+          width={400}
+          height={300}
+          markers={[
+            { timestamp: candles[5].timestamp, price: candles[5].low - 1, kind: 'entry-long' },
+            { timestamp: candles[10].timestamp, price: candles[10].high + 1, kind: 'exit-long', label: 'exit' },
+            { timestamp: candles[15].timestamp, price: candles[15].close, kind: 'stop-loss' },
+            { timestamp: candles[20].timestamp, price: candles[20].close, kind: 'take-profit' },
+          ]}
+        />,
+      ),
+    ).not.toThrow();
+
+    const ctx = contexts[contexts.length - 1];
+    expect(ctx.fill).toHaveBeenCalled(); // triangle/dot markers
+    expect(ctx.stroke).toHaveBeenCalled(); // x marker + wicks/axis grid
+  });
+
+  it('draws exactly one dot per take-profit marker (arc is unique to the dot shape)', () => {
+    const candles = makeCandles(30);
+    render(
+      <SLChart
+        data={candles}
+        width={400}
+        height={300}
+        markers={[
+          { timestamp: candles[5].timestamp, price: candles[5].close, kind: 'take-profit' },
+          { timestamp: candles[10].timestamp, price: candles[10].close, kind: 'take-profit' },
+        ]}
+      />,
+    );
+
+    const ctx = contexts[contexts.length - 1];
+    expect(ctx.arc).toHaveBeenCalledTimes(2);
+  });
+
+  it('clips markers whose timestamp falls outside the visible window', () => {
+    const candles = makeCandles(60);
+    // visibleDataPoints=30 keeps only the most recent 30 candles on screen.
+    render(
+      <SLChart
+        data={candles}
+        width={400}
+        height={300}
+        visibleDataPoints={30}
+        markers={[
+          { timestamp: candles[0].timestamp, price: candles[0].close, kind: 'take-profit' }, // out of view
+          { timestamp: candles[59].timestamp, price: candles[59].close, kind: 'take-profit' }, // in view
+        ]}
+      />,
+    );
+
+    const ctx = contexts[contexts.length - 1];
+    expect(ctx.arc).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not draw any marker shape when a marker timestamp matches no candle', () => {
+    const candles = makeCandles(30);
+    render(
+      <SLChart
+        data={candles}
+        width={400}
+        height={300}
+        markers={[{ timestamp: 999_999_999, price: candles[5].close, kind: 'take-profit' }]}
+      />,
+    );
+
+    const ctx = contexts[contexts.length - 1];
+    expect(ctx.arc).not.toHaveBeenCalled();
+  });
+
   it('draws indicator overlays and shaded areas without throwing', () => {
     const candles = makeCandles(40);
     const ema9 = calcEMA(candles, 9, 'ema-9', '#4a90e2');

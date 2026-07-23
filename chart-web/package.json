@@ -1,7 +1,7 @@
 {
   "name": "@stacklatte/chart-web",
-  "version": "1.0.0",
-  "description": "React trading chart for the web — plain HTML5 Canvas 2D, no WASM, no react-native-web. Candlesticks, RSI/MACD/Bollinger, pinch-zoom, live streaming. Ships an LLM-safe declarative ChartConfig + JSON Schema so agents can generate charts without hallucinating props.",
+  "version": "1.1.0",
+  "description": "React trading chart for the web — plain HTML5 Canvas 2D, no WASM, no react-native-web. Candlesticks, RSI/MACD/Bollinger/Volume, trade markers, pinch-zoom, live streaming. Ships an LLM-safe declarative ChartConfig + JSON Schema so agents can generate charts without hallucinating props.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -48,6 +48,9 @@
     "rsi",
     "macd",
     "bollinger-bands",
+    "volume",
+    "trade-markers",
+    "backtest",
     "chartconfig",
     "json-schema",
     "llm",
@@ -78,16 +81,16 @@
     "react-dom": ">=19.0.0"
   },
   "dependencies": {
-    "@stacklatte/chart-core": "^2.0.0"
+    "@stacklatte/chart-core": "^2.1.0"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/jest-dom": "^7.0.0",
     "@testing-library/react": "^16.3.2",
     "@types/react": "~19.2.17",
     "@types/react-dom": "~19.2.3",
     "jsdom": "^29.1.1",
-    "react": "19.2.7",
-    "react-dom": "19.2.7",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
     "tsup": "^8.5.1",
     "typescript": "^7.0.2",
     "vitest": "^4.1.10"

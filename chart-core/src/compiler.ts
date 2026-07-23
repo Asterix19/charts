@@ -81,16 +81,22 @@ export function compileChartConfig(
   const rsiPanel = config.subPanels.find((p) => p.type === 'rsi');
   const showRsiPanel = rsiPanel !== undefined;
 
+  const showMacdPanel = config.subPanels.some((p) => p.type === 'macd');
+  const showVolumePanel = config.subPanels.some((p) => p.type === 'volume');
+
   return {
     data,
     indicators,
     shadedAreas,
+    markers: config.markers ?? [],
     intervalMs: INTERVAL_MS[config.interval],
     visibleDataPoints: Math.min(500, Math.max(10, config.viewport.visibleCandles)),
     theme: config.theme,
     showOhlcHud: config.hud.showOhlcHud,
     showRsiPanel,
     rsiPeriod: rsiPanel?.params.period,
+    showMacdPanel,
+    showVolumePanel,
     chartType: config.priceDisplay,
   };
 }

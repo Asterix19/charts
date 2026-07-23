@@ -10,7 +10,11 @@
  *   - `code`    — machine-readable enum for programmatic handling
  */
 
-import { CHART_CONFIG_VERSION, type ChartConfig, type OverlayConfig } from './config';
+import { CHART_CONFIG_VERSION, type ChartConfig, type MarkerKindConfig, type OverlayConfig } from './config';
+
+const VALID_MARKER_KINDS: ReadonlySet<MarkerKindConfig> = new Set([
+  'entry-long', 'exit-long', 'entry-short', 'exit-short', 'stop-loss', 'take-profit',
+]);
 
 // ─── Error types ──────────────────────────────────────────────────────────────
 
@@ -22,7 +26,10 @@ export type ValidationErrorCode =
   | 'INVALID_OPACITY'
   | 'INVALID_VISIBLE_CANDLES'
   | 'INVALID_PERIOD'
-  | 'INVALID_STD_DEV';
+  | 'INVALID_STD_DEV'
+  | 'INVALID_MARKER_TIMESTAMP'
+  | 'INVALID_MARKER_PRICE'
+  | 'INVALID_MARKER_KIND';
 
 export interface ValidationError {
   /** Dot-notation path to the offending field. */
@@ -61,6 +68,7 @@ export function validateChartConfig(config: ChartConfig): ValidationResult {
   validateShadedAreas(config, knownIds, errors);
   validateViewport(config, errors);
   validateSubPanels(config, errors);
+  validateMarkers(config, errors);
 
   return errors.length === 0 ? { valid: true } : { valid: false, errors };
 }
@@ -165,6 +173,36 @@ function validateSubPanels(config: ChartConfig, errors: ValidationError[]): void
   config.subPanels.forEach((panel, i) => {
     if (panel.type === 'rsi') {
       validatePeriod(panel.params.period, `subPanels[${i}].params.period`, errors);
+    }
+  });
+}
+
+function validateMarkers(config: ChartConfig, errors: ValidationError[]): void {
+  (config.markers ?? []).forEach((marker, i) => {
+    const base = `markers[${i}]`;
+
+    if (!Number.isFinite(marker.timestamp)) {
+      errors.push({
+        path: `${base}.timestamp`,
+        code: 'INVALID_MARKER_TIMESTAMP',
+        message: `timestamp must be a finite number. Got ${marker.timestamp}.`,
+      });
+    }
+
+    if (!Number.isFinite(marker.price)) {
+      errors.push({
+        path: `${base}.price`,
+        code: 'INVALID_MARKER_PRICE',
+        message: `price must be a finite number. Got ${marker.price}.`,
+      });
+    }
+
+    if (!VALID_MARKER_KINDS.has(marker.kind)) {
+      errors.push({
+        path: `${base}.kind`,
+        code: 'INVALID_MARKER_KIND',
+        message: `kind "${marker.kind}" is not a valid marker kind.`,
+      });
     }
   });
 }

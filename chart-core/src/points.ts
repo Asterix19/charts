@@ -6,7 +6,7 @@
  * platform-specific primitives.
  */
 
-import type { Candle, TsPoint } from './types';
+import type { Candle, ChartMarker, MarkerKind, TsPoint } from './types';
 import { getCandleX, getSeriesX, getY } from './layout';
 
 export interface Point {
@@ -130,6 +130,51 @@ export function buildShadedAreaPoints(
   return { top, bottom };
 }
 
+// ─── Trade markers ────────────────────────────────────────────────────────
+
+/** Fixed pixel size for trade markers — deliberately does not scale with zoom. */
+export const MARKER_SIZE = 7;
+
+export interface MarkerPoint {
+  x: number;
+  y: number;
+  kind: MarkerKind;
+  label?: string;
+}
+
+/**
+ * Map ChartMarkers to pixel coordinates using the exact same functions the
+ * candle layer uses (getCandleX/getY), so markers stay pixel-perfect through
+ * pan/zoom/live updates.
+ *
+ * Only markers whose timestamp matches a visible candle are included — same
+ * clipping convention as buildSeriesPoints. Style (shape/color) is resolved
+ * separately by the renderer via getMarkerStyle(), keeping this function a
+ * pure geometry builder.
+ */
+export function buildMarkerPoints(
+  markers: ChartMarker[],
+  indexByTimestamp: Map<number, number>,
+  total: number,
+  width: number,
+  height: number,
+  priceMin: number,
+  priceMax: number
+): MarkerPoint[] {
+  const pts: MarkerPoint[] = [];
+  for (const marker of markers) {
+    const idx = indexByTimestamp.get(marker.timestamp);
+    if (idx === undefined) continue;
+    pts.push({
+      x: getCandleX(idx, total, width),
+      y: getY(marker.price, priceMin, priceMax, height),
+      kind: marker.kind,
+      label: marker.label,
+    });
+  }
+  return pts;
+}
+
 // ─── MACD histogram geometry ──────────────────────────────────────────────
 
 /** Pixel geometry for a single MACD histogram bar. */
@@ -236,6 +281,56 @@ export function buildCandleGeometry(
       body: { y: Math.min(yOpen, yClose), height: Math.max(1, Math.abs(yClose - yOpen)) },
       width: bodyW,
       up,
+      color: up ? colorUp : colorDown,
+    };
+  });
+}
+
+// ─── Volume ───────────────────────────────────────────────────────────────
+
+/** Pixel geometry for a single volume bar. */
+export interface VolumeBar {
+  /** Left edge of the bar in pixels */
+  x: number;
+  /** Top edge of the bar in pixels */
+  y: number;
+  /** Bar width in pixels */
+  width: number;
+  /** Bar height in pixels */
+  height: number;
+  /** Resolved fill color — candleUp/candleDown per the candle's direction */
+  color: string;
+}
+
+/**
+ * Convert per-candle volume into pixel-rect geometry, one bar per candle,
+ * anchored to the panel's bottom edge (yMin is always 0). Missing `volume`
+ * is treated as 0. Bars are 60 % of the candle slot width, centred on the
+ * candle X position — same proportions as buildCandleGeometry.
+ */
+export function buildVolumeBars(
+  data: Candle[],
+  width: number,
+  height: number,
+  yMax: number,
+  colorUp = '#4caf50',
+  colorDown = '#ef5350'
+): VolumeBar[] {
+  const total = data.length;
+  const spacing = width / Math.max(1, total);
+  const barWidth = Math.max(1, spacing * 0.6);
+  const zeroY = getY(0, 0, yMax, height);
+
+  return data.map((c, i) => {
+    const x = getCandleX(i, total, width);
+    const topY = getY(c.volume ?? 0, 0, yMax, height);
+    const up = c.close >= c.open;
+
+    return {
+      x: x - barWidth / 2,
+      y: topY,
+      width: barWidth,
+      height: Math.max(1, zeroY - topY),
       color: up ? colorUp : colorDown,
     };
   });

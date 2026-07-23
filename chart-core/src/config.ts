@@ -200,7 +200,7 @@ export interface ShadedAreaConfig {
 // type manages its own internal rendering style.
 
 /** All valid sub-panel type discriminators. */
-export type SubPanelType = 'rsi';
+export type SubPanelType = 'rsi' | 'macd' | 'volume';
 
 export interface RsiPanelConfig {
   type: 'rsi';
@@ -208,8 +208,40 @@ export interface RsiPanelConfig {
   params: PeriodParams;
 }
 
+/** MACD(12,26,9) sub-panel. No configurable params — matches ChartProps.showMacdPanel. */
+export interface MacdPanelConfig {
+  type: 'macd';
+}
+
+/** Volume sub-panel. No configurable params — matches ChartProps.showVolumePanel. */
+export interface VolumePanelConfig {
+  type: 'volume';
+}
+
 /** Union of all sub-panel types. */
-export type SubPanelConfig = RsiPanelConfig;
+export type SubPanelConfig = RsiPanelConfig | MacdPanelConfig | VolumePanelConfig;
+
+// ─── Markers ──────────────────────────────────────────────────────────────
+
+/** Closed union of supported trade-marker kinds — mirrors ChartMarker's MarkerKind. */
+export type MarkerKindConfig =
+  | 'entry-long'
+  | 'exit-long'
+  | 'entry-short'
+  | 'exit-short'
+  | 'stop-loss'
+  | 'take-profit';
+
+/**
+ * A single trade/event annotation on the price panel. Compiled straight
+ * through to ChartProps.markers — see ChartMarker for the rendered shape.
+ */
+export interface MarkerConfig {
+  timestamp: number;
+  price: number;
+  kind: MarkerKindConfig;
+  label?: string;
+}
 
 // ─── Viewport ─────────────────────────────────────────────────────────────────
 
@@ -264,6 +296,7 @@ export interface HudConfig {
  *     { fromOverlayId: 'bb-upper', toOverlayId: 'bb-lower', color: 'cyan', opacity: 0.15 },
  *   ],
  *   subPanels: [{ type: 'rsi', params: { period: 14 } }],
+ *   markers: [{ timestamp: 1_700_000_000_000, price: 42_000, kind: 'entry-long' }],
  *   viewport: { visibleCandles: 100, followLive: true },
  *   hud: { showOhlcHud: true },
  * };
@@ -281,6 +314,8 @@ export interface ChartConfig {
   shadedAreas: ShadedAreaConfig[];
   /** Oscillator panels rendered below the main chart. */
   subPanels: SubPanelConfig[];
+  /** Trade/event markers drawn on the main price panel. Defaults to [] when omitted. */
+  markers?: MarkerConfig[];
   viewport: ViewportConfig;
   hud: HudConfig;
 }

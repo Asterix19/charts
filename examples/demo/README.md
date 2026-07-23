@@ -3,6 +3,7 @@
 Interactive Expo demo app showcasing `@stacklatte/chart-core`.
 
 Features demonstrated:
+
 - Candlestick and line chart modes
 - Dark and light themes
 - SMA, EMA, and Bollinger Bands overlays

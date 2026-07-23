@@ -9,6 +9,7 @@ import {
   calcRSI,
   clampViewport,
   computeLayout,
+  filterByWindow,
   findIndicatorById,
   findIndicatorValue,
   getSeriesX,
@@ -28,9 +29,11 @@ import CrosshairOverlayWeb from './CrosshairOverlayWeb';
 import IndicatorLayer from './IndicatorLayer';
 import LineLayer from './LineLayer';
 import MacdLayer from './MacdLayer';
+import MarkerLayer from './MarkerLayer';
 import OhlcHud from './OhlcHud';
 import RsiLayer from './RsiLayer';
 import ShadedAreaLayer from './ShadedAreaLayer';
+import VolumeLayer from './VolumeLayer';
 
 type Viewport = CandleViewport;
 
@@ -43,6 +46,7 @@ const SLChart: React.FC<ChartProps> = ({
   data,
   indicators,
   shadedAreas,
+  markers,
   width,
   height,
   intervalMs: intervalMsProp,
@@ -52,6 +56,7 @@ const SLChart: React.FC<ChartProps> = ({
   showRsiPanel = false,
   rsiPeriod = 14,
   showMacdPanel = false,
+  showVolumePanel = false,
   showGrid = true,
   chartType = 'candle',
   scrollToLatestTrigger,
@@ -75,9 +80,10 @@ const SLChart: React.FC<ChartProps> = ({
     panelGap,
     rsiPanelHeight,
     macdPanelHeight,
+    volumePanelHeight,
     mainChartHeight,
     mainCanvasHeight,
-  } = computeLayout(width, height, showRsiPanel, showMacdPanel);
+  } = computeLayout(width, height, showRsiPanel, showMacdPanel, showVolumePanel);
 
   const initialRange = Math.min(
     Math.max(MIN_VISIBLE_CANDLES, visibleDataPointsProp),
@@ -227,6 +233,13 @@ const SLChart: React.FC<ChartProps> = ({
       ];
     });
   }, [shadedAreas, indicators, visibleCandles, intervalMs]);
+
+  const visibleMarkers = useMemo(() => {
+    if (!markers?.length || !visibleCandles.length) return [];
+    const startTs = visibleCandles[0].timestamp;
+    const endTs = visibleCandles[visibleCandles.length - 1].timestamp;
+    return filterByWindow(markers, startTs, endTs);
+  }, [markers, visibleCandles]);
 
   const displayPriceRange = useMemo(() => {
     if (!visibleCandles.length) return { min: 0, max: 1 };
@@ -528,6 +541,18 @@ const SLChart: React.FC<ChartProps> = ({
                     yMax={displayPriceRange.max}
                   />
                 ))}
+
+                {visibleMarkers.length > 0 && (
+                  <MarkerLayer
+                    markers={visibleMarkers}
+                    candleData={visibleCandles}
+                    width={virtualWidth}
+                    height={mainChartHeight}
+                    priceMin={displayPriceRange.min}
+                    priceMax={displayPriceRange.max}
+                    theme={theme}
+                  />
+                )}
               </Group>
 
               {crosshairCandle !== null &&
@@ -623,6 +648,43 @@ const SLChart: React.FC<ChartProps> = ({
             />
           )}
         </View>
+
+        {showVolumePanel && (
+          <View style={{ width, height: panelGap + volumePanelHeight }}>
+            <View style={{ height: panelGap }} />
+
+            <Canvas style={{ width, height: volumePanelHeight }}>
+              <Group clip={{ x: padding.left, y: 0, width: chartWidth, height: volumePanelHeight }}>
+                <Group transform={[{ translateX: padding.left + fractionalOffsetX }]}>
+                  <Line
+                    p1={{ x: 0, y: 0 }}
+                    p2={{ x: chartWidth, y: 0 }}
+                    color={colors.crosshair}
+                    strokeWidth={1}
+                  />
+
+                  <VolumeLayer
+                    candleData={visibleCandles}
+                    width={virtualWidth}
+                    height={volumePanelHeight}
+                    theme={theme}
+                  />
+                </Group>
+
+                {crosshairCandle !== null && crosshairX !== null && (
+                  <Group transform={[{ translateX: padding.left + crosshairX }]}>
+                    <Line
+                      p1={{ x: 0, y: 0 }}
+                      p2={{ x: 0, y: volumePanelHeight }}
+                      color={colors.crosshair}
+                      strokeWidth={1}
+                    />
+                  </Group>
+                )}
+              </Group>
+            </Canvas>
+          </View>
+        )}
 
         {showRsiPanel && (
           <View style={{ width, height: panelGap + rsiPanelHeight }}>

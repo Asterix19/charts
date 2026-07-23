@@ -18,6 +18,7 @@ export interface ChartLayout {
   innerHeight: number;
   rsiPanelHeight: number;
   macdPanelHeight: number;
+  volumePanelHeight: number;
   mainChartHeight: number;
   /** Full height of the main chart canvas including padding (use for Canvas/Svg height prop) */
   mainCanvasHeight: number;
@@ -28,6 +29,7 @@ export function computeLayout(
   height: number,
   showRsiPanel: boolean,
   showMacdPanel = false,
+  showVolumePanel = false,
 ): ChartLayout {
   const padding: ChartPadding = {
     top: 10,
@@ -39,18 +41,19 @@ export function computeLayout(
   const panelGap = 8;
   const innerHeight = height - padding.top - padding.bottom;
 
-  const panelCount = (showRsiPanel ? 1 : 0) + (showMacdPanel ? 1 : 0);
-  // Each sub-panel gets an equal share; shrinks gracefully when both are shown
+  const panelCount = (showVolumePanel ? 1 : 0) + (showRsiPanel ? 1 : 0) + (showMacdPanel ? 1 : 0);
+  // Each sub-panel gets an equal share; shrinks gracefully as more are shown
   const subPanelH = panelCount > 0
     ? Math.max(60, Math.min(110, Math.floor(innerHeight * 0.18)))
     : 0;
 
+  const volumePanelHeight = showVolumePanel ? subPanelH : 0;
   const rsiPanelHeight  = showRsiPanel  ? subPanelH : 0;
   const macdPanelHeight = showMacdPanel ? subPanelH : 0;
   const mainChartHeight = innerHeight - panelCount * (panelGap + subPanelH);
   const mainCanvasHeight = padding.top + mainChartHeight + padding.bottom;
 
-  return { padding, chartWidth, panelGap, innerHeight, rsiPanelHeight, macdPanelHeight, mainChartHeight, mainCanvasHeight };
+  return { padding, chartWidth, panelGap, innerHeight, rsiPanelHeight, macdPanelHeight, volumePanelHeight, mainChartHeight, mainCanvasHeight };
 }
 
 // ─── Time window / viewport ───────────────────────────────────────────────

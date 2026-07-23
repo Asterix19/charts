@@ -1,6 +1,6 @@
 # @stacklatte/chart-web
 
-> React trading chart for plain web apps — HTML5 Canvas 2D, no WebAssembly, no `react-native-web`. Candlesticks, line charts, SMA/EMA/Bollinger Bands overlays, RSI/MACD sub-panels, pointer/wheel pan-zoom, crosshair inspection, live-streaming updates, dark/light themes — MIT licensed. Same engine, same props, same LLM-safe `ChartConfig` as `@stacklatte/chart-core` (the React Native version).
+> React trading chart for plain web apps — HTML5 Canvas 2D, no WebAssembly, no `react-native-web`. Candlesticks, line charts, SMA/EMA/Bollinger Bands overlays, RSI/MACD/volume sub-panels, trade markers (entry/exit/stop-loss/take-profit), pointer/wheel pan-zoom, crosshair inspection, live-streaming updates, dark/light themes — MIT licensed. Same engine, same props, same LLM-safe `ChartConfig` as `@stacklatte/chart-core` (the React Native version).
 
 ## Install
 
@@ -34,7 +34,7 @@ The matching JSON Schema (draft-07, `additionalProperties: false` everywhere) is
 
 ## Full docs
 
-See [README.md](./README.md) for the complete prop table, every indicator/overlay example, gesture reference, theming, and the internal draw-layer architecture (`draw/mainPanel.ts`, `draw/axis.ts`, `draw/rsiPanel.ts`, etc.).
+See [README.md](./README.md) for the complete prop table, every indicator/overlay example, the `markers` prop (`ChartMarker[]`), gesture reference, theming, and the internal draw-layer architecture (`draw/mainPanel.ts`, `draw/axis.ts`, `draw/rsiPanel.ts`, `draw/markers.ts`, `draw/volumePanel.ts`, etc.).
 
 ## Related
 

@@ -11,7 +11,7 @@
  * contain hard-coded color literals.
  */
 
-import type { ChartTheme } from './types';
+import type { ChartTheme, MarkerKind } from './types';
 
 // ─── Color contract ────────────────────────────────────────────────────────
 
@@ -43,6 +43,8 @@ export interface ChartThemeColors {
   hudBackground: string;
   /** OHLC HUD text */
   hudText: string;
+  /** Neutral trade-marker color (exit-long / exit-short) — not tied to bullish/bearish */
+  markerNeutral: string;
 }
 
 // ─── Built-in presets ─────────────────────────────────────────────────────
@@ -70,6 +72,7 @@ export const THEMES: Record<string, ChartThemeColors> = {
     rsiThreshold: '#3C3C3C',
     hudBackground: 'rgba(0,0,0,0.72)',
     hudText: '#FFFFFF',
+    markerNeutral: '#64B5F6',
   },
 
   light: {
@@ -86,6 +89,7 @@ export const THEMES: Record<string, ChartThemeColors> = {
     rsiThreshold: '#808080',
     hudBackground: 'rgba(238,238,238,0.95)',
     hudText: '#111111',
+    markerNeutral: '#1565C0',
   },
 };
 
@@ -108,6 +112,40 @@ export const MACD_COLORS = {
   /** Histogram bar when value < 0 (bearish momentum) — red */
   histNeg: '#E74C3C',
 } as const;
+
+// ─── Trade markers ────────────────────────────────────────────────────────
+
+/** Shapes MarkerLayer / draw/markers.ts know how to draw. */
+export type MarkerShape = 'triangle-up' | 'triangle-down' | 'x' | 'dot';
+
+export interface MarkerStyle {
+  shape: MarkerShape;
+  color: string;
+}
+
+/**
+ * Resolves a MarkerKind to its default shape + color.
+ *
+ *   entry-long   ▲ candleUp        entry-short  ▼ candleDown
+ *   exit-long    ▼ markerNeutral   exit-short   ▲ markerNeutral
+ *   stop-loss    ✕ candleDown      take-profit  ● candleUp
+ */
+export function getMarkerStyle(kind: MarkerKind, colors: ChartThemeColors): MarkerStyle {
+  switch (kind) {
+    case 'entry-long':
+      return { shape: 'triangle-up', color: colors.candleUp };
+    case 'exit-long':
+      return { shape: 'triangle-down', color: colors.markerNeutral };
+    case 'entry-short':
+      return { shape: 'triangle-down', color: colors.candleDown };
+    case 'exit-short':
+      return { shape: 'triangle-up', color: colors.markerNeutral };
+    case 'stop-loss':
+      return { shape: 'x', color: colors.candleDown };
+    case 'take-profit':
+      return { shape: 'dot', color: colors.candleUp };
+  }
+}
 
 // ─── Resolver ─────────────────────────────────────────────────────────────
 

@@ -9,6 +9,7 @@
  *  - bollinger band label → "BB Upper / Lower / Basis" if not provided
  *  - shadedArea.opacity  → clamped to [0, 1]
  *  - viewport.visibleCandles → clamped to [10, 500]
+ *  - markers             → defaults to [] when omitted
  *
  * Returns a new config object — the input is never mutated.
  */
@@ -33,6 +34,7 @@ export function normalizeChartConfig(config: ChartConfig): ChartConfig {
       opacity: clamp(area.opacity, 0, 1),
     })),
     subPanels: config.subPanels.map(normalizeSubPanel),
+    markers: config.markers ?? [],
     viewport: {
       ...config.viewport,
       visibleCandles: clamp(
@@ -85,6 +87,10 @@ function normalizeSubPanel(panel: SubPanelConfig): SubPanelConfig {
     case 'rsi':
       // Clamp period in case it slipped through (normalization is defensive)
       return { ...panel, params: { period: clamp(Math.round(panel.params.period), 1, 500) } };
+    case 'macd':
+    case 'volume':
+      // No configurable params — nothing to normalize.
+      return panel;
   }
 }
 
