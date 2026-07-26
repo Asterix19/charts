@@ -199,8 +199,8 @@ import type { ChartMarker } from '@stacklatte/chart-core';
 
 const markers: ChartMarker[] = [
   { timestamp: 1700003600000, price: 43100, kind: 'entry-long', label: 'Entry' },
-  { timestamp: 1700010800000, price: 44500, kind: 'take-profit' },
-  { timestamp: 1700014400000, price: 42800, kind: 'stop-loss' },
+  { timestamp: 1700010800000, price: 44500, kind: 'take-profit', label: 'TP hit', changePct: 3.2 },
+  { timestamp: 1700014400000, price: 42800, kind: 'stop-loss', label: 'Stopped out', changePct: -1.8 },
 ];
 
 <SLChart data={candles} markers={markers} width={width} height={400} />
@@ -215,7 +215,16 @@ const markers: ChartMarker[] = [
 | `stop-loss` | ✕ | `candleDown` |
 | `take-profit` | ● | `candleUp` |
 
-Markers render at a fixed pixel size regardless of zoom level, and are clipped to the visible time window automatically. Display only — v1 has no click-to-edit or drag-to-reposition.
+Markers render at a fixed pixel size regardless of zoom level, and are clipped to the visible time window automatically. Display only — no click-to-edit or drag-to-reposition.
+
+### Tap tooltip
+
+Tapping a marker (no extra prop needed — this works independently of `showOhlcHud`) shows a small tooltip with its price, timestamp, and:
+
+- `label`, if set — otherwise a heading derived from `kind` (e.g. `"Stop-loss"`, `"Exit (long)"`).
+- `changePct`, if set — a signed, colored `+`/`-X.XX%` row, handy for a closed trade's P&L.
+
+The tooltip stays visible while the finger is held down and clears on release, same lifecycle as the crosshair.
 
 ---
 
@@ -274,6 +283,7 @@ Pinch to zoom and pan are built-in — no setup required.
 | 1-finger pan | Scroll the time axis |
 | 2-finger pinch | Zoom in/out around the focal point |
 | Tap or pan (with `showOhlcHud`) | Lock the crosshair to a candle |
+| Tap a marker | Show its tooltip (price, time, label/changePct) — works regardless of `showOhlcHud` |
 | Pan to the right edge | Re-engage live-follow mode |
 
 ---

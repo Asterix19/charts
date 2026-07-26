@@ -4,7 +4,9 @@ import { Platform, Text, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
 import {
+  buildMarkerPoints,
   buildPaddedRange,
+  buildTimestampIndex,
   calcMACD,
   calcRSI,
   clampViewport,
@@ -12,6 +14,7 @@ import {
   filterByWindow,
   findIndicatorById,
   findIndicatorValue,
+  findMarkerAt,
   getSeriesX,
   getThemeColors,
   getY,
@@ -20,7 +23,7 @@ import {
   resolveIntervalMs,
 } from '../core';
 
-import type { CandleViewport, ChartProps } from '../core';
+import type { CandleViewport, ChartProps, MarkerPoint } from '../core';
 
 import AxisLabelsWeb from './AxisLabelsWeb';
 import AxisLayer from './AxisLayer';
@@ -30,6 +33,7 @@ import IndicatorLayer from './IndicatorLayer';
 import LineLayer from './LineLayer';
 import MacdLayer from './MacdLayer';
 import MarkerLayer from './MarkerLayer';
+import MarkerTooltip from './MarkerTooltip';
 import OhlcHud from './OhlcHud';
 import RsiLayer from './RsiLayer';
 import ShadedAreaLayer from './ShadedAreaLayer';
@@ -257,10 +261,24 @@ const SLChart: React.FC<ChartProps> = ({
     return buildPaddedRange(Math.min(...values), Math.max(...values), 0.05);
   }, [visibleCandles, preparedIndicators]);
 
+  const indexByTimestamp = useMemo(() => buildTimestampIndex(visibleCandles), [visibleCandles]);
+
+  // Plot-local marker geometry, reused both to draw (MarkerLayer, which
+  // recomputes its own copy from the same inputs) and to hit-test taps
+  // (findMarkerAt, below) against.
+  const markerPoints = useMemo(
+    () => buildMarkerPoints(
+      visibleMarkers, indexByTimestamp, visibleCandles.length, virtualWidth, mainChartHeight,
+      displayPriceRange.min, displayPriceRange.max,
+    ),
+    [visibleMarkers, indexByTimestamp, visibleCandles.length, virtualWidth, mainChartHeight, displayPriceRange.min, displayPriceRange.max],
+  );
+
   // Only the locked timestamp lives in state. Everything else is derived during
   // render so crosshair position is always in sync with the current viewport —
   // no stale-state flicker when the viewport changes mid-gesture.
   const [lockedTimestamp, setLockedTimestamp] = useState<number | null>(null);
+  const [hoveredMarker, setHoveredMarker] = useState<MarkerPoint | null>(null);
 
   // Refs so gesture callbacks (stale useMemo closures) can read current values.
   const slotWidthRef = useRef(slotWidth);
@@ -269,6 +287,8 @@ const SLChart: React.FC<ChartProps> = ({
   fractionalOffsetXRef.current = fractionalOffsetX;
   const visibleCandlesRef = useRef(visibleCandles);
   visibleCandlesRef.current = visibleCandles;
+  const markerPointsRef = useRef(markerPoints);
+  markerPointsRef.current = markerPoints;
 
   // Derive crosshair geometry from the locked timestamp + current render values.
   const crosshairInfo = useMemo(() => {
@@ -312,6 +332,18 @@ const SLChart: React.FC<ChartProps> = ({
 
   const releaseInspection = () => {
     setLockedTimestamp(null);
+  };
+
+  // Tap-to-inspect a marker — independent of showOhlcHud, since the marker
+  // tooltip is useful even when the OHLC HUD/crosshair aren't enabled.
+  const hitTestMarkerAtTouch = (viewX: number, viewY: number) => {
+    const xInChart = viewX - padding.left - fractionalOffsetXRef.current;
+    const yInChart = viewY - padding.top;
+    setHoveredMarker(findMarkerAt(markerPointsRef.current, xInChart, yInChart));
+  };
+
+  const releaseMarkerTooltip = () => {
+    setHoveredMarker(null);
   };
 
   const panStartViewportRef = useRef<Viewport>(viewport);
@@ -379,12 +411,14 @@ const SLChart: React.FC<ChartProps> = ({
           if (showOhlcHud) {
             lockCrosshairAtTouchX(event.x);
           }
+          hitTestMarkerAtTouch(event.x, event.y);
         })
         .onUpdate((event) => {
           updateViewportFromPan(event.translationX);
         })
         .onFinalize(() => {
           releaseInspection();
+          releaseMarkerTooltip();
         }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [showOhlcHud, chartWidth, sortedData.length, padding.left],
@@ -397,6 +431,7 @@ const SLChart: React.FC<ChartProps> = ({
         .onBegin(() => {
           pinchStartViewportRef.current = viewportRef.current;
           releaseInspection();
+          releaseMarkerTooltip();
         })
         .onUpdate((event) => {
           updateViewportFromPinch(event.scale, event.focalX);
@@ -464,6 +499,18 @@ const SLChart: React.FC<ChartProps> = ({
             theme={theme}
             indicators={indicators}
             rsiValue={rsiAtCrosshair}
+          />
+        )}
+
+        {hoveredMarker && (
+          <MarkerTooltip
+            point={hoveredMarker}
+            x={hoveredMarker.x + fractionalOffsetX}
+            y={hoveredMarker.y}
+            padding={padding}
+            containerWidth={width}
+            containerHeight={height}
+            theme={theme}
           />
         )}
 

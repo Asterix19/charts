@@ -147,6 +147,27 @@ export function getMarkerStyle(kind: MarkerKind, colors: ChartThemeColors): Mark
   }
 }
 
+/**
+ * Human-readable fallback heading for a marker's hover/tap tooltip, used
+ * when the caller didn't set ChartMarker.label.
+ */
+export function getMarkerKindLabel(kind: MarkerKind): string {
+  switch (kind) {
+    case 'entry-long':
+      return 'Entry (long)';
+    case 'exit-long':
+      return 'Exit (long)';
+    case 'entry-short':
+      return 'Entry (short)';
+    case 'exit-short':
+      return 'Exit (short)';
+    case 'stop-loss':
+      return 'Stop-loss';
+    case 'take-profit':
+      return 'Take-profit';
+  }
+}
+
 // ─── Resolver ─────────────────────────────────────────────────────────────
 
 /**

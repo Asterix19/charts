@@ -11,6 +11,7 @@
 import {
   buildCandleGeometry,
   buildLinePoints,
+  buildMarkerPoints,
   buildPaddedRange,
   buildSeriesPoints,
   buildShadedAreaPoints,
@@ -22,6 +23,7 @@ import {
   filterByWindow,
   findIndicatorById,
   findIndicatorValue,
+  findMarkerAt,
   getSeriesX,
   getThemeColors,
   getY,
@@ -29,7 +31,7 @@ import {
   prepareIndicatorData,
   resolveIntervalMs,
 } from '@stacklatte/chart-core/core';
-import type { CandleViewport, ChartProps } from '@stacklatte/chart-core/core';
+import type { CandleViewport, ChartProps, MarkerPoint } from '@stacklatte/chart-core/core';
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { getScaledContext } from './canvasDpr';
@@ -41,6 +43,7 @@ import { drawMarkers } from './draw/markers';
 import { drawRsiPanel } from './draw/rsiPanel';
 import { drawVolumePanel } from './draw/volumePanel';
 import OhlcHud from './components/OhlcHud';
+import MarkerTooltip from './components/MarkerTooltip';
 
 type Viewport = CandleViewport;
 
@@ -98,6 +101,7 @@ const SLChart: React.FC<ChartProps> = ({
 
   const [isFollowingLive, setIsFollowingLive] = useState(true);
   const [lockedTimestamp, setLockedTimestamp] = useState<number | null>(null);
+  const [hoveredMarker, setHoveredMarker] = useState<MarkerPoint | null>(null);
 
   const viewportRef = useRef(viewport);
   useEffect(() => {
@@ -215,12 +219,27 @@ const SLChart: React.FC<ChartProps> = ({
     return buildPaddedRange(Math.min(...values), Math.max(...values), 0.05);
   }, [visibleCandles, preparedIndicators]);
 
+  const indexByTimestamp = useMemo(() => buildTimestampIndex(visibleCandles), [visibleCandles]);
+
+  // Plot-local marker geometry, reused both to draw (drawMarkers, which
+  // recomputes its own copy from the same inputs) and to hit-test hover
+  // (findMarkerAt, below) against.
+  const markerPoints = useMemo(
+    () => buildMarkerPoints(
+      visibleMarkers, indexByTimestamp, visibleCandles.length, virtualWidth, mainChartHeight,
+      displayPriceRange.min, displayPriceRange.max,
+    ),
+    [visibleMarkers, indexByTimestamp, visibleCandles.length, virtualWidth, mainChartHeight, displayPriceRange.min, displayPriceRange.max],
+  );
+
   const slotWidthRef = useRef(slotWidth);
   slotWidthRef.current = slotWidth;
   const fractionalOffsetXRef = useRef(fractionalOffsetX);
   fractionalOffsetXRef.current = fractionalOffsetX;
   const visibleCandlesRef = useRef(visibleCandles);
   visibleCandlesRef.current = visibleCandles;
+  const markerPointsRef = useRef(markerPoints);
+  markerPointsRef.current = markerPoints;
 
   const crosshairInfo = useMemo(() => {
     if (lockedTimestamp === null) return null;
@@ -274,6 +293,16 @@ const SLChart: React.FC<ChartProps> = ({
 
   const releaseInspection = () => setLockedTimestamp(null);
 
+  // Hover-to-inspect a marker — independent of showOhlcHud, since the
+  // marker tooltip is useful even when the OHLC HUD/crosshair aren't enabled.
+  const hitTestMarker = (localX: number, localY: number) => {
+    const xInChart = localX - geometryRef.current.padding.left - fractionalOffsetXRef.current;
+    const yInChart = localY - geometryRef.current.padding.top;
+    setHoveredMarker(findMarkerAt(markerPointsRef.current, xInChart, yInChart));
+  };
+
+  const releaseMarkerTooltip = () => setHoveredMarker(null);
+
   const updateViewportFromPan = (translationX: number) => {
     const startViewport = panStartViewportRef.current;
     const { chartWidth: cw, dataLength } = geometryRef.current;
@@ -317,6 +346,7 @@ const SLChart: React.FC<ChartProps> = ({
     if (!canvas) return;
 
     const localXOf = (clientX: number) => clientX - canvas.getBoundingClientRect().left;
+    const localYOf = (clientY: number) => clientY - canvas.getBoundingClientRect().top;
 
     const onPointerDown = (e: PointerEvent) => {
       canvas.setPointerCapture(e.pointerId);
@@ -338,6 +368,7 @@ const SLChart: React.FC<ChartProps> = ({
       if (geometryRef.current.showOhlcHud) {
         lockCrosshairAtTouchX(localXOf(e.clientX));
       }
+      hitTestMarker(localXOf(e.clientX), localYOf(e.clientY));
     };
 
     const onPointerMove = (e: PointerEvent) => {
@@ -358,11 +389,13 @@ const SLChart: React.FC<ChartProps> = ({
         activePointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
         updateViewportFromPan(e.clientX - dragStartClientXRef.current);
         if (geometryRef.current.showOhlcHud) lockCrosshairAtTouchX(localXOf(e.clientX));
+        hitTestMarker(localXOf(e.clientX), localYOf(e.clientY));
         return;
       }
 
-      if (e.pointerType === 'mouse' && e.buttons === 0 && geometryRef.current.showOhlcHud) {
-        lockCrosshairAtTouchX(localXOf(e.clientX));
+      if (e.pointerType === 'mouse' && e.buttons === 0) {
+        if (geometryRef.current.showOhlcHud) lockCrosshairAtTouchX(localXOf(e.clientX));
+        hitTestMarker(localXOf(e.clientX), localYOf(e.clientY));
       }
     };
 
@@ -385,13 +418,17 @@ const SLChart: React.FC<ChartProps> = ({
 
       if (activePointersRef.current.size === 0) {
         isDraggingRef.current = false;
-        if (e.pointerType !== 'mouse') releaseInspection();
+        if (e.pointerType !== 'mouse') {
+          releaseInspection();
+          releaseMarkerTooltip();
+        }
       }
     };
 
     const onPointerLeave = (e: PointerEvent) => {
       if (e.pointerType === 'mouse' && !isDraggingRef.current && !isPinchingRef.current) {
         releaseInspection();
+        releaseMarkerTooltip();
       }
     };
 
@@ -455,8 +492,6 @@ const SLChart: React.FC<ChartProps> = ({
       const pts = buildLinePoints(visibleCandles, virtualWidth, mainChartHeight, displayPriceRange.min, displayPriceRange.max);
       drawLineSeries(ctx, pts, colors.lineChart);
     }
-
-    const indexByTimestamp = buildTimestampIndex(visibleCandles);
 
     for (const { line, data: lineData } of preparedIndicators) {
       if (visibleCandles.length < 2 || lineData.length === 0) continue;
@@ -637,6 +672,18 @@ const SLChart: React.FC<ChartProps> = ({
           theme={theme}
           indicators={indicators}
           rsiValue={rsiAtCrosshair}
+        />
+      )}
+
+      {hoveredMarker && (
+        <MarkerTooltip
+          point={hoveredMarker}
+          x={hoveredMarker.x + fractionalOffsetX}
+          y={hoveredMarker.y}
+          padding={padding}
+          containerWidth={width}
+          containerHeight={height}
+          theme={theme}
         />
       )}
 

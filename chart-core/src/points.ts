@@ -135,11 +135,25 @@ export function buildShadedAreaPoints(
 /** Fixed pixel size for trade markers — deliberately does not scale with zoom. */
 export const MARKER_SIZE = 7;
 
+/**
+ * Default hit-test radius for findMarkerAt() — deliberately larger than
+ * MARKER_SIZE. The 7px marker shape is precise to draw but too small a
+ * target to reliably hover/tap; a generous radius keeps the tooltip usable
+ * without visually enlarging the marker itself.
+ */
+export const MARKER_HIT_RADIUS = 12;
+
 export interface MarkerPoint {
   x: number;
   y: number;
   kind: MarkerKind;
   label?: string;
+  /** Original (non-pixel) price value — for tooltip display. */
+  price: number;
+  /** Original (non-pixel) timestamp — for tooltip display. */
+  timestamp: number;
+  /** Carried through from ChartMarker.changePct — for tooltip display. */
+  changePct?: number;
 }
 
 /**
@@ -170,9 +184,36 @@ export function buildMarkerPoints(
       y: getY(marker.price, priceMin, priceMax, height),
       kind: marker.kind,
       label: marker.label,
+      price: marker.price,
+      timestamp: marker.timestamp,
+      changePct: marker.changePct,
     });
   }
   return pts;
+}
+
+/**
+ * Finds the MarkerPoint nearest to (x, y), within `radius` pixels, or null
+ * if none are close enough. Drives the hover (web) / tap (native) tooltip —
+ * a plain linear nearest-within-radius scan, which is plenty fast since
+ * marker counts are small (dozens to low hundreds of trades, not thousands).
+ */
+export function findMarkerAt(
+  points: MarkerPoint[],
+  x: number,
+  y: number,
+  radius: number = MARKER_HIT_RADIUS
+): MarkerPoint | null {
+  let closest: MarkerPoint | null = null;
+  let closestDist = radius;
+  for (const pt of points) {
+    const dist = Math.hypot(pt.x - x, pt.y - y);
+    if (dist <= closestDist) {
+      closest = pt;
+      closestDist = dist;
+    }
+  }
+  return closest;
 }
 
 // ─── MACD histogram geometry ──────────────────────────────────────────────

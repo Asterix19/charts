@@ -37,13 +37,20 @@ export type MarkerKind =
  * backtest's entry/exit points). Rendered by MarkerLayer/draw/markers.ts
  * using the same pixel math as the candle layer, so it stays in sync
  * through pan/zoom/live updates with no external state.
+ *
+ * Hovering (web) or tapping (native) a marker shows a small tooltip built
+ * from these fields — kind, price, timestamp, and, if provided, label and
+ * changePct. No extra wiring is needed to get a tooltip; label/changePct
+ * just make it more specific to a trade.
  */
 export interface ChartMarker {
   timestamp: number;
   price: number;
   kind: MarkerKind;
-  /** Shown on hover/tap (or via the OHLC HUD, if showOhlcHud is on). */
+  /** Tooltip heading. Falls back to a name derived from `kind` (e.g. "Stop-loss") if omitted. */
   label?: string;
+  /** Optional % change shown in the tooltip (e.g. a closed trade's P&L%), colored up/down like the OHLC HUD's change row. */
+  changePct?: number;
 }
 
 export type RsiPoint = { timestamp: number; value: number };

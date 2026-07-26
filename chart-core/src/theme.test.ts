@@ -1,4 +1,4 @@
-import { getMarkerStyle, getThemeColors, THEMES } from './theme';
+import { getMarkerKindLabel, getMarkerStyle, getThemeColors, THEMES } from './theme';
 import type { MarkerKind } from './types';
 
 // ─── built-in presets ───────────────────────────────────────────────────────
@@ -60,5 +60,23 @@ describe('getMarkerStyle', () => {
     const customColors = { ...THEMES.dark, candleUp: '#ABCDEF', markerNeutral: '#123456' };
     expect(getMarkerStyle('entry-long', customColors).color).toBe('#ABCDEF');
     expect(getMarkerStyle('exit-long', customColors).color).toBe('#123456');
+  });
+});
+
+// ─── getMarkerKindLabel ─────────────────────────────────────────────────────
+// Fallback tooltip heading used when a ChartMarker has no explicit label.
+
+describe('getMarkerKindLabel', () => {
+  const cases: [MarkerKind, string][] = [
+    ['entry-long', 'Entry (long)'],
+    ['exit-long', 'Exit (long)'],
+    ['entry-short', 'Entry (short)'],
+    ['exit-short', 'Exit (short)'],
+    ['stop-loss', 'Stop-loss'],
+    ['take-profit', 'Take-profit'],
+  ];
+
+  it.each(cases)('%s → %s', (kind, label) => {
+    expect(getMarkerKindLabel(kind)).toBe(label);
   });
 });

@@ -133,8 +133,8 @@ import type { ChartMarker } from '@stacklatte/chart-web';
 
 const markers: ChartMarker[] = [
   { timestamp: 1700003600000, price: 43100, kind: 'entry-long', label: 'Entry' },
-  { timestamp: 1700010800000, price: 44500, kind: 'take-profit' },
-  { timestamp: 1700014400000, price: 42800, kind: 'stop-loss' },
+  { timestamp: 1700010800000, price: 44500, kind: 'take-profit', label: 'TP hit', changePct: 3.2 },
+  { timestamp: 1700014400000, price: 42800, kind: 'stop-loss', label: 'Stopped out', changePct: -1.8 },
 ];
 
 <SLChart data={candles} markers={markers} width={800} height={400} />
@@ -150,6 +150,15 @@ const markers: ChartMarker[] = [
 | `take-profit` | ● | `candleUp` |
 
 Markers render at a fixed pixel size regardless of zoom level, and are clipped to the visible time window automatically.
+
+### Hover tooltip
+
+Hovering a marker (mouse; no extra prop needed — this works independently of `showOhlcHud`) shows a small tooltip with its price, timestamp, and:
+
+- `label`, if set — otherwise a heading derived from `kind` (e.g. `"Stop-loss"`, `"Exit (long)"`).
+- `changePct`, if set — a signed, colored `+`/`-X.XX%` row, handy for a closed trade's P&L.
+
+No wiring required beyond passing `markers` — the tooltip is built into `<SLChart>`.
 
 ---
 
@@ -183,6 +192,7 @@ Pan, wheel-zoom, and touch-pinch-zoom are built in — no setup required.
 | Mouse wheel | Zoom in/out around the cursor |
 | 2-finger touch pinch | Zoom in/out around the pinch focal point |
 | Hover or drag (with `showOhlcHud`) | Lock the crosshair to a candle |
+| Hover a marker | Show its tooltip (price, time, label/changePct) — works regardless of `showOhlcHud` |
 | Pan to the right edge | Re-engage live-follow mode |
 
 ---

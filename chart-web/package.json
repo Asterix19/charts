@@ -1,6 +1,6 @@
 {
   "name": "@stacklatte/chart-web",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "React trading chart for the web — plain HTML5 Canvas 2D, no WASM, no react-native-web. Candlesticks, RSI/MACD/Bollinger/Volume, trade markers, pinch-zoom, live streaming. Ships an LLM-safe declarative ChartConfig + JSON Schema so agents can generate charts without hallucinating props.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -81,7 +81,7 @@
     "react-dom": ">=19.0.0"
   },
   "dependencies": {
-    "@stacklatte/chart-core": "^2.1.0"
+    "@stacklatte/chart-core": "^2.2.0"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^7.0.0",

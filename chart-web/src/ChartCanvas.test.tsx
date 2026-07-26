@@ -1,5 +1,5 @@
-import { calcEMA } from '@stacklatte/chart-core/core';
-import type { Candle } from '@stacklatte/chart-core/core';
+import { buildPaddedRange, calcEMA, computeLayout, getCandleX, getY } from '@stacklatte/chart-core/core';
+import type { Candle, ChartMarker } from '@stacklatte/chart-core/core';
 import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -210,6 +210,69 @@ describe('SLChart (web)', () => {
     expect(lastCandle).not.toBeNull();
 
     fireEvent.pointerUp(canvas, { clientX: 40, clientY: 150, pointerId: 1 });
+  });
+
+  // ── Marker hover tooltip ──────────────────────────────────────────────
+  // All 30 candles fit on screen at width=400 (visibleDataPoints defaults to
+  // 60), so viewport = {start:0, end:30} exactly and fractionalOffsetX is 0 —
+  // this lets the test derive the marker's exact on-screen pixel position
+  // with the library's own geometry functions instead of guessing coordinates.
+
+  function markerScreenPos(candles: Candle[], candleIndex: number, price: number) {
+    const layout = computeLayout(400, 300, false, false, false);
+    const values = candles.flatMap((c) => [c.high, c.low]);
+    const range = buildPaddedRange(Math.min(...values), Math.max(...values), 0.05);
+    return {
+      clientX: layout.padding.left + getCandleX(candleIndex, candles.length, layout.chartWidth),
+      clientY: layout.padding.top + getY(price, range.min, range.max, layout.mainChartHeight),
+    };
+  }
+
+  it('shows a tooltip with the label, price, and time when hovering a marker, and hides it when the pointer leaves', () => {
+    const candles = makeCandles(30);
+    const marker: ChartMarker = {
+      timestamp: candles[5].timestamp, price: candles[5].close, kind: 'stop-loss', label: 'Stopped out',
+    };
+    const { container } = render(<SLChart data={candles} width={400} height={300} markers={[marker]} />);
+    const canvas = container.querySelector('canvas')!;
+    const { clientX, clientY } = markerScreenPos(candles, 5, marker.price);
+
+    expect(screen.queryByText('Stopped out')).not.toBeInTheDocument();
+
+    fireEvent.pointerMove(canvas, { clientX, clientY, pointerId: 1, pointerType: 'mouse', buttons: 0 });
+
+    expect(screen.getByText('Stopped out')).toBeInTheDocument();
+    expect(screen.getByText(marker.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }))).toBeInTheDocument();
+
+    fireEvent.pointerLeave(canvas, { clientX, clientY, pointerId: 1, pointerType: 'mouse' });
+
+    expect(screen.queryByText('Stopped out')).not.toBeInTheDocument();
+  });
+
+  it('falls back to a kind-derived heading and shows changePct when the marker has no label', () => {
+    const candles = makeCandles(30);
+    const marker: ChartMarker = {
+      timestamp: candles[10].timestamp, price: candles[10].close, kind: 'exit-long', changePct: -3.25,
+    };
+    const { container } = render(<SLChart data={candles} width={400} height={300} markers={[marker]} />);
+    const canvas = container.querySelector('canvas')!;
+    const { clientX, clientY } = markerScreenPos(candles, 10, marker.price);
+
+    fireEvent.pointerMove(canvas, { clientX, clientY, pointerId: 1, pointerType: 'mouse', buttons: 0 });
+
+    expect(screen.getByText('Exit (long)')).toBeInTheDocument();
+    expect(screen.getByText('-3.25%')).toBeInTheDocument();
+  });
+
+  it('does not show a tooltip when hovering away from every marker', () => {
+    const candles = makeCandles(30);
+    const marker: ChartMarker = { timestamp: candles[5].timestamp, price: candles[5].close, kind: 'take-profit', label: 'TP hit' };
+    const { container } = render(<SLChart data={candles} width={400} height={300} markers={[marker]} />);
+    const canvas = container.querySelector('canvas')!;
+
+    fireEvent.pointerMove(canvas, { clientX: 5, clientY: 5, pointerId: 1, pointerType: 'mouse', buttons: 0 });
+
+    expect(screen.queryByText('TP hit')).not.toBeInTheDocument();
   });
 
   it('pans the viewport on pointer drag without throwing', () => {

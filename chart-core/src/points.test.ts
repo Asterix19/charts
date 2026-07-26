@@ -5,6 +5,9 @@ import {
   buildCandleGeometry,
   buildMarkerPoints,
   buildVolumeBars,
+  findMarkerAt,
+  MARKER_HIT_RADIUS,
+  type MarkerPoint,
 } from './points';
 import type { Candle, ChartMarker, TsPoint } from './types';
 
@@ -258,8 +261,66 @@ describe('buildMarkerPoints', () => {
     expect(pts[0].label).toBe('SL');
   });
 
+  it('carries the original (non-pixel) price and timestamp through, for tooltip display', () => {
+    const markers = [marker(candles[0].timestamp, 103.5)];
+    const pts = buildMarkerPoints(markers, idx, total, width, height, 90, 110);
+    expect(pts[0].price).toBe(103.5);
+    expect(pts[0].timestamp).toBe(candles[0].timestamp);
+  });
+
+  it('carries changePct through when set, and leaves it undefined otherwise', () => {
+    const withChange = { ...marker(candles[0].timestamp, 100), changePct: -2.4 };
+    const withoutChange = marker(candles[2].timestamp, 105);
+    const pts = buildMarkerPoints([withChange, withoutChange], idx, total, width, height, 90, 110);
+    expect(pts[0].changePct).toBe(-2.4);
+    expect(pts[1].changePct).toBeUndefined();
+  });
+
   it('returns empty array for empty markers', () => {
     expect(buildMarkerPoints([], idx, total, width, height, 90, 110)).toEqual([]);
+  });
+});
+
+// ─── findMarkerAt ──────────────────────────────────────────────────────────
+// Nearest-within-radius hit-test driving the hover (web) / tap (native)
+// tooltip — a plain linear scan since marker counts are always small.
+
+describe('findMarkerAt', () => {
+  const point = (x: number, y: number, overrides: Partial<MarkerPoint> = {}): MarkerPoint => ({
+    x, y, kind: 'entry-long', price: 100, timestamp: 1000, ...overrides,
+  });
+
+  it('returns null when given no points', () => {
+    expect(findMarkerAt([], 10, 10)).toBeNull();
+  });
+
+  it('returns null when nothing is within the radius', () => {
+    const points = [point(0, 0)];
+    expect(findMarkerAt(points, 100, 100)).toBeNull();
+  });
+
+  it('returns the point when it is within the default radius', () => {
+    const points = [point(50, 50)];
+    const hit = findMarkerAt(points, 50 + MARKER_HIT_RADIUS - 1, 50);
+    expect(hit).toBe(points[0]);
+  });
+
+  it('excludes a point exactly at the radius boundary plus one pixel', () => {
+    const points = [point(50, 50)];
+    expect(findMarkerAt(points, 50 + MARKER_HIT_RADIUS + 1, 50)).toBeNull();
+  });
+
+  it('returns the nearest point when multiple are within range', () => {
+    const near = point(52, 50, { kind: 'take-profit' });
+    const far = point(45, 50, { kind: 'stop-loss' });
+    const hit = findMarkerAt([far, near], 50, 50, MARKER_HIT_RADIUS);
+    expect(hit).toBe(near);
+  });
+
+  it('respects a custom radius', () => {
+    const points = [point(0, 0)];
+    expect(findMarkerAt(points, 5, 0, 3)).toBeNull();
+    expect(findMarkerAt(points, 5, 0, 10)).toBe(points[0]);
   });
 });
 
