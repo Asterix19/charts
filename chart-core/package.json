@@ -1,6 +1,6 @@
 {
   "name": "@stacklatte/chart-core",
-  "version": "2.2.0",
+  "version": "2.3.2",
   "description": "GPU-accelerated React Native trading chart (Skia): candlesticks, RSI/MACD/Bollinger/Volume, trade markers, pinch-zoom, live streaming. Ships an LLM-safe declarative ChartConfig + JSON Schema so agents can generate charts without hallucinating props.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -93,7 +93,7 @@
   },
   "devDependencies": {
     "@shopify/react-native-skia": "2.10.0",
-    "@types/react": "~19.2.17",
+    "@types/react": "~19.2.18",
     "react": "19.2.8",
     "react-native": "0.86.0",
     "react-native-gesture-handler": "~3.1.0",

@@ -296,6 +296,131 @@ describe('SLChart (web)', () => {
       fireEvent.wheel(canvas, { deltaY: -100, clientX: 200, clientY: 150 });
     }).not.toThrow();
   });
+
+  it('caps zoom-out at a legible candle density instead of showing the whole dataset at once', () => {
+    const candles = makeCandles(1000);
+    const { container } = render(<SLChart data={candles} width={400} height={300} visibleDataPoints={60} />);
+    const canvas = container.querySelector('canvas')!;
+
+    // A huge positive deltaY zooms out as far as the wheel handler allows.
+    fireEvent.wheel(canvas, { deltaY: 100_000, clientX: 200, clientY: 150 });
+
+    // Each visible candle body draws exactly one fillRect (see draw/mainPanel.ts's drawCandles) —
+    // the latest draw's count is a direct read of how many candles are now visible.
+    const latestDraw = contexts[contexts.length - 1];
+    const candleDraws = latestDraw.fillRect.mock.calls.length;
+    expect(candleDraws).toBeGreaterThan(0);
+    // At the 3px/candle legibility floor, a 400px-wide chart caps out well under 150 visible
+    // candles — far short of the full 1000-candle dataset a pre-fix chart would zoom out to.
+    expect(candleDraws).toBeLessThan(150);
+  });
+
+  it('keeps giving a little instead of a hard wall as zoom-out overshoots the legibility ceiling', () => {
+    const candles = makeCandles(1000);
+
+    const zoomAndCountDraws = (deltaY: number) => {
+      const { container, unmount } = render(<SLChart data={candles} width={400} height={300} visibleDataPoints={60} />);
+      const canvas = container.querySelector('canvas')!;
+      fireEvent.wheel(canvas, { deltaY, clientX: 200, clientY: 150 });
+      const draws = contexts[contexts.length - 1].fillRect.mock.calls.length;
+      unmount();
+      return draws;
+    };
+
+    const moderateOvershoot = zoomAndCountDraws(800);
+    const largerOvershoot = zoomAndCountDraws(1100);
+
+    // A hard clamp at the legibility ceiling would make these identical; resistance means a
+    // bigger requested overshoot still visibly pushes further out, just by a diminishing amount.
+    expect(largerOvershoot).toBeGreaterThan(moderateOvershoot);
+    // Both stay well short of the full 1000-candle dataset — resistance still converges to a bound.
+    expect(largerOvershoot).toBeLessThan(160);
+  });
+
+  // ── customPanels ─────────────────────────────────────────────────────────
+
+  it('renders one extra canvas per custom panel, alongside RSI/MACD/Volume', () => {
+    const candles = makeCandles(60).map((c) => ({ ...c, volume: 1000 }));
+    const correlation = candles.map((c, i) => ({ timestamp: c.timestamp, value: Math.sin(i / 5) }));
+    const { container } = render(
+      <SLChart
+        data={candles}
+        width={400}
+        height={1000}
+        showRsiPanel
+        showMacdPanel
+        showVolumePanel
+        customPanels={[{ id: 'cheese-corr', label: 'Cheese Correlation', series: [{ id: 'cheese', color: '#e07b39', data: correlation }] }]}
+      />,
+    );
+
+    // main + rsi + macd + volume + 1 custom = 5
+    expect(container.querySelectorAll('canvas').length).toBe(5);
+  });
+
+  it('draws the custom panel line without throwing, using a fixed yRange', () => {
+    const candles = makeCandles(40);
+    const correlation = candles.map((c) => ({ timestamp: c.timestamp, value: 0.3 }));
+    expect(() =>
+      render(
+        <SLChart
+          data={candles}
+          width={400}
+          height={600}
+          customPanels={[
+            { id: 'cheese-corr', label: 'Cheese Correlation', series: [{ id: 'cheese', color: '#e07b39', data: correlation }], yRange: { min: -1, max: 1 }, referenceLines: [0] },
+          ]}
+        />,
+      ),
+    ).not.toThrow();
+
+    const ctx = contexts[contexts.length - 1];
+    expect(ctx.bezierCurveTo).toHaveBeenCalled(); // the custom panel's smoothed line
+  });
+
+  it('renders multiple custom panels independently, each with its own canvas', () => {
+    const candles = makeCandles(40);
+    const seriesA = candles.map((c) => ({ timestamp: c.timestamp, value: 1 }));
+    const seriesB = candles.map((c) => ({ timestamp: c.timestamp, value: 2 }));
+    const { container } = render(
+      <SLChart
+        data={candles}
+        width={400}
+        height={900}
+        customPanels={[
+          { id: 'panel-a', label: 'Panel A', series: [{ id: 'a', color: '#fff', data: seriesA }] },
+          { id: 'panel-b', label: 'Panel B', series: [{ id: 'b', color: '#000', data: seriesB }] },
+        ]}
+      />,
+    );
+
+    expect(container.querySelectorAll('canvas').length).toBe(3); // main + 2 custom panels
+  });
+
+  it('renders no extra canvas when customPanels is omitted', () => {
+    const candles = makeCandles(30);
+    const { container } = render(<SLChart data={candles} width={400} height={300} />);
+    expect(container.querySelectorAll('canvas').length).toBe(1);
+  });
+
+  it('shows a custom panel value in the OHLC HUD when hovering a candle', () => {
+    const candles = makeCandles(30);
+    const correlation = candles.map((c) => ({ timestamp: c.timestamp, value: 0.42 }));
+    const { container } = render(
+      <SLChart
+        data={candles}
+        width={400}
+        height={600}
+        showOhlcHud
+        customPanels={[{ id: 'cheese-corr', label: 'Cheese Correlation', series: [{ id: 'cheese', name: 'Cheese Corr', color: '#e07b39', data: correlation }] }]}
+      />,
+    );
+
+    const canvas = container.querySelector('canvas')!;
+    fireEvent.pointerDown(canvas, { clientX: 40, clientY: 150, pointerId: 1 });
+
+    expect(screen.getByText('0.42')).toBeInTheDocument();
+  });
 });
 
 describe('canvasMock harness', () => {

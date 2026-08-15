@@ -1,0 +1,96 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #0d0e14;
+  color: #d4d8e8;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+  background: #13141c;
+  border-bottom: 1px solid #1e2130;
+}
+
+.toolLabel {
+  font-size: 9px;
+  font-weight: 700;
+  color: #3a3f58;
+  letter-spacing: 0.8px;
+  margin-right: 2px;
+  text-transform: uppercase;
+}
+
+.divider {
+  width: 1px;
+  height: 14px;
+  background: #1e2130;
+  margin: 0 3px;
+}
+
+.pill {
+  padding: 4px 9px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: #5a5f7a;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+}
+
+.pill:hover {
+  background: #1e2130;
+}
+
+.liveDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  margin-right: 1px;
+}
+
+.actionBtn {
+  padding: 4px 7px;
+  border-radius: 4px;
+  border: 1px solid #1e2130;
+  background: transparent;
+  color: #5a5f7a;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.actionBtn:hover {
+  background: #1e2130;
+}
+
+.actionBtnBlue {
+  border-color: #1a3a6e;
+  color: #60a5fa;
+}
+
+.actionBtnOrange {
+  border-color: #a0522d;
+  color: #cd853f;
+}
+
+.chartWrap {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.statusBar {
+  padding: 6px 10px;
+  background: #13141c;
+  border-top: 1px solid #1e2130;
+  font-size: 11px;
+  color: #5a5f7a;
+  font-variant-numeric: tabular-nums;
+}

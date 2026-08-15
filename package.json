@@ -4,13 +4,18 @@
   "workspaces": [
     "chart-core",
     "chart-web",
-    "examples/demo"
+    "examples/demo",
+    "examples/web-demo"
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
-    "clean": "npm run clean --workspaces --if-present"
+    "clean": "npm run clean --workspaces --if-present",
+    "demo:web": "npm run dev --workspace=web-demo",
+    "demo:native": "npm run start --workspace=demo",
+    "demo:ios": "npm run ios --workspace=demo",
+    "demo:android": "npm run android --workspace=demo"
   },
   "devDependencies": {
     "typescript": "^7.0.2"

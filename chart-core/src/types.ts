@@ -64,6 +64,28 @@ export interface MacdResult {
   histogram: TsPoint[];
 }
 
+/**
+ * One named sub-panel of caller-supplied data that doesn't fit an existing overlay or fixed
+ * panel type (RSI/MACD/Volume) — e.g. a correlation coefficient, an external data series, or any
+ * strategy-specific signal the caller has already computed. Unlike `indicators` (which overlay
+ * the main price panel and assume a price-like scale), a `CustomPanel` gets its own scaled
+ * sub-panel, the same visual treatment RSI/MACD/Volume already get.
+ */
+export interface CustomPanel {
+  id: string;
+  label: string;
+  /** Usually one line, but multiple series can share a panel (e.g. two correlated indicators on
+   * the same scale) — each is drawn with its own `IndicatorLine.color`. */
+  series: IndicatorLine[];
+  /** `'auto'` (default) computes the range from the panel's own visible data, padded — same
+   * convention as the main price panel. Provide fixed bounds for a panel with a natural fixed
+   * scale (e.g. a -1..1 correlation coefficient never needs to auto-range). */
+  yRange?: 'auto' | { min: number; max: number };
+  /** Horizontal reference lines (e.g. 0 for a correlation panel) — the same visual idea as RSI's
+   * 30/70 threshold lines, generalized to any value(s) instead of a fixed pair. */
+  referenceLines?: number[];
+}
+
 /** Named built-in theme presets. */
 export type ChartTheme = 'light' | 'dark';
 
@@ -79,6 +101,9 @@ export interface ChartProps {
   shadedAreas?: ShadedArea[];
   /** Trade/event markers drawn on the main price panel. */
   markers?: ChartMarker[];
+  /** Arbitrary named sub-panels for data that doesn't fit `indicators` (wrong scale) or the
+   * fixed RSI/MACD/Volume panels (wrong shape) — see `CustomPanel`. */
+  customPanels?: CustomPanel[];
   width: number;
   height: number;
   /**

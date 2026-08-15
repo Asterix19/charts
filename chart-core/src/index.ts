@@ -6,6 +6,7 @@ export { default as SLChart } from './components/ChartCanvas';
 export { default as AxisLayer } from './components/AxisLayer';
 export { default as CandlestickLayer } from './components/CandlestickLayer';
 export { default as CrosshairLayer } from './components/CrosshairLayer';
+export { default as CustomPanelLayer } from './components/CustomPanelLayer';
 export { default as IndicatorLayer } from './components/IndicatorLayer';
 export { default as MarkerLayer } from './components/MarkerLayer';
 export { default as OhlcHud } from './components/OhlcHud';

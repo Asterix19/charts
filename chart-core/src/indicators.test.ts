@@ -1,4 +1,4 @@
-import { calcRSI, calcSMA, calcEMA, calcBollingerBands, computeVolumeYRange } from './indicators';
+import { calcRSI, calcSMA, calcEMA, calcBollingerBands, computeCustomPanelYRange, computeVolumeYRange } from './indicators';
 import type { Candle } from './types';
 
 // ─── helpers ──────────────────────────────────────────────────────────────
@@ -278,5 +278,50 @@ describe('computeVolumeYRange', () => {
 
   it('returns yMax=1 for empty input', () => {
     expect(computeVolumeYRange([])).toEqual({ yMin: 0, yMax: 1 });
+  });
+});
+
+// ─── computeCustomPanelYRange ─────────────────────────────────────────────
+// A caller-fixed yRange always wins; 'auto'/undefined computes from the
+// panel's own series + reference lines, padded 10% via buildPaddedRange.
+
+describe('computeCustomPanelYRange', () => {
+  const series = (values: number[]) => [values.map((value, i) => ({ timestamp: 1000 + i * 60_000, value }))];
+
+  it('returns the fixed range unchanged when yRange is explicit bounds', () => {
+    expect(computeCustomPanelYRange({ min: -1, max: 1 }, series([0.2, 0.5, -0.3]))).toEqual({ yMin: -1, yMax: 1 });
+  });
+
+  it('ignores series data entirely when a fixed range is given', () => {
+    expect(computeCustomPanelYRange({ min: -1, max: 1 }, series([500, -500]))).toEqual({ yMin: -1, yMax: 1 });
+  });
+
+  it('auto-computes from series min/max, padded, when yRange is "auto"', () => {
+    const { yMin, yMax } = computeCustomPanelYRange('auto', series([0, 10]));
+    expect(yMin).toBeLessThan(0);
+    expect(yMax).toBeGreaterThan(10);
+  });
+
+  it('auto-computes the same way when yRange is omitted entirely', () => {
+    expect(computeCustomPanelYRange(undefined, series([0, 10]))).toEqual(computeCustomPanelYRange('auto', series([0, 10])));
+  });
+
+  it('folds reference lines into the auto-computed range', () => {
+    // Series never goes above 5, but a 0 reference line plus this data would already be inside
+    // range — use a reference line clearly outside the series to prove it is actually included.
+    const withoutRef = computeCustomPanelYRange('auto', series([1, 2, 3]));
+    const withRef = computeCustomPanelYRange('auto', series([1, 2, 3]), [100]);
+    expect(withRef.yMax).toBeGreaterThan(withoutRef.yMax);
+  });
+
+  it('combines multiple series in the same panel into one range', () => {
+    const twoSeries = [series([0, 5])[0], series([-5, 0])[0]];
+    const { yMin, yMax } = computeCustomPanelYRange('auto', twoSeries);
+    expect(yMin).toBeLessThan(-5);
+    expect(yMax).toBeGreaterThan(5);
+  });
+
+  it('falls back to [0, 1] for no data and no reference lines', () => {
+    expect(computeCustomPanelYRange('auto', [])).toEqual({ yMin: 0, yMax: 1 });
   });
 });

@@ -62,9 +62,11 @@ See the [chart-web README](./chart-web/README.md) for all examples.
 ## Monorepo structure
 
 ```
-├── chart-core/    @stacklatte/chart-core — React Native / Skia renderer + shared core logic
-├── chart-web/     @stacklatte/chart-web  — Canvas 2D renderer, reuses chart-core's core logic
-└── examples/demo/      Expo demo app
+├── chart-core/           @stacklatte/chart-core — React Native / Skia renderer + shared core logic
+├── chart-web/            @stacklatte/chart-web  — Canvas 2D renderer, reuses chart-core's core logic
+└── examples/
+    ├── demo/             Expo demo app (chart-core)
+    └── web-demo/         Vite + React demo app (chart-web)
 ```
 
 ---
@@ -82,9 +84,11 @@ npm run build
 # Run tests
 npm run test
 
-# Start the Expo demo app
-cd examples/demo
-npx expo start
+# Start the Expo demo app (React Native)
+npm run demo:native
+
+# Start the web demo app
+npm run demo:web
 ```
 
 ---

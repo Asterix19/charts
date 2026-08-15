@@ -1,4 +1,5 @@
 import type { Candle, IndicatorLine, MacdResult, RsiPoint, TsPoint } from './types';
+import { buildPaddedRange } from './viewport';
 
 // ─── RSI scale ────────────────────────────────────────────────────────────
 
@@ -241,4 +242,25 @@ export function computeMacdYRange(
 export function computeVolumeYRange(candles: Candle[]): { yMin: number; yMax: number } {
   const maxVolume = candles.reduce((max, c) => Math.max(max, c.volume ?? 0), 0);
   return { yMin: 0, yMax: maxVolume > 0 ? maxVolume * 1.1 : 1 };
+}
+
+// ─── Custom panels ────────────────────────────────────────────────────────
+
+/**
+ * Resolve the Y axis range for a custom panel: the caller's fixed `yRange` if given (e.g. a
+ * correlation coefficient's natural -1..1), otherwise auto-computed from the panel's own visible
+ * series data and reference lines, padded 10% via the same `buildPaddedRange` the main price
+ * panel uses — so an empty or single-value panel still gets a sane, non-zero-height range.
+ */
+export function computeCustomPanelYRange(
+  yRange: 'auto' | { min: number; max: number } | undefined,
+  series: TsPoint[][],
+  referenceLines: number[] = [],
+): { yMin: number; yMax: number } {
+  if (yRange && yRange !== 'auto') return { yMin: yRange.min, yMax: yRange.max };
+
+  const values = series.flatMap((points) => points.map((p) => p.value)).concat(referenceLines);
+  if (values.length === 0) return { yMin: 0, yMax: 1 };
+  const { min, max } = buildPaddedRange(Math.min(...values), Math.max(...values), 0.1);
+  return { yMin: min, yMax: max };
 }

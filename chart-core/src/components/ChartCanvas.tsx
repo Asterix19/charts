@@ -10,15 +10,19 @@ import {
   calcMACD,
   calcRSI,
   clampViewport,
+  computeCustomPanelYRange,
   computeLayout,
   filterByWindow,
   findIndicatorById,
   findIndicatorValue,
   findMarkerAt,
+  applyZoomOutResistance,
   getSeriesX,
   getThemeColors,
   getY,
+  maxLegibleVisibleCandles,
   normalizeCandles,
+  softZoomOutCeiling,
   prepareIndicatorData,
   resolveIntervalMs,
 } from '../core';
@@ -29,6 +33,7 @@ import AxisLabelsWeb from './AxisLabelsWeb';
 import AxisLayer from './AxisLayer';
 import CandlestickLayer from './CandlestickLayer';
 import CrosshairOverlayWeb from './CrosshairOverlayWeb';
+import CustomPanelLayer from './CustomPanelLayer';
 import IndicatorLayer from './IndicatorLayer';
 import LineLayer from './LineLayer';
 import MacdLayer from './MacdLayer';
@@ -51,6 +56,7 @@ const SLChart: React.FC<ChartProps> = ({
   indicators,
   shadedAreas,
   markers,
+  customPanels,
   width,
   height,
   intervalMs: intervalMsProp,
@@ -85,13 +91,14 @@ const SLChart: React.FC<ChartProps> = ({
     rsiPanelHeight,
     macdPanelHeight,
     volumePanelHeight,
+    customPanelHeight,
     mainChartHeight,
     mainCanvasHeight,
-  } = computeLayout(width, height, showRsiPanel, showMacdPanel, showVolumePanel);
+  } = computeLayout(width, height, showRsiPanel, showMacdPanel, showVolumePanel, customPanels?.length ?? 0);
 
   const initialRange = Math.min(
     Math.max(MIN_VISIBLE_CANDLES, visibleDataPointsProp),
-    maxZoom ?? sortedData.length,
+    maxZoom ?? maxLegibleVisibleCandles(chartWidth, MIN_VISIBLE_CANDLES),
     sortedData.length || visibleDataPointsProp,
   );
 
@@ -119,7 +126,8 @@ const SLChart: React.FC<ChartProps> = ({
   // range anchored at the latest data point and re-engage live-follow mode.
   useEffect(() => {
     const len = sortedDataLengthRef.current;
-    const range = clamp(visibleDataPointsProp, MIN_VISIBLE_CANDLES, len || visibleDataPointsProp);
+    const legibleMax = maxZoom ?? maxLegibleVisibleCandles(chartWidth, MIN_VISIBLE_CANDLES);
+    const range = clamp(visibleDataPointsProp, MIN_VISIBLE_CANDLES, Math.min(len || visibleDataPointsProp, legibleMax));
     setIsFollowingLive(true);
     setViewport(clampViewport(
       { start: len - range, end: len },
@@ -244,6 +252,17 @@ const SLChart: React.FC<ChartProps> = ({
     const endTs = visibleCandles[visibleCandles.length - 1].timestamp;
     return filterByWindow(markers, startTs, endTs);
   }, [markers, visibleCandles]);
+
+  const preparedCustomPanels = useMemo(() => {
+    if (!customPanels?.length || !visibleCandles.length) return [];
+    const startTs = visibleCandles[0].timestamp - intervalMs;
+    const endTs = visibleCandles[visibleCandles.length - 1].timestamp + intervalMs;
+    return customPanels.map((panel) => {
+      const series = panel.series.map((line) => ({ line, data: prepareIndicatorData(line, startTs, endTs) }));
+      const { yMin, yMax } = computeCustomPanelYRange(panel.yRange, series.map((s) => s.data), panel.referenceLines);
+      return { panel, series, yMin, yMax };
+    });
+  }, [customPanels, visibleCandles, intervalMs]);
 
   const displayPriceRange = useMemo(() => {
     if (!visibleCandles.length) return { min: 0, max: 1 };
@@ -378,12 +397,13 @@ const SLChart: React.FC<ChartProps> = ({
     const focalRatio = clamp((focalX - padding.left) / chartWidth, 0, 1);
     const focalIndex = startViewport.start + oldRange * focalRatio;
 
-    const maxVisible = Math.min(maxZoom ?? sortedData.length, sortedData.length);
+    const maxVisible = Math.min(maxZoom ?? maxLegibleVisibleCandles(chartWidth, MIN_VISIBLE_CANDLES), sortedData.length);
+    const resistedRange = applyZoomOutResistance(oldRange / scale, maxVisible);
 
     const nextRange = clamp(
-      oldRange / scale,
+      resistedRange,
       MIN_VISIBLE_CANDLES,
-      maxVisible,
+      Math.min(softZoomOutCeiling(maxVisible), sortedData.length),
     );
 
     const next = clampViewport(
@@ -476,6 +496,16 @@ const SLChart: React.FC<ChartProps> = ({
       ? findIndicatorValue(visibleRsi, crosshairCandle.timestamp)
       : null;
 
+  const customPanelValuesAtCrosshair = useMemo(() => {
+    if (!crosshairCandle) return [];
+    return preparedCustomPanels.flatMap(({ panel, series }) =>
+      series.flatMap(({ line, data }) => {
+        const value = findIndicatorValue(data, crosshairCandle.timestamp);
+        return value === null ? [] : [{ id: `${panel.id}-${line.id}`, label: line.name ?? line.id, color: line.color, value }];
+      }),
+    );
+  }, [preparedCustomPanels, crosshairCandle]);
+
   const contentTransform = [
     { translateX: padding.left + fractionalOffsetX },
     { translateY: padding.top },
@@ -499,6 +529,7 @@ const SLChart: React.FC<ChartProps> = ({
             theme={theme}
             indicators={indicators}
             rsiValue={rsiAtCrosshair}
+            customPanelValues={customPanelValuesAtCrosshair}
           />
         )}
 
@@ -819,6 +850,61 @@ const SLChart: React.FC<ChartProps> = ({
             </Canvas>
           </View>
         )}
+
+        {preparedCustomPanels.map(({ panel, series, yMin, yMax }) => (
+          <View key={panel.id} style={{ width, height: panelGap + customPanelHeight }}>
+            <View style={{ height: panelGap }} />
+
+            <Canvas style={{ width, height: customPanelHeight }}>
+              <Group clip={{ x: padding.left, y: 0, width: chartWidth, height: customPanelHeight }}>
+                <Group transform={[{ translateX: padding.left + fractionalOffsetX }]}>
+                  <Line
+                    p1={{ x: 0, y: 0 }}
+                    p2={{ x: chartWidth, y: 0 }}
+                    color={colors.crosshair}
+                    strokeWidth={1}
+                  />
+
+                  <CustomPanelLayer
+                    series={series}
+                    candleData={visibleCandles}
+                    width={virtualWidth}
+                    height={customPanelHeight}
+                    yMin={yMin}
+                    yMax={yMax}
+                    referenceLines={panel.referenceLines}
+                    theme={theme}
+                  />
+                </Group>
+
+                {crosshairCandle !== null && crosshairX !== null && (
+                  <Group transform={[{ translateX: padding.left + crosshairX }]}>
+                    <Line
+                      p1={{ x: 0, y: 0 }}
+                      p2={{ x: 0, y: customPanelHeight }}
+                      color={colors.crosshair}
+                      strokeWidth={1}
+                    />
+
+                    {series.map(({ line, data }) => {
+                      const val = findIndicatorValue(data, crosshairCandle.timestamp);
+                      if (val === null) return null;
+                      return (
+                        <Circle
+                          key={line.id}
+                          cx={0}
+                          cy={getY(val, yMin, yMax, customPanelHeight)}
+                          r={2}
+                          color={line.color}
+                        />
+                      );
+                    })}
+                  </Group>
+                )}
+              </Group>
+            </Canvas>
+          </View>
+        ))}
       </View>
     </GestureDetector>
   );

@@ -19,15 +19,19 @@ import {
   calcMACD,
   calcRSI,
   clampViewport,
+  computeCustomPanelYRange,
   computeLayout,
   filterByWindow,
   findIndicatorById,
   findIndicatorValue,
+  applyZoomOutResistance,
   findMarkerAt,
   getSeriesX,
   getThemeColors,
   getY,
+  maxLegibleVisibleCandles,
   normalizeCandles,
+  softZoomOutCeiling,
   prepareIndicatorData,
   resolveIntervalMs,
 } from '@stacklatte/chart-core/core';
@@ -37,6 +41,7 @@ import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 're
 import { getScaledContext } from './canvasDpr';
 import { drawAxis } from './draw/axis';
 import { drawCrosshairLines } from './draw/crosshair';
+import { drawCustomPanel } from './draw/customPanel';
 import { drawMacdPanel } from './draw/macdPanel';
 import { drawCandles, drawCrosshairDot, drawLineSeries, drawShadedArea } from './draw/mainPanel';
 import { drawMarkers } from './draw/markers';
@@ -57,6 +62,7 @@ const SLChart: React.FC<ChartProps> = ({
   indicators,
   shadedAreas,
   markers,
+  customPanels,
   width,
   height,
   intervalMs: intervalMsProp,
@@ -84,12 +90,12 @@ const SLChart: React.FC<ChartProps> = ({
   );
 
   const {
-    padding, chartWidth, panelGap, rsiPanelHeight, macdPanelHeight, volumePanelHeight, mainChartHeight, mainCanvasHeight,
-  } = computeLayout(width, height, showRsiPanel, showMacdPanel, showVolumePanel);
+    padding, chartWidth, panelGap, rsiPanelHeight, macdPanelHeight, volumePanelHeight, customPanelHeight, mainChartHeight, mainCanvasHeight,
+  } = computeLayout(width, height, showRsiPanel, showMacdPanel, showVolumePanel, customPanels?.length ?? 0);
 
   const initialRange = Math.min(
     Math.max(MIN_VISIBLE_CANDLES, visibleDataPointsProp),
-    maxZoom ?? sortedData.length,
+    maxZoom ?? maxLegibleVisibleCandles(chartWidth, MIN_VISIBLE_CANDLES),
     sortedData.length || visibleDataPointsProp,
   );
 
@@ -113,7 +119,8 @@ const SLChart: React.FC<ChartProps> = ({
 
   useEffect(() => {
     const len = sortedDataLengthRef.current;
-    const range = clamp(visibleDataPointsProp, MIN_VISIBLE_CANDLES, len || visibleDataPointsProp);
+    const legibleMax = maxZoom ?? maxLegibleVisibleCandles(chartWidth, MIN_VISIBLE_CANDLES);
+    const range = clamp(visibleDataPointsProp, MIN_VISIBLE_CANDLES, Math.min(len || visibleDataPointsProp, legibleMax));
     setIsFollowingLive(true);
     setViewport(clampViewport({ start: len - range, end: len }, len, MIN_VISIBLE_CANDLES));
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -209,6 +216,17 @@ const SLChart: React.FC<ChartProps> = ({
     return filterByWindow(markers, startTs, endTs);
   }, [markers, visibleCandles]);
 
+  const preparedCustomPanels = useMemo(() => {
+    if (!customPanels?.length || !visibleCandles.length) return [];
+    const startTs = visibleCandles[0].timestamp - intervalMs;
+    const endTs = visibleCandles[visibleCandles.length - 1].timestamp + intervalMs;
+    return customPanels.map((panel) => {
+      const series = panel.series.map((line) => ({ line, data: prepareIndicatorData(line, startTs, endTs) }));
+      const { yMin, yMax } = computeCustomPanelYRange(panel.yRange, series.map((s) => s.data), panel.referenceLines);
+      return { panel, series, yMin, yMax };
+    });
+  }, [customPanels, visibleCandles, intervalMs]);
+
   const displayPriceRange = useMemo(() => {
     if (!visibleCandles.length) return { min: 0, max: 1 };
     const candleValues = visibleCandles.flatMap((c) => [c.high, c.low]);
@@ -274,6 +292,9 @@ const SLChart: React.FC<ChartProps> = ({
   const rsiCanvasRef = useRef<HTMLCanvasElement>(null);
   const macdCanvasRef = useRef<HTMLCanvasElement>(null);
   const volumeCanvasRef = useRef<HTMLCanvasElement>(null);
+  // Dynamic list (unlike the fixed RSI/MACD/Volume refs above) — one canvas per custom panel,
+  // keyed by panel id via a callback ref, since the panel count/identity varies per caller.
+  const customPanelCanvasRefs = useRef(new Map<string, HTMLCanvasElement | null>());
 
   const panStartViewportRef = useRef<Viewport>(viewport);
   const pinchStartViewportRef = useRef<Viewport>(viewport);
@@ -328,8 +349,9 @@ const SLChart: React.FC<ChartProps> = ({
 
     const focalRatio = clamp((focalX - pad.left) / cw, 0, 1);
     const focalIndex = startViewport.start + oldRange * focalRatio;
-    const maxVisible = Math.min(mz ?? dataLength, dataLength);
-    const nextRange = clamp(oldRange / scale, MIN_VISIBLE_CANDLES, maxVisible);
+    const maxVisible = Math.min(mz ?? maxLegibleVisibleCandles(cw, MIN_VISIBLE_CANDLES), dataLength);
+    const resistedRange = applyZoomOutResistance(oldRange / scale, maxVisible);
+    const nextRange = clamp(resistedRange, MIN_VISIBLE_CANDLES, Math.min(softZoomOutCeiling(maxVisible), dataLength));
 
     const next = clampViewport(
       { start: focalIndex - nextRange * focalRatio, end: focalIndex + nextRange * (1 - focalRatio) },
@@ -459,6 +481,16 @@ const SLChart: React.FC<ChartProps> = ({
 
   const rsiAtCrosshair =
     showRsiPanel && crosshairCandle ? findIndicatorValue(visibleRsi, crosshairCandle.timestamp) : null;
+
+  const customPanelValuesAtCrosshair = useMemo(() => {
+    if (!crosshairCandle) return [];
+    return preparedCustomPanels.flatMap(({ panel, series }) =>
+      series.flatMap(({ line, data }) => {
+        const value = findIndicatorValue(data, crosshairCandle.timestamp);
+        return value === null ? [] : [{ id: `${panel.id}-${line.id}`, label: line.name ?? line.id, color: line.color, value }];
+      }),
+    );
+  }, [preparedCustomPanels, crosshairCandle]);
 
   // ── Draw ──────────────────────────────────────────────────────────────────
   useLayoutEffect(() => {
@@ -655,6 +687,60 @@ const SLChart: React.FC<ChartProps> = ({
     ctx.restore();
   });
 
+  useLayoutEffect(() => {
+    if (!visibleCandles.length) return;
+    for (const { panel, series, yMin, yMax } of preparedCustomPanels) {
+      const canvas = customPanelCanvasRefs.current.get(panel.id);
+      if (!canvas) continue;
+      const ctx = getScaledContext(canvas, width, customPanelHeight);
+      if (!ctx) continue;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(padding.left, 0, chartWidth, customPanelHeight);
+      ctx.clip();
+
+      ctx.save();
+      ctx.translate(padding.left + fractionalOffsetX, 0);
+      ctx.strokeStyle = colors.crosshair;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(chartWidth, 0);
+      ctx.stroke();
+      drawCustomPanel(ctx, {
+        series: series.map((s) => ({ color: s.line.color, data: s.data })),
+        candleData: visibleCandles,
+        width: virtualWidth,
+        height: customPanelHeight,
+        yMin,
+        yMax,
+        referenceLines: panel.referenceLines,
+        colors,
+      });
+      ctx.restore();
+
+      if (crosshairCandle !== null && crosshairX !== null) {
+        ctx.save();
+        ctx.translate(padding.left + crosshairX, 0);
+        ctx.strokeStyle = colors.crosshair;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(0, customPanelHeight);
+        ctx.stroke();
+        for (const { line, data } of series) {
+          const val = findIndicatorValue(data, crosshairCandle.timestamp);
+          if (val === null) continue;
+          drawCrosshairDot(ctx, { x: 0, y: getY(val, yMin, yMax, customPanelHeight) }, line.color, 2);
+        }
+        ctx.restore();
+      }
+
+      ctx.restore();
+    }
+  });
+
   if (!visibleCandles.length) {
     return (
       <div style={{ width, height, backgroundColor: colors.background, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -672,6 +758,7 @@ const SLChart: React.FC<ChartProps> = ({
           theme={theme}
           indicators={indicators}
           rsiValue={rsiAtCrosshair}
+          customPanelValues={customPanelValuesAtCrosshair}
         />
       )}
 
@@ -714,6 +801,18 @@ const SLChart: React.FC<ChartProps> = ({
           <canvas ref={macdCanvasRef} style={{ width, height: macdPanelHeight, display: 'block' }} />
         </div>
       )}
+
+      {preparedCustomPanels.map(({ panel }) => (
+        <div key={panel.id} style={{ width, height: panelGap + customPanelHeight }}>
+          <div style={{ height: panelGap }} />
+          <canvas
+            ref={(el) => {
+              customPanelCanvasRefs.current.set(panel.id, el);
+            }}
+            style={{ width, height: customPanelHeight, display: 'block' }}
+          />
+        </div>
+      ))}
     </div>
   );
 };

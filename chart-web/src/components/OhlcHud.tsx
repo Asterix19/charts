@@ -10,12 +10,20 @@ import { abbrevName, findIndicatorValue, getThemeColors } from '@stacklatte/char
 import type { Candle, ChartTheme, ChartThemeColors, IndicatorLine } from '@stacklatte/chart-core/core';
 import React, { useRef, useState } from 'react';
 
+interface CustomPanelHudValue {
+  id: string;
+  label: string;
+  color: string;
+  value: number;
+}
+
 interface Props {
   candle: Candle;
   isLive: boolean;
   theme: ChartTheme | ChartThemeColors;
   indicators?: IndicatorLine[];
   rsiValue?: number | null;
+  customPanelValues?: CustomPanelHudValue[];
 }
 
 function formatTime(ts: number): string {
@@ -32,7 +40,7 @@ function formatVolume(n: number): string {
   return n.toFixed(0);
 }
 
-const OhlcHud: React.FC<Props> = ({ candle, isLive, theme, indicators, rsiValue }) => {
+const OhlcHud: React.FC<Props> = ({ candle, isLive, theme, indicators, rsiValue, customPanelValues }) => {
   const [pos, setPos] = useState({ top: 6, left: 6 });
   const dragStartRef = useRef({ top: 6, left: 6 });
   const pointerStartRef = useRef({ x: 0, y: 0 });
@@ -144,6 +152,14 @@ const OhlcHud: React.FC<Props> = ({ candle, isLive, theme, indicators, rsiValue 
           </div>
         );
       })}
+
+      {customPanelValues?.map((v) => (
+        <div key={v.id} style={rowStyle}>
+          <span style={{ ...dotStyle, backgroundColor: v.color }} />
+          <span style={{ ...labelStyle, color: colors.hudText }}>{abbrevName(v.label)}</span>
+          <span style={{ ...valueStyle, color: v.color }}>{v.value.toFixed(2)}</span>
+        </div>
+      ))}
     </div>
   );
 };

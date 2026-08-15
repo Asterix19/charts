@@ -16,6 +16,13 @@ import { PanResponder, StyleSheet, Text, View } from 'react-native';
 import { getThemeColors, abbrevName, findIndicatorValue } from '../core';
 import type { ChartThemeColors, Candle, ChartTheme, IndicatorLine } from '../core';
 
+interface CustomPanelHudValue {
+  id: string;
+  label: string;
+  color: string;
+  value: number;
+}
+
 interface Props {
   /** The candle to display — always non-null (ChartCanvas provides latest as fallback). */
   candle: Candle;
@@ -24,6 +31,7 @@ interface Props {
   theme: ChartTheme | ChartThemeColors;
   indicators?: IndicatorLine[];
   rsiValue?: number | null;
+  customPanelValues?: CustomPanelHudValue[];
   onDragStart?: () => void;
   onDragEnd?: () => void;
 }
@@ -45,7 +53,7 @@ function formatVolume(n: number): string {
 }
 
 const OhlcHud: React.FC<Props> = ({
-  candle, isLive, theme, indicators, rsiValue, onDragStart, onDragEnd,
+  candle, isLive, theme, indicators, rsiValue, customPanelValues, onDragStart, onDragEnd,
 }) => {
   const [pos, setPos] = useState({ top: 6, left: 6 });
   const posRef       = useRef({ top: 6, left: 6 });
@@ -136,6 +144,15 @@ const OhlcHud: React.FC<Props> = ({
           </View>
         );
       })}
+
+      {/* Custom panels */}
+      {customPanelValues?.map((v) => (
+        <View key={v.id} style={styles.row}>
+          <View style={[styles.dot, { backgroundColor: v.color }]} />
+          <Text style={[styles.label, { color: colors.hudText }]}>{abbrevName(v.label)}</Text>
+          <Text style={[styles.value, { color: v.color }]}>{v.value.toFixed(2)}</Text>
+        </View>
+      ))}
     </View>
   );
 };

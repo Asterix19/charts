@@ -19,6 +19,10 @@ export interface ChartLayout {
   rsiPanelHeight: number;
   macdPanelHeight: number;
   volumePanelHeight: number;
+  /** Shared height for every custom panel (see `CustomPanel`) — same "equal share, shrinks as
+   * more panels are shown" sizing as RSI/MACD/Volume, since custom panels are just more entries
+   * in the same stack, not a separate sizing tier. */
+  customPanelHeight: number;
   mainChartHeight: number;
   /** Full height of the main chart canvas including padding (use for Canvas/Svg height prop) */
   mainCanvasHeight: number;
@@ -30,6 +34,7 @@ export function computeLayout(
   showRsiPanel: boolean,
   showMacdPanel = false,
   showVolumePanel = false,
+  customPanelCount = 0,
 ): ChartLayout {
   const padding: ChartPadding = {
     top: 10,
@@ -41,7 +46,7 @@ export function computeLayout(
   const panelGap = 8;
   const innerHeight = height - padding.top - padding.bottom;
 
-  const panelCount = (showVolumePanel ? 1 : 0) + (showRsiPanel ? 1 : 0) + (showMacdPanel ? 1 : 0);
+  const panelCount = (showVolumePanel ? 1 : 0) + (showRsiPanel ? 1 : 0) + (showMacdPanel ? 1 : 0) + Math.max(0, customPanelCount);
   // Each sub-panel gets an equal share; shrinks gracefully as more are shown
   const subPanelH = panelCount > 0
     ? Math.max(60, Math.min(110, Math.floor(innerHeight * 0.18)))
@@ -50,10 +55,11 @@ export function computeLayout(
   const volumePanelHeight = showVolumePanel ? subPanelH : 0;
   const rsiPanelHeight  = showRsiPanel  ? subPanelH : 0;
   const macdPanelHeight = showMacdPanel ? subPanelH : 0;
+  const customPanelHeight = customPanelCount > 0 ? subPanelH : 0;
   const mainChartHeight = innerHeight - panelCount * (panelGap + subPanelH);
   const mainCanvasHeight = padding.top + mainChartHeight + padding.bottom;
 
-  return { padding, chartWidth, panelGap, innerHeight, rsiPanelHeight, macdPanelHeight, volumePanelHeight, mainChartHeight, mainCanvasHeight };
+  return { padding, chartWidth, panelGap, innerHeight, rsiPanelHeight, macdPanelHeight, volumePanelHeight, customPanelHeight, mainChartHeight, mainCanvasHeight };
 }
 
 // ─── Time window / viewport ───────────────────────────────────────────────
@@ -248,6 +254,48 @@ export interface CandleViewport {
   end: number;
 }
 
+/** Minimum candle-slot pixel width before candles, their gaps, and the gridlines behind them
+ * become illegibly dense. Used as the implicit zoom-out ceiling whenever a caller doesn't pass a
+ * smaller `maxZoom` — without it, zooming out (wheel/pinch) is only bounded by `dataLength`, so a
+ * chart with a lot of data zoomed out on a fixed-width canvas degrades into a hairline smear with
+ * an overcrowded axis. Deliberately a pixel width, not a fixed candle count, so the ceiling scales
+ * with the chart's actual rendered width. */
+export const MIN_PX_PER_CANDLE = 3;
+
+/** The most candles `chartWidth` px can show while keeping each candle slot at least
+ * `MIN_PX_PER_CANDLE` wide. */
+export function maxLegibleVisibleCandles(chartWidth: number, minVisibleCandles: number): number {
+  return Math.max(minVisibleCandles, Math.floor(chartWidth / MIN_PX_PER_CANDLE));
+}
+
+/** How far past `maxVisible` the soft ceiling (see `applyZoomOutResistance`) is allowed to
+ * asymptotically approach, as a fraction of `maxVisible` — e.g. 0.25 means the absolute ceiling is
+ * 125% of `maxVisible`, never reachable but approached arbitrarily closely. */
+const SOFT_ZOOM_OUT_RATIO = 0.25;
+
+/**
+ * Applies rubber-band-style resistance once a requested zoom-out range exceeds `maxVisible`,
+ * instead of a hard clamp. A hard `Math.min(requestedRange, maxVisible)` makes zooming out feel
+ * like hitting a wall — the range stops responding at all the instant the ceiling is reached. This
+ * keeps the range responsive-but-diminishing past the ceiling, asymptotically settling at
+ * `maxVisible * (1 + SOFT_ZOOM_OUT_RATIO)` rather than ever exceeding it outright. Below
+ * `maxVisible` this is the identity function — resistance only ever kicks in past the legible
+ * ceiling, never inside it.
+ */
+export function applyZoomOutResistance(requestedRange: number, maxVisible: number): number {
+  if (requestedRange <= maxVisible || maxVisible <= 0) return requestedRange;
+  const overshoot = requestedRange - maxVisible;
+  const give = maxVisible * SOFT_ZOOM_OUT_RATIO;
+  return maxVisible + give * (1 - Math.exp(-overshoot / give));
+}
+
+/** The absolute ceiling `applyZoomOutResistance` asymptotically approaches but never reaches —
+ * use this (not `maxVisible` itself) as the outer `clampViewport`/`clamp` bound so the resisted
+ * range is never truncated back down to a hard wall by a later clamp. */
+export function softZoomOutCeiling(maxVisible: number): number {
+  return maxVisible * (1 + SOFT_ZOOM_OUT_RATIO);
+}
+
 /**
  * Clamp a CandleViewport so it stays within the available data and
  * the visible range stays between minVisibleCandles and dataLength.
@@ -386,12 +434,16 @@ export function priceTickCount(chartHeight: number, minPx = 40): number {
   return Math.max(3, Math.floor(chartHeight / minPx));
 }
 
+const ONE_YEAR_MS = 365 * 86_400_000;
+
 /**
  * Formats a timestamp for a time-axis label, adapting to the total visible time span.
  *   < 10 s   → HH:MM:SS  (sub-second intervals)
  *   < 24 h   → HH:MM  (or h:MM AM/PM when hour12=true)
  *   < 7 d    → ddd HH:MM
- *   ≥ 7 d    → MMM DD
+ *   < 1 y    → MMM DD
+ *   ≥ 1 y    → MMM YYYY  (a bare "MMM DD" would be ambiguous once ticks span multiple years —
+ *                         e.g. "Jan 03" recurring every year — so the year is included instead)
  */
 export function formatTimeLabel(ts: number, totalSpanMs: number, hour12 = false): string {
   const d = new Date(ts);
@@ -408,15 +460,23 @@ export function formatTimeLabel(ts: number, totalSpanMs: number, hour12 = false)
       d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12 })
     );
   }
-  return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+  if (totalSpanMs < ONE_YEAR_MS) {
+    return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+  }
+  return d.toLocaleDateString([], { month: 'short', year: 'numeric' });
 }
 
-// Ordered list of "nice" time boundaries used for grid line intervals.
+// Ordered list of "nice" time boundaries used for grid line intervals. Extends out to
+// multi-decade steps (not just up to a week) so a chart zoomed out over years of daily bars picks
+// a wide-enough interval instead of falling back to the last (smallest) entry and drawing far more
+// labels than fit — the cause of overlapping x-axis dates on long-spanning charts.
 const NICE_GRID_INTERVALS_MS = [
   1_000, 2_000, 5_000, 10_000, 15_000, 30_000,
   60_000, 2 * 60_000, 5 * 60_000, 10 * 60_000, 15 * 60_000, 30 * 60_000,
   3_600_000, 2 * 3_600_000, 4 * 3_600_000, 6 * 3_600_000, 12 * 3_600_000,
-  86_400_000, 2 * 86_400_000, 7 * 86_400_000,
+  86_400_000, 2 * 86_400_000, 7 * 86_400_000, 14 * 86_400_000, 30 * 86_400_000,
+  90 * 86_400_000, 180 * 86_400_000,
+  ...[1, 2, 5, 10, 20, 50, 100].map((years) => years * ONE_YEAR_MS),
 ];
 
 function pickGridInterval(totalSpanMs: number, maxTicks: number): number {

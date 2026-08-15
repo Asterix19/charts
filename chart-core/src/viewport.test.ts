@@ -14,8 +14,11 @@ import {
   clampTickX,
   getPriceTicks,
   priceTickCount,
+  applyZoomOutResistance,
   formatTimeLabel,
   getTimeTicks,
+  maxLegibleVisibleCandles,
+  softZoomOutCeiling,
 } from './viewport';
 import type { Candle, IndicatorLine } from './types';
 
@@ -108,6 +111,37 @@ describe('computeLayout', () => {
     const rsiOnly = computeLayout(500, 800, true, false, false);
     const rsiPlusVolume = computeLayout(500, 800, true, false, true);
     expect(rsiPlusVolume.mainChartHeight).toBeLessThan(rsiOnly.mainChartHeight);
+  });
+
+  it('customPanelHeight is 0 when customPanelCount is omitted (defaults 0)', () => {
+    expect(computeLayout(500, 400, false).customPanelHeight).toBe(0);
+  });
+
+  it('customPanelHeight is 0 when customPanelCount is 0', () => {
+    expect(computeLayout(500, 800, false, false, false, 0).customPanelHeight).toBe(0);
+  });
+
+  it('customPanelHeight is positive when customPanelCount > 0', () => {
+    const { customPanelHeight } = computeLayout(500, 800, false, false, false, 1);
+    expect(customPanelHeight).toBeGreaterThanOrEqual(60);
+  });
+
+  it('custom panels get the same equal-share treatment as RSI/MACD/Volume', () => {
+    const layout = computeLayout(500, 1200, true, false, false, 2);
+    expect(layout.customPanelHeight).toBe(layout.rsiPanelHeight);
+  });
+
+  it('mainChartHeight accounts for every custom panel + gap, not just one', () => {
+    const onePanel = computeLayout(500, 1200, false, false, false, 1);
+    const twoPanels = computeLayout(500, 1200, false, false, false, 2);
+    expect(twoPanels.mainChartHeight).toBe(onePanel.mainChartHeight - (onePanel.panelGap + onePanel.customPanelHeight));
+  });
+
+  it('custom panels stack alongside RSI/MACD/Volume, not instead of them', () => {
+    const layout = computeLayout(500, 1400, true, true, true, 1);
+    expect(layout.mainChartHeight).toBe(
+      layout.innerHeight - 4 * (layout.panelGap + layout.rsiPanelHeight),
+    );
   });
 });
 
@@ -522,10 +556,17 @@ describe('formatTimeLabel', () => {
     expect(label).toMatch(/^[A-Z][a-z]{2}/);
   });
 
-  it('shows month and day for spans >= 7 days', () => {
+  it('shows month and day for spans >= 7 days and < 1 year', () => {
     const label = formatTimeLabel(ts, 14 * 24 * 60 * 60_000); // 2 weeks
     // Should look like "Jan 15"
     expect(label).toMatch(/[A-Z][a-z]{2}\s\d{1,2}/);
+    expect(label).not.toMatch(/\d{4}/);
+  });
+
+  it('shows month and year (not day) for spans >= 1 year — a bare "MMM DD" would be ambiguous across years', () => {
+    const label = formatTimeLabel(ts, 3 * 365 * 24 * 60 * 60_000); // 3 years
+    // Should look like "Jan 2024", not "Jan 15"
+    expect(label).toMatch(/[A-Z][a-z]{2}\s\d{4}/);
   });
 });
 
@@ -605,5 +646,80 @@ describe('getTimeTicks', () => {
     const subSec = makeCandles(100, Date.now(), 5);
     const ticks = getTimeTicks(subSec, 0, 100, 5, 400);
     if (ticks.length > 0) expect(ticks[0].label).toMatch(/\d{2}:\d{2}:\d{2}/);
+  });
+
+  it('tick count stays within a reasonable band even for a multi-year daily-bar span — regression for the interval table topping out at 7 days and dumping one label per week', () => {
+    const DAY = 24 * 60 * 60_000;
+    const years = makeCandles(3650, Date.now(), DAY); // ~10 years of daily bars
+    const ticks = getTimeTicks(years, 0, years.length, DAY, 800);
+    expect(ticks.length).toBeGreaterThanOrEqual(2);
+    expect(ticks.length).toBeLessThanOrEqual(10);
+  });
+});
+
+// ─── maxLegibleVisibleCandles ──────────────────────────────────────────────
+
+describe('maxLegibleVisibleCandles', () => {
+  it('scales with chart width', () => {
+    expect(maxLegibleVisibleCandles(300, 4)).toBe(100);
+    expect(maxLegibleVisibleCandles(900, 4)).toBe(300);
+  });
+
+  it('never returns less than minVisibleCandles, even for a tiny width', () => {
+    expect(maxLegibleVisibleCandles(1, 4)).toBe(4);
+    expect(maxLegibleVisibleCandles(0, 4)).toBe(4);
+  });
+});
+
+// ─── applyZoomOutResistance / softZoomOutCeiling ────────────────────────────
+// Rubber-band-style "give" past the legible zoom-out ceiling instead of a hard stop.
+
+describe('applyZoomOutResistance', () => {
+  it('is the identity function at or below maxVisible — resistance only applies past the ceiling', () => {
+    expect(applyZoomOutResistance(50, 100)).toBe(50);
+    expect(applyZoomOutResistance(100, 100)).toBe(100);
+  });
+
+  it('softens a small overshoot rather than clamping it away entirely', () => {
+    const result = applyZoomOutResistance(110, 100);
+    // Some of the requested 10-unit overshoot gets through, but not all of it.
+    expect(result).toBeGreaterThan(100);
+    expect(result).toBeLessThan(110);
+    expect(result).toBeGreaterThan(107);
+  });
+
+  it('diminishes as the requested overshoot grows — each extra unit requested adds less', () => {
+    const near = applyZoomOutResistance(150, 100) - applyZoomOutResistance(140, 100);
+    const far = applyZoomOutResistance(1050, 100) - applyZoomOutResistance(1040, 100);
+    expect(far).toBeLessThan(near);
+  });
+
+  it('asymptotically approaches softZoomOutCeiling and never exceeds it, even for an enormous request', () => {
+    const ceiling = softZoomOutCeiling(100);
+    const result = applyZoomOutResistance(1_000_000, 100);
+    // Mathematically the curve never reaches its asymptote, but float64 underflow can round it
+    // exactly to the ceiling for a large enough request — either way it must never overshoot.
+    expect(result).toBeLessThanOrEqual(ceiling);
+    expect(result).toBeGreaterThan(ceiling - 0.01);
+  });
+
+  it('is monotonically increasing — more requested range never yields less resisted range', () => {
+    let prev = 0;
+    for (const requested of [50, 100, 120, 150, 200, 500, 5000]) {
+      const result = applyZoomOutResistance(requested, 100);
+      expect(result).toBeGreaterThanOrEqual(prev);
+      prev = result;
+    }
+  });
+
+  it('passes through unchanged when maxVisible is 0', () => {
+    expect(applyZoomOutResistance(50, 0)).toBe(50);
+  });
+});
+
+describe('softZoomOutCeiling', () => {
+  it('is 25% above maxVisible', () => {
+    expect(softZoomOutCeiling(100)).toBe(125);
+    expect(softZoomOutCeiling(0)).toBe(0);
   });
 });
