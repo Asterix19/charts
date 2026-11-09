@@ -1,6 +1,6 @@
 # @stacklatte/chart-web
 
-> React trading chart for plain web apps — HTML5 Canvas 2D, no WebAssembly, no `react-native-web`. Candlesticks, line charts, SMA/EMA/Bollinger Bands overlays, RSI/MACD/volume sub-panels, trade markers (entry/exit/stop-loss/take-profit), pointer/wheel pan-zoom, crosshair inspection, live-streaming updates, dark/light themes — MIT licensed. Same engine, same props, same LLM-safe `ChartConfig` as `@stacklatte/chart-core` (the React Native version).
+> React trading chart for plain web apps — HTML5 Canvas 2D, no WebAssembly, no `react-native-web`. Candlesticks, line charts, SMA/EMA/Bollinger Bands overlays, RSI/MACD/volume sub-panels, trade markers (entry/exit/stop-loss/take-profit), pointer/wheel pan-zoom, crosshair inspection, live-streaming updates, dark/light themes — MIT licensed. Same engine, same props, same LLM-safe `ChartConfig` as `@stacklatte/chart-native` (the React Native version).
 
 ## Install
 
@@ -30,7 +30,7 @@ import { buildChartPipeline } from '@stacklatte/chart-web';
 const compiled = buildChartPipeline(config, candles); // -> spread into <SLChart {...compiled} width height />
 ```
 
-The matching JSON Schema (draft-07, `additionalProperties: false` everywhere) is published at `../chart-core/dist/ChartConfig.schema.json` in the sibling `@stacklatte/chart-core` package (a dependency of this one) — use it directly as a structured-output / tool-call schema.
+The matching JSON Schema (draft-07, `additionalProperties: false` everywhere) is published as `@stacklatte/chart-engine/ChartConfig.schema.json` (`@stacklatte/chart-engine` is a dependency of this package) — use it directly as a structured-output / tool-call schema.
 
 ## Full docs
 
@@ -38,5 +38,5 @@ See [README.md](./README.md) for the complete prop table, every indicator/overla
 
 ## Related
 
-- Same API on React Native: [`@stacklatte/chart-core`](../chart-core/llms.txt) (Skia, GPU-accelerated)
+- Same API on React Native: [`@stacklatte/chart-native`](../chart-native/llms.txt) (Skia, GPU-accelerated)
 - Monorepo overview: [`../llms.txt`](../llms.txt)

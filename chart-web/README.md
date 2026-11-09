@@ -5,17 +5,17 @@ High-performance web trading charts — rendered with plain HTML5 Canvas 2D. No 
 [![npm](https://img.shields.io/npm/v/@stacklatte/chart-web)](https://www.npmjs.com/package/@stacklatte/chart-web)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE.md)
 
-This package renders the exact same chart engine as [`@stacklatte/chart-core`](../chart-core) (the React Native / Skia version) — same props, same indicators, same themes, same config pipeline. Every piece of pixel-geometry and indicator math is imported directly from `@stacklatte/chart-core`'s platform-agnostic core (`@stacklatte/chart-core/core`); only the rendering layer (Canvas 2D draw calls instead of Skia JSX) and the gesture layer (Pointer Events + wheel instead of `react-native-gesture-handler`) are reimplemented for the browser.
+This package renders the exact same chart engine as [`@stacklatte/chart-native`](../chart-native) (the React Native / Skia version) — same props, same indicators, same themes, same config pipeline. Every piece of pixel-geometry and indicator math is imported directly from [`@stacklatte/chart-engine`](../chart-engine); only the rendering layer (Canvas 2D draw calls instead of Skia JSX) and the gesture layer (Pointer Events + wheel instead of `react-native-gesture-handler`) are reimplemented for the browser.
 
 ---
 
 ## Why chart-web
 
 - **One component, not a kit.** Candlesticks, line series, SMA/EMA/Bollinger Bands overlays, RSI + MACD + volume sub-panels, trade markers, wheel/touch pan-zoom, crosshair inspection, and live-streaming updates all ship built in.
-- **Real indicator math.** RSI uses Wilder smoothing, MACD is seeded and aligned correctly (12/26/9), Bollinger Bands use an O(n) sliding window — the same tested implementation `chart-core` uses, not a reimplementation that can drift.
+- **Real indicator math.** RSI uses Wilder smoothing, MACD is seeded and aligned correctly (12/26/9), Bollinger Bands use an O(n) sliding window — the same tested implementation `chart-native` uses, not a reimplementation that can drift.
 - **No WASM, no shim.** Plain `<canvas>` + `ctx.fillText` — no CanvasKit download, no `react-native-web` dependency graph. Only peers are `react` and `react-dom`.
 - **LLM-safe declarative config.** `buildChartPipeline()` takes a versioned `ChartConfig` document — every color and interval is a closed enum, never a raw string an LLM can typo — and returns validated, ready-to-render props, or throws a precise, itemized error. A generated JSON Schema ships alongside it for structured output / tool-calling. See [`llms.txt`](./llms.txt) for the quick path.
-- **Also available for React Native.** [`@stacklatte/chart-core`](../chart-core) is the same engine, same props, GPU-rendered via Skia on iOS/Android.
+- **Also available for React Native.** [`@stacklatte/chart-native`](../chart-native) is the same engine, same props, GPU-rendered via Skia on iOS/Android.
 
 | | chart-web / chart-core | General-purpose chart libs (Recharts, Victory) | Web-only trading chart libs |
 |---|---|---|---|
@@ -276,7 +276,7 @@ This exists specifically so an LLM (or any code-generation step) can produce cha
 
 - **Every string is a closed enum** — `theme`, `interval`, overlay `type`, and every `color` come from a fixed, named union. There's no raw hex, no arbitrary millisecond literal, nothing an LLM can plausibly hallucinate a wrong-but-valid-looking value for.
 - **It fails loudly, not silently.** `buildChartPipeline` validates first and throws one error listing every problem (`[code] path: message`) if the document doesn't match the schema, instead of rendering something subtly wrong.
-- **A matching JSON Schema ships with `@stacklatte/chart-core`** (a dependency of this package) at `node_modules/@stacklatte/chart-core/dist/ChartConfig.schema.json` — drop it straight into an LLM's structured-output or tool-call schema.
+- **A matching JSON Schema ships with `@stacklatte/chart-engine`** (a dependency of this package) — `require.resolve('@stacklatte/chart-engine/ChartConfig.schema.json')` — drop it straight into an LLM's structured-output or tool-call schema.
 
 See [`llms.txt`](./llms.txt) for a condensed reference aimed at coding agents.
 

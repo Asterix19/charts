@@ -1,0 +1,20 @@
+# Stacklatte Chart Engine
+
+> Framework-agnostic, zero-dependency engine for trading charts: candle/viewport/pan-zoom math, tested indicators (SMA, EMA, Wilder RSI, MACD 12/26/9, Bollinger Bands), marker geometry, themes, and an LLM-safe declarative `ChartConfig` with a generated JSON Schema. Renderers: @stacklatte/chart-native (React Native/Skia), @stacklatte/chart-web (Canvas 2D).
+
+Use this package directly when you need the indicator math, the validated `ChartConfig` pipeline, or you are writing a renderer for another framework (Angular, Vue, Svelte, Blazor via JS interop). If you just want a chart on screen, install a renderer instead.
+
+## ChartConfig → props (safe for LLM-generated input)
+
+`buildChartPipeline(config, candles)` validates → normalizes → compiles a versioned `ChartConfig` into renderer props. Every string field is a closed enum (never raw hex); unknown keys are rejected with `[code] path: message` errors. The JSON Schema for the exact type ships at `dist/ChartConfig.schema.json` — pass it as a `response_format` / tool-call schema.
+
+```ts
+import { buildChartPipeline, calcRSI, calcEMA } from '@stacklatte/chart-engine';
+const props = buildChartPipeline(config, candles); // spread into <SLChart {...props} />
+```
+
+## Pure functions you can call without any UI
+
+`calcSMA`, `calcEMA`, `calcRSI`, `calcMACD`, `calcBollingerBands`, `normalizeCandles`, `computeViewport`, `clampViewport`, `buildCandleGeometry`, `buildMarkerPoints`.
+
+- Repository: https://github.com/Asterix19/charts — MIT

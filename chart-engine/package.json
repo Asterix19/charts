@@ -57,7 +57,8 @@
       "import": "./dist/index.mjs",
       "require": "./dist/index.js",
       "default": "./dist/index.mjs"
-    }
+    },
+    "./ChartConfig.schema.json": "./dist/ChartConfig.schema.json"
   },
   "files": [
     "dist",
