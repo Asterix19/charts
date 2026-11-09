@@ -12,8 +12,8 @@
 
 import { Path } from '@shopify/react-native-skia';
 import React, { useMemo } from 'react';
-import { buildSeriesPoints, buildTimestampIndex, resolveYRange } from '../core';
-import type { Candle, TsPoint } from '../core';
+import { buildSeriesPoints, buildTimestampIndex, resolveYRange } from '@stacklatte/chart-engine';
+import type { Candle, TsPoint } from '@stacklatte/chart-engine';
 import { buildSmoothPath } from '../pathUtils';
 
 interface Props {

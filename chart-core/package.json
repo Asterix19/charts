@@ -1,7 +1,7 @@
 {
   "name": "@stacklatte/chart-core",
-  "version": "2.3.3",
-  "description": "GPU-accelerated React Native trading chart (Skia): candlesticks, RSI/MACD/Bollinger/Volume, trade markers, pinch-zoom, live streaming. Ships an LLM-safe declarative ChartConfig + JSON Schema so agents can generate charts without hallucinating props.",
+  "version": "2.4.0",
+  "description": "[Deprecated name] React Native Skia trading chart. Now a thin re-export of @stacklatte/chart-native (renderer) and @stacklatte/chart-engine (/core). Prefer installing those directly.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "react-native": "./src/index.ts",
@@ -30,14 +30,10 @@
     "llms.txt"
   ],
   "scripts": {
-    "build": "tsup && tsc -p tsconfig.json --emitDeclarationOnly --declarationMap && npm run schema:generate",
-    "dev": "tsup --watch",
+    "build": "tsup && tsc -p tsconfig.json --emitDeclarationOnly --declarationMap",
     "clean": "rm -rf dist",
-    "prepublishOnly": "npm run lint && npm test && npm run build",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "lint": "tsc --noEmit",
-    "schema:generate": "ts-json-schema-generator --path src/config.ts --type ChartConfig --no-type-check --out dist/ChartConfig.schema.json"
+    "prepublishOnly": "npm run lint && npm run build",
+    "lint": "tsc --noEmit"
   },
   "keywords": [
     "chart",
@@ -111,9 +107,11 @@
     "react": "19.2.8",
     "react-native": "0.86.0",
     "react-native-gesture-handler": "~3.1.0",
-    "ts-json-schema-generator": "^2.9.0",
     "tsup": "^8.5.1",
-    "typescript": "^7.0.2",
-    "vitest": "^4.1.10"
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "@stacklatte/chart-native": "^1.0.0",
+    "@stacklatte/chart-engine": "^1.0.0"
   }
 }

@@ -1,5 +1,5 @@
 /**
- * Canvas 2D volume sub-panel — the web counterpart to chart-core's VolumeLayer.
+ * Canvas 2D volume sub-panel — the web counterpart to chart-native's VolumeLayer.
  */
 
 import {
@@ -7,7 +7,7 @@ import {
   computeVolumeYRange,
   type Candle,
   type ChartThemeColors,
-} from '@stacklatte/chart-core/core';
+} from '@stacklatte/chart-engine';
 
 export function drawVolumePanel(
   ctx: CanvasRenderingContext2D,

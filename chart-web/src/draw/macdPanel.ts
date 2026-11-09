@@ -1,5 +1,5 @@
 /**
- * Canvas 2D MACD sub-panel — the web counterpart to chart-core's MacdLayer.
+ * Canvas 2D MACD sub-panel — the web counterpart to chart-native's MacdLayer.
  */
 
 import {
@@ -12,7 +12,7 @@ import {
   type Candle,
   type ChartThemeColors,
   type TsPoint,
-} from '@stacklatte/chart-core/core';
+} from '@stacklatte/chart-engine';
 import { strokeSmoothPath } from './path';
 
 export function drawMacdPanel(

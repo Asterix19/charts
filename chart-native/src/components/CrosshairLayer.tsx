@@ -12,7 +12,7 @@
 import { DashPathEffect, Group, Line } from '@shopify/react-native-skia';
 import React from 'react';
 import { Platform } from 'react-native';
-import { parseDashArray } from '../core';
+import { parseDashArray } from '@stacklatte/chart-engine';
 
 const isWeb = Platform.OS === 'web';
 

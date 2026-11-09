@@ -1,5 +1,5 @@
-import { buildPaddedRange, calcEMA, computeLayout, getCandleX, getY } from '@stacklatte/chart-core/core';
-import type { Candle, ChartMarker } from '@stacklatte/chart-core/core';
+import { buildPaddedRange, calcEMA, computeLayout, getCandleX, getY } from '@stacklatte/chart-engine';
+import type { Candle, ChartMarker } from '@stacklatte/chart-engine';
 import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';

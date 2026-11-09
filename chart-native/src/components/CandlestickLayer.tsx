@@ -11,8 +11,8 @@
 
 import { Group, Line, Rect } from '@shopify/react-native-skia';
 import React, { useMemo } from 'react';
-import { buildCandleGeometry } from '../core';
-import type { Candle } from '../core';
+import { buildCandleGeometry } from '@stacklatte/chart-engine';
+import type { Candle } from '@stacklatte/chart-engine';
 
 interface Props {
   data: Candle[];

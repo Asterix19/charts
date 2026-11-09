@@ -1,7 +1,7 @@
 /**
  * Sizes a <canvas> backing store for the device pixel ratio and returns a
  * context pre-scaled to CSS-pixel coordinates, so every draw helper in this
- * package can work in the same logical-pixel space chart-core uses.
+ * package can work in the same logical-pixel space chart-native uses.
  */
 export function getScaledContext(
   canvas: HTMLCanvasElement,

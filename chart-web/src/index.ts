@@ -1,5 +1,5 @@
-// ── Core logic (platform-agnostic, shared with @stacklatte/chart-core) ─────
-export * from '@stacklatte/chart-core/core';
+// ── Core logic (platform-agnostic, shared with @stacklatte/chart-engine) ─────
+export * from '@stacklatte/chart-engine';
 
 // ── Canvas 2D renderer ───────────────────────────────────────────────────────
 export { default as SLChart } from './ChartCanvas';

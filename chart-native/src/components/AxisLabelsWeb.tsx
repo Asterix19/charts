@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { Text, View } from 'react-native';
-import { getY, getThemeColors, getPriceTicks, getTimeTicks, priceTickCount } from '../core';
-import type { ChartThemeColors, Candle, ChartTheme } from '../core';
+import { getY, getThemeColors, getPriceTicks, getTimeTicks, priceTickCount } from '@stacklatte/chart-engine';
+import type { ChartThemeColors, Candle, ChartTheme } from '@stacklatte/chart-engine';
 
 interface Props {
   sortedData: Candle[];

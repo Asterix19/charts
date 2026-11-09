@@ -7,8 +7,8 @@ import {
 } from '@shopify/react-native-skia';
 import React, { useMemo } from 'react';
 import { Platform } from 'react-native';
-import { getY, getThemeColors, getPriceTicks, getTimeTicks, priceTickCount } from '../core';
-import type { ChartThemeColors, Candle, ChartTheme } from '../core';
+import { getY, getThemeColors, getPriceTicks, getTimeTicks, priceTickCount } from '@stacklatte/chart-engine';
+import type { ChartThemeColors, Candle, ChartTheme } from '@stacklatte/chart-engine';
 
 const isWeb = Platform.OS === 'web';
 

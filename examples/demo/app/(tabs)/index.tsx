@@ -1,4 +1,4 @@
-import { SLChart, calcSMA, calcEMA, calcBollingerBands, Candle, IndicatorLine, ShadedArea, ChartType, ChartTheme } from '@stacklatte/chart-core';
+import { SLChart, calcSMA, calcEMA, calcBollingerBands, Candle, IndicatorLine, ShadedArea, ChartType, ChartTheme } from '@stacklatte/chart-native';
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import {
   View,

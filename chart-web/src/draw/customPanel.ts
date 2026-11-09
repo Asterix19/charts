@@ -1,12 +1,12 @@
 /**
  * Canvas 2D custom sub-panel — draws an arbitrary caller-supplied `CustomPanel` (see
- * chart-core's `types.ts`). Unlike RSI/MACD/Volume, this has no fixed indicator math of its own:
+ * chart-engine's `types.ts`). Unlike RSI/MACD/Volume, this has no fixed indicator math of its own:
  * it just plots whatever `IndicatorLine` series the panel was given, within the Y range the
  * caller resolved (via `computeCustomPanelYRange`), plus optional horizontal reference lines —
  * the same visual idea as RSI's 30/70 threshold lines, generalized to any value(s).
  */
 
-import { buildSeriesPoints, buildTimestampIndex, getY, type Candle, type ChartThemeColors, type TsPoint } from '@stacklatte/chart-core/core';
+import { buildSeriesPoints, buildTimestampIndex, getY, type Candle, type ChartThemeColors, type TsPoint } from '@stacklatte/chart-engine';
 import { strokeSmoothPath } from './path';
 
 export function drawCustomPanel(

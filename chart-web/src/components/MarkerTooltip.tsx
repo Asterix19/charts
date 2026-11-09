@@ -2,14 +2,14 @@
  * MarkerTooltip — hover tooltip for a single trade marker (entry, exit,
  * stop-loss, take-profit).
  *
- * Plain-DOM port of chart-core's MarkerTooltip: same content/positioning
+ * Plain-DOM port of chart-native's MarkerTooltip: same content/positioning
  * logic, built with <div>/<span> instead of RN View/Text. Purely
  * presentational — the parent resolves which marker is hovered (via
  * findMarkerAt()) and passes its plot-local x/y here.
  */
 
-import { getMarkerKindLabel, getThemeColors } from '@stacklatte/chart-core/core';
-import type { ChartPadding, ChartTheme, ChartThemeColors, MarkerPoint } from '@stacklatte/chart-core/core';
+import { getMarkerKindLabel, getThemeColors } from '@stacklatte/chart-engine';
+import type { ChartPadding, ChartTheme, ChartThemeColors, MarkerPoint } from '@stacklatte/chart-engine';
 import React from 'react';
 
 interface Props {

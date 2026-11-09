@@ -8,8 +8,8 @@
 
 import { Path } from '@shopify/react-native-skia';
 import React, { useMemo } from 'react';
-import { buildLinePoints } from '../core';
-import type { Candle } from '../core';
+import { buildLinePoints } from '@stacklatte/chart-engine';
+import type { Candle } from '@stacklatte/chart-engine';
 import { buildSmoothPath } from '../pathUtils';
 
 interface Props {

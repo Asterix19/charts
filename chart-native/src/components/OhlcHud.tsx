@@ -13,8 +13,8 @@
 
 import React, { useRef, useState } from 'react';
 import { PanResponder, StyleSheet, Text, View } from 'react-native';
-import { getThemeColors, abbrevName, findIndicatorValue } from '../core';
-import type { ChartThemeColors, Candle, ChartTheme, IndicatorLine } from '../core';
+import { getThemeColors, abbrevName, findIndicatorValue } from '@stacklatte/chart-engine';
+import type { ChartThemeColors, Candle, ChartTheme, IndicatorLine } from '@stacklatte/chart-engine';
 
 interface CustomPanelHudValue {
   id: string;

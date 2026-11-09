@@ -2,6 +2,8 @@
   "name": "stacklatte-charts-monorepo",
   "private": true,
   "workspaces": [
+    "chart-engine",
+    "chart-native",
     "chart-core",
     "chart-web",
     "examples/demo",

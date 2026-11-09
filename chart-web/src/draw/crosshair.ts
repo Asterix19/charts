@@ -1,5 +1,5 @@
 /**
- * Canvas 2D dashed crosshair — the web counterpart to chart-core's
+ * Canvas 2D dashed crosshair — the web counterpart to chart-native's
  * CrosshairLayer (native Skia canvas draws its own dashed lines; on
  * react-native-web it falls back to a DOM overlay because DashPathEffect
  * isn't supported there). Plain <canvas> supports ctx.setLineDash natively,

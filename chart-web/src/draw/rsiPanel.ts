@@ -1,5 +1,5 @@
 /**
- * Canvas 2D RSI sub-panel — the web counterpart to chart-core's RsiLayer.
+ * Canvas 2D RSI sub-panel — the web counterpart to chart-native's RsiLayer.
  */
 
 import {
@@ -11,7 +11,7 @@ import {
   type Candle,
   type ChartThemeColors,
   type RsiPoint,
-} from '@stacklatte/chart-core/core';
+} from '@stacklatte/chart-engine';
 import { strokeSmoothPath } from './path';
 
 export function drawRsiPanel(

@@ -11,8 +11,8 @@
 
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { getMarkerKindLabel, getThemeColors } from '../core';
-import type { ChartPadding, ChartTheme, ChartThemeColors, MarkerPoint } from '../core';
+import { getMarkerKindLabel, getThemeColors } from '@stacklatte/chart-engine';
+import type { ChartPadding, ChartTheme, ChartThemeColors, MarkerPoint } from '@stacklatte/chart-engine';
 
 interface Props {
   point: MarkerPoint;

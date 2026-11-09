@@ -18,9 +18,9 @@ import {
   getThemeColors,
   getY,
   MACD_COLORS,
-} from '../core';
+} from '@stacklatte/chart-engine';
 import { buildSmoothPath } from '../pathUtils';
-import type { Candle, ChartTheme, ChartThemeColors, TsPoint } from '../core';
+import type { Candle, ChartTheme, ChartThemeColors, TsPoint } from '@stacklatte/chart-engine';
 
 interface Props {
   macd: TsPoint[];

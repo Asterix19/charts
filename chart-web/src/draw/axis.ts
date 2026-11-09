@@ -1,9 +1,9 @@
 /**
  * Canvas 2D price/time grid + axis labels — the web counterpart to
- * chart-core's AxisLayer + AxisLabelsWeb combined.
+ * chart-native's AxisLayer + AxisLabelsWeb combined.
  *
  * Unlike react-native-skia-on-web (which needs a DOM overlay for crisp text —
- * see chart-core's AxisLabelsWeb), plain <canvas> text rendering via
+ * see chart-native's AxisLabelsWeb), plain <canvas> text rendering via
  * ctx.fillText is fully supported, so grid lines and labels are drawn
  * together in one pass here.
  */
@@ -16,7 +16,7 @@ import {
   type Candle,
   type ChartPadding,
   type ChartThemeColors,
-} from '@stacklatte/chart-core/core';
+} from '@stacklatte/chart-engine';
 
 export interface AxisDrawOptions {
   sortedData: Candle[];

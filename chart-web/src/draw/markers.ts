@@ -1,7 +1,7 @@
 /**
- * Canvas 2D trade markers — the web counterpart to chart-core's MarkerLayer.
+ * Canvas 2D trade markers — the web counterpart to chart-native's MarkerLayer.
  *
- * Geometry comes from buildMarkerPoints() in chart-core (the same getCandleX/
+ * Geometry comes from buildMarkerPoints() in chart-engine (the same getCandleX/
  * getY pixel math the candle layer uses); shape/color per marker kind comes
  * from getMarkerStyle(). This module only issues the matching Canvas 2D
  * draw calls. Markers are drawn at a fixed pixel size regardless of zoom.
@@ -15,7 +15,7 @@ import {
   type Candle,
   type ChartMarker,
   type ChartThemeColors,
-} from '@stacklatte/chart-core/core';
+} from '@stacklatte/chart-engine';
 import { fillPolygon } from './path';
 
 export function drawMarkers(

@@ -9,8 +9,8 @@
 
 import { Group, Line, Path } from '@shopify/react-native-skia';
 import React, { useMemo } from 'react';
-import { buildSeriesPoints, buildTimestampIndex, getThemeColors, getY } from '../core';
-import type { Candle, ChartTheme, ChartThemeColors, IndicatorLine, TsPoint } from '../core';
+import { buildSeriesPoints, buildTimestampIndex, getThemeColors, getY } from '@stacklatte/chart-engine';
+import type { Candle, ChartTheme, ChartThemeColors, IndicatorLine, TsPoint } from '@stacklatte/chart-engine';
 import { buildSmoothPath } from '../pathUtils';
 
 interface Props {

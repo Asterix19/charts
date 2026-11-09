@@ -8,8 +8,8 @@
 
 import { Group, Rect } from '@shopify/react-native-skia';
 import React, { useMemo } from 'react';
-import { buildVolumeBars, computeVolumeYRange, getThemeColors } from '../core';
-import type { Candle, ChartTheme, ChartThemeColors } from '../core';
+import { buildVolumeBars, computeVolumeYRange, getThemeColors } from '@stacklatte/chart-engine';
+import type { Candle, ChartTheme, ChartThemeColors } from '@stacklatte/chart-engine';
 
 interface Props {
   candleData: Candle[];

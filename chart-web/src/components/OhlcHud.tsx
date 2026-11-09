@@ -1,13 +1,13 @@
 /**
  * OhlcHud — always-on OHLC overlay for the active or latest candle.
  *
- * Plain-DOM port of chart-core's OhlcHud: same layout/behavior, but built
+ * Plain-DOM port of chart-native's OhlcHud: same layout/behavior, but built
  * with <div>/<span> + pointer events for the drag handle instead of
  * RN View/Text + PanResponder.
  */
 
-import { abbrevName, findIndicatorValue, getThemeColors } from '@stacklatte/chart-core/core';
-import type { Candle, ChartTheme, ChartThemeColors, IndicatorLine } from '@stacklatte/chart-core/core';
+import { abbrevName, findIndicatorValue, getThemeColors } from '@stacklatte/chart-engine';
+import type { Candle, ChartTheme, ChartThemeColors, IndicatorLine } from '@stacklatte/chart-engine';
 import React, { useRef, useState } from 'react';
 
 interface CustomPanelHudValue {

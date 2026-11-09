@@ -1,9 +1,9 @@
 /**
- * SLChart (web) — Canvas 2D renderer sharing chart-core's engine.
+ * SLChart (web) — Canvas 2D renderer sharing chart-engine's logic.
  *
  * State management, viewport math, indicator prep and layout all reuse the
- * exact same functions chart-core's ChartCanvas.tsx uses (imported from
- * '@stacklatte/chart-core/core') — only the rendering (Canvas 2D draw calls
+ * exact same functions chart-native's ChartCanvas.tsx uses (imported from
+ * '@stacklatte/chart-engine') — only the rendering (Canvas 2D draw calls
  * instead of Skia JSX) and the gesture layer (Pointer Events + wheel instead
  * of react-native-gesture-handler) are web-native reimplementations.
  */
@@ -34,8 +34,8 @@ import {
   softZoomOutCeiling,
   prepareIndicatorData,
   resolveIntervalMs,
-} from '@stacklatte/chart-core/core';
-import type { CandleViewport, ChartProps, MarkerPoint } from '@stacklatte/chart-core/core';
+} from '@stacklatte/chart-engine';
+import type { CandleViewport, ChartProps, MarkerPoint } from '@stacklatte/chart-engine';
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { getScaledContext } from './canvasDpr';

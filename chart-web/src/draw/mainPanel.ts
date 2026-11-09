@@ -1,14 +1,14 @@
 /**
  * Canvas 2D drawing for the main price panel — the web counterpart to
- * chart-core's CandlestickLayer / LineLayer / IndicatorLayer / ShadedAreaLayer.
+ * chart-native's CandlestickLayer / LineLayer / IndicatorLayer / ShadedAreaLayer.
  *
- * All geometry comes from chart-core/core (buildCandleGeometry, buildLinePoints,
+ * All geometry comes from chart-engine (buildCandleGeometry, buildLinePoints,
  * buildSeriesPoints, buildShadedAreaPoints) — this module only issues the
  * matching Canvas 2D draw calls. Callers are expected to have already
  * translated the context to the plot origin.
  */
 
-import type { CandleBar, Point } from '@stacklatte/chart-core/core';
+import type { CandleBar, Point } from '@stacklatte/chart-engine';
 import { fillPolygon, strokeSmoothPath } from './path';
 
 export function drawCandles(ctx: CanvasRenderingContext2D, bars: CandleBar[]): void {

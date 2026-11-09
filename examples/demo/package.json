@@ -13,7 +13,7 @@
   "dependencies": {
     "@expo/vector-icons": "^15.1.1",
     "@shopify/react-native-skia": "^2.10.0",
-    "@stacklatte/chart-core": "^2.2.0",
+    "@stacklatte/chart-native": "^1.0.0",
     "expo": "~57.0.13",
     "expo-constants": "~57.0.11",
     "expo-font": "~57.0.1",

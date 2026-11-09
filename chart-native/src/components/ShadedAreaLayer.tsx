@@ -11,8 +11,8 @@
 
 import { Path, Skia } from '@shopify/react-native-skia';
 import React, { useMemo } from 'react';
-import { buildShadedAreaPoints, buildTimestampIndex, resolveYRange } from '../core';
-import type { Candle, TsPoint } from '../core';
+import { buildShadedAreaPoints, buildTimestampIndex, resolveYRange } from '@stacklatte/chart-engine';
+import type { Candle, TsPoint } from '@stacklatte/chart-engine';
 
 interface Props {
   /** Upper boundary series (timestamps must match candles). */

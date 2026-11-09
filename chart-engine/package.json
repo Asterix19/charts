@@ -1,0 +1,85 @@
+{
+  "name": "@stacklatte/chart-engine",
+  "version": "1.0.0",
+  "description": "Framework-agnostic trading chart engine: viewport, indicators (RSI/MACD/Bollinger/SMA/EMA), layout, and an LLM-safe declarative ChartConfig + JSON Schema. Zero dependencies; powers the React Native, web and Angular renderers.",
+  "sideEffects": false,
+  "author": "Stacklatte",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "chart",
+    "charts",
+    "trading",
+    "trading-view",
+    "finance",
+    "candlestick",
+    "candlestick-chart",
+    "crypto",
+    "stock",
+    "indicators",
+    "technical-analysis",
+    "rsi",
+    "macd",
+    "bollinger-bands",
+    "volume",
+    "trade-markers",
+    "backtest",
+    "chartconfig",
+    "json-schema",
+    "llm",
+    "ai-agent",
+    "structured-output",
+    "open-source",
+    "typescript",
+    "engine",
+    "framework-agnostic"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Asterix19/charts",
+    "directory": "chart-engine"
+  },
+  "homepage": "https://stacklatte.com",
+  "bugs": {
+    "url": "https://github.com/Asterix19/charts/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "default": "./dist/index.mjs"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE.md",
+    "llms.txt"
+  ],
+  "scripts": {
+    "build": "tsup && tsc -p tsconfig.json --emitDeclarationOnly --declarationMap && npm run schema:generate",
+    "dev": "tsup --watch",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run lint && npm test && npm run build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "tsc --noEmit",
+    "schema:generate": "ts-json-schema-generator --path src/config.ts --type ChartConfig --no-type-check --out dist/ChartConfig.schema.json"
+  },
+  "devDependencies": {
+    "ts-json-schema-generator": "^2.9.0",
+    "tsup": "^8.5.1",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  }
+}

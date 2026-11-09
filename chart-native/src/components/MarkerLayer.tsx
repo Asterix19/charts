@@ -18,8 +18,8 @@ import {
   getMarkerStyle,
   getThemeColors,
   MARKER_SIZE,
-} from '../core';
-import type { Candle, ChartMarker, ChartTheme, ChartThemeColors } from '../core';
+} from '@stacklatte/chart-engine';
+import type { Candle, ChartMarker, ChartTheme, ChartThemeColors } from '@stacklatte/chart-engine';
 import { buildTrianglePath } from '../pathUtils';
 
 interface Props {

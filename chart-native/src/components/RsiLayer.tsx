@@ -10,8 +10,8 @@
 
 import { Group, Line, Path } from '@shopify/react-native-skia';
 import React, { useMemo } from 'react';
-import { buildSeriesPoints, buildTimestampIndex, getThemeColors, getY, RSI_MAX, RSI_MIN } from '../core';
-import type { Candle, ChartTheme, ChartThemeColors, RsiPoint } from '../core';
+import { buildSeriesPoints, buildTimestampIndex, getThemeColors, getY, RSI_MAX, RSI_MIN } from '@stacklatte/chart-engine';
+import type { Candle, ChartTheme, ChartThemeColors, RsiPoint } from '@stacklatte/chart-engine';
 import { buildSmoothPath } from '../pathUtils';
 
 interface Props {

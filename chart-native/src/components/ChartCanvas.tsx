@@ -25,9 +25,9 @@ import {
   softZoomOutCeiling,
   prepareIndicatorData,
   resolveIntervalMs,
-} from '../core';
+} from '@stacklatte/chart-engine';
 
-import type { CandleViewport, ChartProps, MarkerPoint } from '../core';
+import type { CandleViewport, ChartProps, MarkerPoint } from '@stacklatte/chart-engine';
 
 import AxisLabelsWeb from './AxisLabelsWeb';
 import AxisLayer from './AxisLayer';

@@ -11,7 +11,7 @@
 
 import React from 'react';
 import { View } from 'react-native';
-import type { ChartPadding } from '../core';
+import type { ChartPadding } from '@stacklatte/chart-engine';
 
 interface Props {
   /** Horizontal position in plot-local coordinates (null = hidden). */
