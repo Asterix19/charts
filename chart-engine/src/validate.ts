@@ -10,7 +10,14 @@
  *   - `code`    — machine-readable enum for programmatic handling
  */
 
-import { CHART_CONFIG_VERSION, type ChartConfig, type MarkerKindConfig, type OverlayConfig } from './config';
+import {
+  CHART_CONFIG_VERSION,
+  INTERVAL_MS,
+  PALETTE,
+  type ChartConfig,
+  type MarkerKindConfig,
+  type OverlayConfig,
+} from './config';
 
 const VALID_MARKER_KINDS: ReadonlySet<MarkerKindConfig> = new Set([
   'entry-long', 'exit-long', 'entry-short', 'exit-short', 'stop-loss', 'take-profit',
@@ -29,7 +36,10 @@ export type ValidationErrorCode =
   | 'INVALID_STD_DEV'
   | 'INVALID_MARKER_TIMESTAMP'
   | 'INVALID_MARKER_PRICE'
-  | 'INVALID_MARKER_KIND';
+  | 'INVALID_MARKER_KIND'
+  | 'INVALID_ENUM'
+  | 'UNKNOWN_KEY'
+  | 'INVALID_STRUCTURE';
 
 export interface ValidationError {
   /** Dot-notation path to the offending field. */
@@ -63,6 +73,12 @@ export type ValidationResult =
 export function validateChartConfig(config: ChartConfig): ValidationResult {
   const errors: ValidationError[] = [];
 
+  // Structural pass first: closed enums, unknown keys, required shapes. If the
+  // document isn't shaped like a ChartConfig, the semantic validators below
+  // would throw on missing arrays/objects — return the itemized errors instead.
+  validateStructure(config, errors);
+  if (errors.some((e) => e.code === 'INVALID_STRUCTURE')) return { valid: false, errors };
+
   validateVersion(config, errors);
   const knownIds = validateOverlays(config, errors);
   validateShadedAreas(config, knownIds, errors);
@@ -71,6 +87,144 @@ export function validateChartConfig(config: ChartConfig): ValidationResult {
   validateMarkers(config, errors);
 
   return errors.length === 0 ? { valid: true } : { valid: false, errors };
+}
+
+// ─── Structural validation (closed enums + unknown keys) ─────────────────────
+//
+// Mirrors the generated JSON Schema (`additionalProperties: false`, closed
+// enums) at runtime, so a config that bypasses structured output still fails
+// loudly instead of silently falling back (e.g. an unknown theme rendering dark).
+
+const THEMES_ALLOWED = ['dark', 'light'] as const;
+const PRICE_DISPLAYS = ['candle', 'line'] as const;
+const OVERLAY_TYPES = ['sma', 'ema', 'bollinger_bands', 'vwap'] as const;
+const SUB_PANEL_TYPES = ['rsi', 'macd', 'volume'] as const;
+const INTERVALS = Object.keys(INTERVAL_MS);
+const COLORS = Object.keys(PALETTE);
+const MARKER_KINDS = [...VALID_MARKER_KINDS] as string[];
+
+const isRecord = (v: unknown): v is Record<string, unknown> =>
+  typeof v === 'object' && v !== null && !Array.isArray(v);
+
+function validateStructure(config: unknown, errors: ValidationError[]): void {
+  const bad = (path: string, code: ValidationErrorCode, message: string) => errors.push({ path, code, message });
+
+  const keys = (v: unknown, path: string, allowed: string[]): v is Record<string, unknown> => {
+    if (!isRecord(v)) {
+      bad(path || '(root)', 'INVALID_STRUCTURE', 'must be an object.');
+      return false;
+    }
+    for (const k of Object.keys(v)) {
+      if (!allowed.includes(k)) {
+        bad(path ? `${path}.${k}` : k, 'UNKNOWN_KEY', `Unknown key "${k}". Allowed keys: ${allowed.join(', ')}.`);
+      }
+    }
+    return true;
+  };
+
+  const oneOf = (v: unknown, path: string, allowed: readonly string[]) => {
+    if (typeof v !== 'string' || !allowed.includes(v)) {
+      bad(path, 'INVALID_ENUM', `${JSON.stringify(v)} is not allowed. Expected one of: ${allowed.join(', ')}.`);
+    }
+  };
+
+  const str = (v: unknown, path: string) => {
+    if (typeof v !== 'string' || v.length === 0) bad(path, 'INVALID_STRUCTURE', 'must be a non-empty string.');
+  };
+
+  const bool = (v: unknown, path: string) => {
+    if (typeof v !== 'boolean') bad(path, 'INVALID_STRUCTURE', 'must be a boolean.');
+  };
+
+  const num = (v: unknown, path: string) => {
+    if (typeof v !== 'number') bad(path, 'INVALID_STRUCTURE', 'must be a number.');
+  };
+
+  const array = (v: unknown, path: string, required: boolean): v is unknown[] => {
+    if (v === undefined && !required) return false;
+    if (!Array.isArray(v)) {
+      bad(path, 'INVALID_STRUCTURE', 'must be an array.');
+      return false;
+    }
+    return true;
+  };
+
+  const params = (v: unknown, path: string, allowed: string[]) => {
+    if (!keys(v, path, allowed)) return;
+    for (const k of allowed) num(v[k], `${path}.${k}`);
+  };
+
+  if (!keys(config, '', ['version', 'theme', 'priceDisplay', 'interval', 'overlays', 'shadedAreas', 'subPanels', 'markers', 'viewport', 'hud'])) return;
+  const c = config as Record<string, unknown>;
+
+  oneOf(c.theme, 'theme', THEMES_ALLOWED);
+  oneOf(c.priceDisplay, 'priceDisplay', PRICE_DISPLAYS);
+  oneOf(c.interval, 'interval', INTERVALS);
+
+  if (array(c.overlays, 'overlays', true)) {
+    c.overlays.forEach((o, i) => {
+      const base = `overlays[${i}]`;
+      if (!isRecord(o)) return bad(base, 'INVALID_STRUCTURE', 'must be an object.');
+      oneOf(o.type, `${base}.type`, OVERLAY_TYPES);
+      switch (o.type) {
+        case 'sma':
+        case 'ema':
+          keys(o, base, ['type', 'id', 'params', 'color', 'label']);
+          str(o.id, `${base}.id`); oneOf(o.color, `${base}.color`, COLORS);
+          params(o.params, `${base}.params`, ['period']);
+          break;
+        case 'vwap':
+          keys(o, base, ['type', 'id', 'params', 'color', 'label']);
+          str(o.id, `${base}.id`); oneOf(o.color, `${base}.color`, COLORS);
+          params(o.params, `${base}.params`, []);
+          break;
+        case 'bollinger_bands':
+          keys(o, base, ['type', 'params', 'bands']);
+          params(o.params, `${base}.params`, ['period', 'stdDev']);
+          if (keys(o.bands, `${base}.bands`, ['upper', 'lower', 'basis'])) {
+            for (const band of ['upper', 'lower', 'basis'] as const) {
+              const bp = `${base}.bands.${band}`;
+              const b = (o.bands as Record<string, unknown>)[band];
+              if (keys(b, bp, ['id', 'color', 'label'])) { str(b.id, `${bp}.id`); oneOf(b.color, `${bp}.color`, COLORS); }
+            }
+          }
+          break;
+      }
+    });
+  }
+
+  if (array(c.shadedAreas, 'shadedAreas', true)) {
+    c.shadedAreas.forEach((a, i) => {
+      const base = `shadedAreas[${i}]`;
+      if (!keys(a, base, ['fromOverlayId', 'toOverlayId', 'color', 'opacity'])) return;
+      str(a.fromOverlayId, `${base}.fromOverlayId`); str(a.toOverlayId, `${base}.toOverlayId`);
+      oneOf(a.color, `${base}.color`, COLORS); num(a.opacity, `${base}.opacity`);
+    });
+  }
+
+  if (array(c.subPanels, 'subPanels', true)) {
+    c.subPanels.forEach((p, i) => {
+      const base = `subPanels[${i}]`;
+      if (!isRecord(p)) return bad(base, 'INVALID_STRUCTURE', 'must be an object.');
+      oneOf(p.type, `${base}.type`, SUB_PANEL_TYPES);
+      if (p.type === 'rsi') { keys(p, base, ['type', 'params']); params(p.params, `${base}.params`, ['period']); }
+      else if (p.type === 'macd' || p.type === 'volume') keys(p, base, ['type']);
+    });
+  }
+
+  if (array(c.markers, 'markers', false)) {
+    c.markers.forEach((m, i) => {
+      const base = `markers[${i}]`;
+      if (!keys(m, base, ['timestamp', 'price', 'kind', 'label'])) return;
+      // Numeric/kind semantics are reported by validateMarkers; only guard the shape here.
+      if (m.label !== undefined && typeof m.label !== 'string') bad(`${base}.label`, 'INVALID_STRUCTURE', 'must be a string.');
+    });
+  }
+
+  if (keys(c.viewport, 'viewport', ['visibleCandles', 'followLive'])) {
+    num(c.viewport.visibleCandles, 'viewport.visibleCandles'); bool(c.viewport.followLive, 'viewport.followLive');
+  }
+  if (keys(c.hud, 'hud', ['showOhlcHud'])) bool(c.hud.showOhlcHud, 'hud.showOhlcHud');
 }
 
 // ─── Section validators ───────────────────────────────────────────────────────

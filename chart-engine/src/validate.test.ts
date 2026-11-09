@@ -174,3 +174,78 @@ describe('validateChartConfig', () => {
     }
   });
 });
+
+// ─── structural validation: closed enums + unknown keys ─────────────────────
+
+describe('validateChartConfig — closed enums and unknown keys', () => {
+  const errorsFor = (patch: Record<string, unknown>) => {
+    const result = validateChartConfig({ ...baseConfig(), ...patch } as unknown as ChartConfig);
+    return result.valid ? [] : result.errors;
+  };
+
+  it.each([
+    ['theme', 'neon'],
+    ['priceDisplay', 'ohlc'],
+    ['interval', '2h'],
+  ])('rejects an out-of-enum %s instead of silently falling back', (field, value) => {
+    const errors = errorsFor({ [field]: value });
+    expect(errors).toContainEqual(expect.objectContaining({ path: field, code: 'INVALID_ENUM' }));
+  });
+
+  it('rejects a raw hex color — only the named palette is allowed', () => {
+    const errors = errorsFor({ overlays: [{ type: 'sma', id: 'a', params: { period: 9 }, color: '#ff0000' }] });
+    expect(errors).toContainEqual(expect.objectContaining({ path: 'overlays[0].color', code: 'INVALID_ENUM' }));
+  });
+
+  it('rejects an unknown overlay type and sub-panel type', () => {
+    const errors = errorsFor({
+      overlays: [{ type: 'ichimoku', id: 'a', params: {}, color: 'blue' }],
+      subPanels: [{ type: 'stochastic' }],
+    });
+    expect(errors.map((e) => e.path)).toEqual(expect.arrayContaining(['overlays[0].type', 'subPanels[0].type']));
+  });
+
+  it('rejects unknown keys at the top level and nested', () => {
+    const errors = errorsFor({
+      sparkles: true,
+      hud: { showOhlcHud: true, extra: 1 },
+      overlays: [{ type: 'ema', id: 'a', params: { period: 9, smoothing: 2 }, color: 'cyan', width: 3 }],
+    });
+    const unknown = errors.filter((e) => e.code === 'UNKNOWN_KEY').map((e) => e.path);
+    expect(unknown).toEqual(expect.arrayContaining(['sparkles', 'hud.extra', 'overlays[0].params.smoothing', 'overlays[0].width']));
+  });
+
+  it('reports missing arrays/objects as itemized errors instead of throwing', () => {
+    const doc = { version: '1', theme: 'dark', priceDisplay: 'candle', interval: '1m' } as unknown as ChartConfig;
+    let result: ReturnType<typeof validateChartConfig> | undefined;
+    expect(() => { result = validateChartConfig(doc); }).not.toThrow();
+    const errors = result && !result.valid ? result.errors : [];
+    expect(errors.map((e) => e.path)).toEqual(expect.arrayContaining(['overlays', 'shadedAreas', 'subPanels', 'viewport', 'hud']));
+  });
+
+  it('rejects non-object input', () => {
+    expect(validateChartConfig(null as unknown as ChartConfig).valid).toBe(false);
+    expect(validateChartConfig([] as unknown as ChartConfig).valid).toBe(false);
+  });
+
+  it('reports every problem in one pass (LLM-friendly)', () => {
+    const errors = errorsFor({ theme: 'neon', interval: '2h', sparkles: 1 });
+    expect(errors.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it('still accepts a fully-populated valid config', () => {
+    const full: ChartConfig = {
+      ...baseConfig(),
+      overlays: [
+        { type: 'ema', id: 'e', params: { period: 9 }, color: 'cyan', label: 'EMA' },
+        { type: 'bollinger_bands', params: { period: 20, stdDev: 2 }, bands: {
+          upper: { id: 'u', color: 'blue' }, lower: { id: 'l', color: 'blue' }, basis: { id: 'b', color: 'gray', label: 'mid' } } },
+        { type: 'vwap', id: 'v', params: {}, color: 'orange' },
+      ],
+      shadedAreas: [{ fromOverlayId: 'u', toOverlayId: 'l', color: 'blue', opacity: 0.2 }],
+      subPanels: [{ type: 'rsi', params: { period: 14 } }, { type: 'macd' }, { type: 'volume' }],
+      markers: [{ timestamp: 1, price: 2, kind: 'entry-long', label: 'in' }],
+    };
+    expect(validateChartConfig(full)).toEqual({ valid: true });
+  });
+});

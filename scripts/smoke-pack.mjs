@@ -1,0 +1,51 @@
+#!/usr/bin/env node
+// Consumer smoke test: pack every publishable package, install the tarballs into
+// an empty project, and exercise the public entry points exactly as a user would.
+// Run after `npm run build` (the `test:pack` script does both).
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+const PACKAGES = ['chart-engine', 'chart-native', 'chart-web', 'chart-core'];
+const root = new URL('..', import.meta.url).pathname;
+const work = mkdtempSync(join(tmpdir(), 'stacklatte-smoke-'));
+const run = (cmd, args, cwd) => execFileSync(cmd, args, { cwd, stdio: ['ignore', 'pipe', 'inherit'] }).toString();
+
+const tarballs = PACKAGES.map((w) => {
+  const out = run('npm', ['pack', '-w', w, '--pack-destination', work, '--json'], root);
+  return join(work, JSON.parse(out)[0].filename);
+});
+
+writeFileSync(join(work, 'package.json'), '{"name":"smoke","private":true,"type":"module"}');
+run('npm', ['i', '--no-audit', '--no-fund', ...tarballs, 'react@19.2.8', 'react-dom@19.2.8'], work);
+
+writeFileSync(join(work, 'check.mjs'), `
+import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
+import React from 'react';
+import { renderToString } from 'react-dom/server';
+import * as engine from '@stacklatte/chart-engine';
+import * as coreShim from '@stacklatte/chart-core/core';
+import * as web from '@stacklatte/chart-web';
+const require = createRequire(import.meta.url);
+
+const candles = Array.from({ length: 50 }, (_, i) => ({ timestamp: i * 60000, open: 100 + i, high: 102 + i, low: 99 + i, close: 101 + i, volume: 10 }));
+const config = { version: '1', theme: 'dark', priceDisplay: 'candle', interval: '1h',
+  overlays: [{ type: 'ema', id: 'e', params: { period: 9 }, color: 'cyan' }], shadedAreas: [],
+  subPanels: [{ type: 'rsi', params: { period: 14 } }], viewport: { visibleCandles: 30, followLive: true }, hud: { showOhlcHud: true } };
+
+assert.deepEqual(Object.keys(coreShim).sort(), Object.keys(engine).sort(), 'chart-core/core must mirror chart-engine');
+assert.ok(engine.calcRSI(candles, 14).length > 0, 'RSI computes');
+assert.equal(typeof engine.buildChartPipeline(config, candles), 'object', 'valid config compiles');
+for (const bad of [{ ...config, theme: 'neon' }, { ...config, interval: '2h' }, { ...config, sparkles: 1 }]) {
+  assert.throws(() => engine.buildChartPipeline(bad, candles), /Invalid ChartConfig/, 'invalid config must throw');
+}
+assert.equal(typeof web.SLChart, 'function', 'chart-web exports SLChart');
+assert.ok(renderToString(React.createElement(web.SLChart, { data: candles, width: 400, height: 300 })).includes('<canvas'), 'chart-web SSR renders a canvas');
+assert.ok('definitions' in require('@stacklatte/chart-engine/ChartConfig.schema.json'), 'JSON Schema is resolvable');
+assert.ok(require.resolve('@stacklatte/chart-native').includes('chart-native'), 'chart-native resolves');
+assert.ok(require.resolve('@stacklatte/chart-core').includes('chart-core'), 'chart-core shim resolves');
+console.log('consumer smoke test passed');
+`);
+process.stdout.write(run('node', ['check.mjs'], work));

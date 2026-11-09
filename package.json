@@ -18,7 +18,8 @@
     "demo:native": "npm run start --workspace=demo",
     "demo:ios": "npm run ios --workspace=demo",
     "demo:android": "npm run android --workspace=demo",
-    "test:e2e": "npm run build -w @stacklatte/chart-engine -w @stacklatte/chart-web && playwright test"
+    "test:e2e": "npm run build -w @stacklatte/chart-engine -w @stacklatte/chart-web && playwright test",
+    "test:pack": "npm run build && node scripts/smoke-pack.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.65.0",
