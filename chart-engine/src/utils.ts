@@ -71,6 +71,14 @@ export function sameOhlc(a: Candle | null, b: Candle | null): boolean {
  * Deduplicate and sort candles by timestamp.
  */
 export function normalizeCandles(candles: Candle[]): Candle[] {
+  // Fast path: live feeds are almost always already strictly ascending, so a
+  // linear scan avoids an O(n log n) comparator sort on every tick.
+  let ascending = true;
+  for (let i = 1; i < candles.length; i++) {
+    if (candles[i].timestamp <= candles[i - 1].timestamp) { ascending = false; break; }
+  }
+  if (ascending) return candles.slice();
+
   const sorted = candles.slice().sort((a, b) => a.timestamp - b.timestamp);
   const out: Candle[] = [];
   for (let i = 0; i < sorted.length; i++) {

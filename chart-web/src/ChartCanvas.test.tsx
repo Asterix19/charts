@@ -1,6 +1,6 @@
 import { buildPaddedRange, calcEMA, computeLayout, getCandleX, getY } from '@stacklatte/chart-engine';
 import type { Candle, ChartMarker } from '@stacklatte/chart-engine';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -35,6 +35,8 @@ beforeEach(() => {
 afterEach(() => {
   vi.restoreAllMocks();
 });
+
+const nextFrame = () => act(() => new Promise<void>((resolve) => { requestAnimationFrame(() => resolve()); }));
 
 describe('SLChart (web)', () => {
   it('renders a "No data" placeholder when given no candles', () => {
@@ -315,26 +317,49 @@ describe('SLChart (web)', () => {
     expect(candleDraws).toBeLessThan(150);
   });
 
-  it('keeps giving a little instead of a hard wall as zoom-out overshoots the legibility ceiling', () => {
+  it('keeps giving a little instead of a hard wall as zoom-out overshoots the legibility ceiling', async () => {
     const candles = makeCandles(1000);
 
-    const zoomAndCountDraws = (deltaY: number) => {
+    const zoomAndCountDraws = async (deltaY: number) => {
       const { container, unmount } = render(<SLChart data={candles} width={400} height={300} visibleDataPoints={60} />);
       const canvas = container.querySelector('canvas')!;
       fireEvent.wheel(canvas, { deltaY, clientX: 200, clientY: 150 });
+      await nextFrame();
       const draws = contexts[contexts.length - 1].fillRect.mock.calls.length;
       unmount();
       return draws;
     };
 
-    const moderateOvershoot = zoomAndCountDraws(800);
-    const largerOvershoot = zoomAndCountDraws(1100);
+    const moderateOvershoot = await zoomAndCountDraws(800);
+    const largerOvershoot = await zoomAndCountDraws(1100);
 
     // A hard clamp at the legibility ceiling would make these identical; resistance means a
     // bigger requested overshoot still visibly pushes further out, just by a diminishing amount.
     expect(largerOvershoot).toBeGreaterThan(moderateOvershoot);
     // Both stay well short of the full 1000-candle dataset — resistance still converges to a bound.
     expect(largerOvershoot).toBeLessThan(160);
+  });
+
+  it('coalesces a burst of wheel events into one render per animation frame, without losing any zoom', async () => {
+    const candles = makeCandles(1000);
+    const zoomedOnce = render(<SLChart data={candles} width={400} height={300} visibleDataPoints={100} />);
+    fireEvent.wheel(zoomedOnce.container.querySelector('canvas')!, { deltaY: -400, clientX: 200, clientY: 150 });
+    await nextFrame();
+    const oneStepDraws = contexts[contexts.length - 1].fillRect.mock.calls.length;
+    zoomedOnce.unmount();
+
+    const { container } = render(<SLChart data={candles} width={400} height={300} visibleDataPoints={100} />);
+    const canvas = container.querySelector('canvas')!;
+    const rafSpy = vi.spyOn(window, 'requestAnimationFrame');
+    fireEvent.wheel(canvas, { deltaY: -200, clientX: 200, clientY: 150 });
+    fireEvent.wheel(canvas, { deltaY: -200, clientX: 200, clientY: 150 });
+    expect(rafSpy).toHaveBeenCalledTimes(1); // second event rides the same frame
+    await nextFrame();
+    const twoStepDraws = contexts[contexts.length - 1].fillRect.mock.calls.length;
+    rafSpy.mockRestore();
+
+    // Two -200 ticks must land where a single -400 tick does (both compound from the live viewport).
+    expect(twoStepDraws).toBe(oneStepDraws);
   });
 
   // ── customPanels ─────────────────────────────────────────────────────────

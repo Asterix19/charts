@@ -125,6 +125,18 @@ describe('normalizeCandles', () => {
     expect(result[1].timestamp).toBe(200);
   });
 
+  it('returns a fresh array (not the input) when already strictly ascending', () => {
+    const input = [candle(100), candle(200), candle(300)];
+    const result = normalizeCandles(input);
+    expect(result).not.toBe(input);
+    expect(result).toEqual(input);
+  });
+
+  it('still dedupes and sorts when only the tail is out of order', () => {
+    const input = [candle(100), candle(200), candle(300), candle(300), candle(250)];
+    expect(normalizeCandles(input).map(c => c.timestamp)).toEqual([100, 200, 250, 300]);
+  });
+
   it('does not mutate the original array', () => {
     const input = [candle(300), candle(100)];
     const copy = [...input];

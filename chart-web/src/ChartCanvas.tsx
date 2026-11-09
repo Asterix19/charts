@@ -110,9 +110,18 @@ const SLChart: React.FC<ChartProps> = ({
   const [hoveredMarker, setHoveredMarker] = useState<MarkerPoint | null>(null);
 
   const viewportRef = useRef(viewport);
+  // Gesture-driven viewport updates are coalesced to one React render per
+  // animation frame (see scheduleViewport) — pointer/wheel events can fire far
+  // more often than the display refreshes, and each render redraws every canvas.
+  const pendingViewportRef = useRef<Viewport | null>(null);
+  const rafIdRef = useRef<number | null>(null);
   useEffect(() => {
-    viewportRef.current = viewport;
+    // Don't clobber a newer, not-yet-flushed gesture viewport.
+    if (pendingViewportRef.current === null) viewportRef.current = viewport;
   }, [viewport]);
+  useEffect(() => () => {
+    if (rafIdRef.current !== null) cancelAnimationFrame(rafIdRef.current);
+  }, []);
 
   const sortedDataLengthRef = useRef(sortedData.length);
   sortedDataLengthRef.current = sortedData.length;
@@ -324,6 +333,22 @@ const SLChart: React.FC<ChartProps> = ({
 
   const releaseMarkerTooltip = () => setHoveredMarker(null);
 
+  // viewportRef updates immediately so successive events in the same frame
+  // (e.g. a burst of wheel ticks) compound; React state follows once per frame.
+  const scheduleViewport = (next: Viewport) => {
+    viewportRef.current = next;
+    pendingViewportRef.current = next;
+    if (rafIdRef.current !== null) return;
+    rafIdRef.current = requestAnimationFrame(() => {
+      rafIdRef.current = null;
+      const pending = pendingViewportRef.current;
+      pendingViewportRef.current = null;
+      if (!pending) return;
+      setIsFollowingLive(pending.end >= geometryRef.current.dataLength - 0.01);
+      setViewport(pending);
+    });
+  };
+
   const updateViewportFromPan = (translationX: number) => {
     const startViewport = panStartViewportRef.current;
     const { chartWidth: cw, dataLength } = geometryRef.current;
@@ -337,8 +362,7 @@ const SLChart: React.FC<ChartProps> = ({
       MIN_VISIBLE_CANDLES,
     );
 
-    setIsFollowingLive(next.end >= dataLength - 0.01);
-    setViewport(next);
+    scheduleViewport(next);
   };
 
   const updateViewportFromPinch = (scale: number, focalX: number) => {
@@ -359,8 +383,7 @@ const SLChart: React.FC<ChartProps> = ({
       MIN_VISIBLE_CANDLES,
     );
 
-    setIsFollowingLive(next.end >= dataLength - 0.01);
-    setViewport(next);
+    scheduleViewport(next);
   };
 
   useEffect(() => {
