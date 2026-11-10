@@ -59,24 +59,43 @@ import type {
   styles: [':host { display: inline-block; }'],
 })
 export class SlChartComponent implements OnChanges, OnDestroy {
+  /** The candles. May be unsorted/duplicated/dirty — they are normalised. */
   @Input({ required: true }) data!: Candle[];
+  /** Chart width in CSS pixels. */
   @Input({ required: true }) width!: number;
+  /** Chart height in CSS pixels (including sub-panels). */
   @Input({ required: true }) height!: number;
+  /** Overlay lines on the price panel (`calcSMA`, `calcEMA`, `calcBollingerBands`). */
   @Input() indicators?: IndicatorLine[];
+  /** Filled regions between two `indicators` (matched by id). */
   @Input() shadedAreas?: ShadedArea[];
+  /** Trade markers (entry / exit / stop-loss / take-profit). */
   @Input() markers?: ChartMarker[];
+  /** Your own named sub-panels for data that fits no built-in panel. */
   @Input() customPanels?: CustomPanel[];
+  /** Milliseconds per candle; auto-detected from the data when omitted. */
   @Input() intervalMs?: number;
+  /** How many candles are visible at once. Default 60. */
   @Input() visibleDataPoints?: number;
+  /** `'dark'` (default), `'light'`, or a full `ChartThemeColors` object. */
   @Input() theme?: ChartTheme | ChartThemeColors;
+  /** `'candle'` (default) or `'line'`. */
   @Input() chartType?: ChartType;
+  /** Show the OHLC readout and enable the crosshair. */
   @Input() showOhlcHud = false;
+  /** Show an RSI sub-panel. */
   @Input() showRsiPanel?: boolean;
+  /** RSI lookback period. Default 14. */
   @Input() rsiPeriod?: number;
+  /** Show a MACD(12,26,9) sub-panel. */
   @Input() showMacdPanel?: boolean;
+  /** Show a volume sub-panel (needs `volume` on the candles). */
   @Input() showVolumePanel?: boolean;
+  /** Background grid lines. Default true. */
   @Input() showGrid?: boolean;
+  /** 12-hour time labels on the x-axis. Default false. */
   @Input() hour12?: boolean;
+  /** Maximum candles visible when zoomed out. */
   @Input() maxZoom?: number;
   /** Increment to jump the viewport to the latest candle. */
   @Input() scrollToLatestTrigger?: number;

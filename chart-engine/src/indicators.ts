@@ -13,6 +13,11 @@ export const RSI_MAX = 100;
 /** A usable lookback is a positive integer; anything else (0, negative, NaN, 1.5) yields "no data" instead of throwing. */
 const isValidPeriod = (period: number): boolean => Number.isInteger(period) && period >= 1;
 
+/**
+ * Relative Strength Index with Wilder smoothing. Returns one point per candle after the first `period`
+ * candles, values in [0, 100] (100 when there are no losses). Returns `[]` when there are fewer than
+ * `period + 1` candles or `period` is not a positive integer — it never throws.
+ */
 export function calcRSI(candles: Candle[], period = 14): RsiPoint[] {
   if (!candles || !isValidPeriod(period) || candles.length < period + 1) return [];
 
@@ -55,6 +60,11 @@ export function calcRSI(candles: Candle[], period = 14): RsiPoint[] {
 
 // ─── SMA ──────────────────────────────────────────────────────────────────
 
+/**
+ * Simple moving average of `close` over `period` candles, as an overlay line. The first point is at candle
+ * `period - 1`. Returns `null` when there are fewer candles than `period` or `period` is not a positive
+ * integer. `id` is the key `ShadedArea` refers to; `color` is any CSS color.
+ */
 export function calcSMA(
   candles: Candle[],
   period: number,
@@ -79,6 +89,11 @@ export function calcSMA(
 
 // ─── EMA ──────────────────────────────────────────────────────────────────
 
+/**
+ * Exponential moving average of `close` (smoothing 2 / (period + 1)), seeded with the SMA of the first
+ * `period` closes. The first point is at candle `period - 1`. Returns `null` when there are fewer candles
+ * than `period` or `period` is not a positive integer.
+ */
 export function calcEMA(
   candles: Candle[],
   period: number,
@@ -168,6 +183,12 @@ export function calcMACD(
 
 // ─── Bollinger Bands ──────────────────────────────────────────────────────
 
+/**
+ * Bollinger Bands: a `period`-candle SMA (`basis`) with `upper` / `lower` bands `multiplier` standard
+ * deviations away (population standard deviation, O(n) sliding window). Returns three `IndicatorLine`s —
+ * pair `upper` and `lower` in a `ShadedArea` for the classic filled band — or `null` when there are fewer
+ * candles than `period` or `period` is not a positive integer.
+ */
 export function calcBollingerBands(
   candles: Candle[],
   period: number,

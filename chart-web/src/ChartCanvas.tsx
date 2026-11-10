@@ -62,6 +62,15 @@ const MACD_WARMUP = 35; // slowPeriod(26) + signalPeriod(9)
 
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
 
+/**
+ * Trading chart for React (HTML5 Canvas 2D). Candlestick or line price panel, optional SMA/EMA/Bollinger
+ * overlays, volume / RSI / MACD / custom sub-panels, trade markers, pinch / wheel zoom, drag pan, crosshair
+ * inspection and live-streaming updates. Props are identical to the React Native `SLChart`.
+ *
+ * ```tsx
+ * <SLChart data={candles} width={800} height={480} theme="dark" showVolumePanel showRsiPanel showOhlcHud />
+ * ```
+ */
 const SLChart: React.FC<ChartProps> = ({
   data,
   indicators,

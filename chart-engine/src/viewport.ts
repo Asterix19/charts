@@ -4,6 +4,7 @@ import { extendToEdges, sameOhlc } from './utils';
 
 // ─── Layout ───────────────────────────────────────────────────────────────
 
+/** Space reserved around the plot area (right = price-axis gutter, bottom = time-axis gutter), in px. */
 export interface ChartPadding {
   top: number;
   right: number;
@@ -11,23 +12,38 @@ export interface ChartPadding {
   left: number;
 }
 
+/** Pixel geometry of a chart, from `computeLayout`. The plot size is always ≥ 1 px; hidden sub-panels are 0. */
 export interface ChartLayout {
+  /** Gutters around the main plot. */
   padding: ChartPadding;
+  /** Plot width (total width minus the price-axis gutter). */
   chartWidth: number;
+  /** Vertical gap between stacked panels. */
   panelGap: number;
+  /** Total height available to the main plot plus all sub-panels (excludes the padding). */
   innerHeight: number;
+  /** Height of the RSI panel (0 when hidden). */
   rsiPanelHeight: number;
+  /** Height of the MACD panel (0 when hidden). */
   macdPanelHeight: number;
+  /** Height of the volume panel (0 when hidden). */
   volumePanelHeight: number;
   /** Shared height for every custom panel (see `CustomPanel`) — same "equal share, shrinks as
    * more panels are shown" sizing as RSI/MACD/Volume, since custom panels are just more entries
    * in the same stack, not a separate sizing tier. */
   customPanelHeight: number;
+  /** Height of the main price plot after the sub-panels are subtracted. */
   mainChartHeight: number;
   /** Full height of the main chart canvas including padding (use for Canvas/Svg height prop) */
   mainCanvasHeight: number;
 }
 
+/**
+ * Pixel layout of a chart: plot width, and the heights of the main panel and each sub-panel.
+ * Sub-panels (volume, RSI, MACD, custom) share one height of 60–110 px (18% of the plot height), each separated
+ * by `panelGap`. Sizes never go below 1 px, so tiny containers cannot produce negative canvas sizes.
+ * `mainCanvasHeight` includes the top padding and the time-axis gutter.
+ */
 export function computeLayout(
   width: number,
   height: number,
@@ -73,6 +89,11 @@ export interface ViewportWindow {
   timeMax: number;
 }
 
+/**
+ * Time window shown for a given zoom level (candle count) and interval. While `isFollowingLive` (or
+ * `scrollStartTime` is null) the window ends at the last candle; otherwise it starts at `scrollStartTime`,
+ * clamped so it never scrolls past the data.
+ */
 export function computeViewport(
   sortedData: Candle[],
   zoomLevel: number,
@@ -100,6 +121,10 @@ export function computeViewport(
 
 // ─── Price range ──────────────────────────────────────────────────────────
 
+/**
+ * Lowest `low` and highest `high` of the given candles. Returns `{ priceMin: 0, priceMax: 1 }` for an empty
+ * array. Candles must be finite — pass the output of `normalizeCandles`.
+ */
 export function computePriceRange(visibleCandles: Candle[]): {
   priceMin: number;
   priceMax: number;
@@ -129,6 +154,10 @@ export function resolveYRange(
 
 // ─── Crosshair ────────────────────────────────────────────────────────────
 
+/**
+ * Crosshair position for the candle at `idx` (clamped into range): x is the candle slot centre, y is the close
+ * price mapped into the plot. Returns the candle too.
+ */
 export function crosshairAtIndex(
   idx: number,
   visibleCandles: Candle[],
@@ -147,6 +176,10 @@ export function crosshairAtIndex(
   };
 }
 
+/**
+ * Index of the visible candle under an x pixel position (clamped to the plot). Use it to map a pointer to a
+ * candle for crosshair inspection.
+ */
 export function indexFromViewX(
   viewX: number,
   paddingLeft: number,
@@ -161,6 +194,7 @@ export function indexFromViewX(
 
 // ─── Gesture math ─────────────────────────────────────────────────────────
 
+/** Euclidean distance between two touch points — the input to `computePinchZoom`. */
 export function computePinchDistance(
   x1: number,
   y1: number,
@@ -172,6 +206,11 @@ export function computePinchDistance(
   return Math.sqrt(dx * dx + dy * dy);
 }
 
+/**
+ * New zoom level (visible candle count) after a pinch: `currentZoom / (newDistance / initialDistance)`, clamped
+ * to [`min`, `max`]. Spreading fingers (distance grows) zooms in (fewer candles). Returns `currentZoom` when
+ * either distance is not positive.
+ */
 export function computePinchZoom(
   currentZoom: number,
   initialDistance: number,
@@ -414,6 +453,10 @@ export function clampTickX(x: number, width: number, margin = 20): number {
   return Math.min(width - margin, Math.max(margin, x));
 }
 
+/**
+ * "Nice" horizontal grid prices between `min` and `max`, about `count` of them (steps of 1, 2, 5 × 10ⁿ).
+ * Returns `[]` for an empty, reversed or non-finite range, never loops forever.
+ */
 export function getPriceTicks(min: number, max: number, count: number): number[] {
   const range = max - min;
   if (!isFinite(range) || range <= 0) return [];
@@ -554,6 +597,10 @@ export function inferIntervalMs(sortedData: Candle[]): number | undefined {
   return diffs[Math.floor(diffs.length / 2)];
 }
 
+/**
+ * Candle interval in ms: the explicit `intervalMsProp` if given, else the median gap between candles, else
+ * 60 000 (1 minute).
+ */
 export function resolveIntervalMs(
   intervalMsProp: number | undefined,
   sortedData: Candle[],

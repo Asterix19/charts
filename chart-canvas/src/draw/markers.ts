@@ -18,6 +18,7 @@ import {
 } from '@stacklatte/chart-engine';
 import { fillPolygon } from './path';
 
+/** Draws trade markers (triangles, stop/take-profit glyphs) pinned to their candle and price. */
 export function drawMarkers(
   ctx: CanvasRenderingContext2D,
   opts: {

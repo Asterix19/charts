@@ -15,6 +15,7 @@ import {
 } from '@stacklatte/chart-engine';
 import { strokeSmoothPath } from './path';
 
+/** Draws MACD and signal lines plus the histogram (green above zero, red below) into the MACD sub-panel. */
 export function drawMacdPanel(
   ctx: CanvasRenderingContext2D,
   opts: {

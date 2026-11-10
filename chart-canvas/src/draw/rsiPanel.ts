@@ -14,6 +14,7 @@ import {
 } from '@stacklatte/chart-engine';
 import { strokeSmoothPath } from './path';
 
+/** Draws the RSI line (0–100) with its 30/70 threshold lines into the RSI sub-panel. */
 export function drawRsiPanel(
   ctx: CanvasRenderingContext2D,
   opts: {

@@ -9,6 +9,7 @@
 import { buildSeriesPoints, buildTimestampIndex, getY, type Candle, type ChartThemeColors, type TsPoint } from '@stacklatte/chart-engine';
 import { strokeSmoothPath } from './path';
 
+/** Draws a `CustomPanel`'s series, fixed or auto y-range and reference lines into its own sub-panel. */
 export function drawCustomPanel(
   ctx: CanvasRenderingContext2D,
   opts: {

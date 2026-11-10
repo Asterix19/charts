@@ -9,6 +9,7 @@ import {
   type ChartThemeColors,
 } from '@stacklatte/chart-engine';
 
+/** Draws volume bars coloured by candle direction into the volume sub-panel. */
 export function drawVolumePanel(
   ctx: CanvasRenderingContext2D,
   opts: {

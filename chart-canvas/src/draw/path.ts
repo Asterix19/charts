@@ -30,6 +30,7 @@ function traceSmoothPath(ctx: CanvasRenderingContext2D, pts: Point[]): void {
   }
 }
 
+/** Strokes a cubic-bezier curve passing exactly through every point (Catmull-Rom, tension 1/6). */
 export function strokeSmoothPath(
   ctx: CanvasRenderingContext2D,
   pts: Point[],
@@ -48,6 +49,7 @@ export function strokeSmoothPath(
   ctx.restore();
 }
 
+/** Fills a closed polygon through the given points. */
 export function fillPolygon(
   ctx: CanvasRenderingContext2D,
   pts: Point[],
@@ -66,6 +68,7 @@ export function fillPolygon(
   ctx.restore();
 }
 
+/** Strokes a straight dashed line between two points. */
 export function strokeDashedLine(
   ctx: CanvasRenderingContext2D,
   p1: Point,

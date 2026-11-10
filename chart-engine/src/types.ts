@@ -1,26 +1,50 @@
+/**
+ * One OHLC(V) bar. All prices must be finite numbers; candles with a non-finite timestamp or price are
+ * dropped by `normalizeCandles` (which every renderer applies), so one bad tick cannot blank a chart.
+ */
 export interface Candle {
+  /** Bar open time in Unix milliseconds. Candles may arrive unsorted or duplicated; renderers sort and dedupe. */
   timestamp: number;
+  /** Price at bar open. */
   open: number;
+  /** Highest price of the bar (must be ≥ open and close). */
   high: number;
+  /** Lowest price of the bar (must be ≤ open and close). */
   low: number;
+  /** Price at bar close — the value line charts, indicators and the crosshair use. */
   close: number;
+  /** Traded volume. Optional; required only for the volume panel. Non-finite values are stripped. */
   volume?: number;
 }
 
+/**
+ * A line drawn over the price panel (moving average, Bollinger band, VWAP, …). Produce one with
+ * `calcSMA` / `calcEMA` / `calcBollingerBands`, or build your own from any `{ timestamp, value }` series.
+ */
 export interface IndicatorLine {
+  /** Unique id. `ShadedArea.fromId` / `toId` refer to it. */
   id: string;
+  /** Label shown in the OHLC HUD (e.g. "EMA(9)"). Defaults to `id`. */
   name?: string;
+  /** Any CSS color string (hex, rgb(), name). */
   color: string;
+  /** Points keyed by candle timestamp; timestamps with no matching candle are ignored. */
   data: { timestamp: number; value: number }[];
 }
 
+/** A filled region between two indicator lines (e.g. between the upper and lower Bollinger band). */
 export interface ShadedArea {
+  /** `IndicatorLine.id` of the first boundary. */
   fromId: string;
+  /** `IndicatorLine.id` of the second boundary. */
   toId: string;
+  /** Fill color (CSS string). Default: a neutral grey. */
   color?: string;
+  /** Fill opacity in [0, 1]. Default: 0.3. */
   opacity?: number;
 }
 
+/** A value aligned to a candle timestamp — the building block of every indicator series. */
 export type TsPoint = { timestamp: number; value: number };
 
 /** Closed union of supported trade-marker kinds — same convention as OverlayType/ChartType. */
@@ -44,8 +68,11 @@ export type MarkerKind =
  * just make it more specific to a trade.
  */
 export interface ChartMarker {
+  /** Candle time (Unix ms) the marker is pinned to. Markers outside the visible window are not drawn. */
   timestamp: number;
+  /** Price level (same units as the candles) the marker sits at. */
   price: number;
+  /** Determines the glyph and color: entry/exit long/short, stop-loss, take-profit. */
   kind: MarkerKind;
   /** Tooltip heading. Falls back to a name derived from `kind` (e.g. "Stop-loss") if omitted. */
   label?: string;
@@ -53,6 +80,7 @@ export interface ChartMarker {
   changePct?: number;
 }
 
+/** One RSI value (0–100) aligned to a candle timestamp. */
 export type RsiPoint = { timestamp: number; value: number };
 
 export interface MacdResult {
@@ -72,7 +100,9 @@ export interface MacdResult {
  * sub-panel, the same visual treatment RSI/MACD/Volume already get.
  */
 export interface CustomPanel {
+  /** Unique panel id (used as the DOM/React key). */
   id: string;
+  /** Human-readable panel name shown in the OHLC HUD. */
   label: string;
   /** Usually one line, but multiple series can share a panel (e.g. two correlated indicators on
    * the same scale) — each is drawn with its own `IndicatorLine.color`. */
@@ -96,15 +126,20 @@ export type ChartType = 'candle' | 'line';
 export type LiveUpdateMode = 'none' | 'mutate-last-candle' | 'append-new-candle';
 
 export interface ChartProps {
+  /** The candles to draw. May be unsorted, duplicated or contain bad values — renderers normalise it (`normalizeCandles`). `[]` renders a "No data" placeholder. */
   data: Candle[];
+  /** Overlay lines on the price panel (see `calcSMA`, `calcEMA`, `calcBollingerBands`). */
   indicators?: IndicatorLine[];
+  /** Filled regions between two `indicators` (matched by id). */
   shadedAreas?: ShadedArea[];
   /** Trade/event markers drawn on the main price panel. */
   markers?: ChartMarker[];
   /** Arbitrary named sub-panels for data that doesn't fit `indicators` (wrong scale) or the
    * fixed RSI/MACD/Volume panels (wrong shape) — see `CustomPanel`. */
   customPanels?: CustomPanel[];
+  /** Total chart width in CSS pixels (the plot is narrower by the price-axis gutter). */
   width: number;
+  /** Total chart height in CSS pixels, including every sub-panel and the time axis. */
   height: number;
   /**
    * Milliseconds per candle. If omitted the chart auto-detects the interval
@@ -115,16 +150,21 @@ export interface ChartProps {
   visibleDataPoints?: number;
   /** Named preset ("dark" | "light") or a custom ChartThemeColors object. */
   theme?: ChartTheme | import('./theme').ChartThemeColors;
+  /** Show the OHLC readout and enable the crosshair that follows the pointer / touch. Default: false. */
   showOhlcHud?: boolean;
+  /** Show an RSI sub-panel (period: `rsiPeriod`) with 30/70 thresholds. Default: false. */
   showRsiPanel?: boolean;
   /** RSI lookback period. Default: 14. Only used when showRsiPanel is true. */
   rsiPeriod?: number;
+  /** Show a MACD(12,26,9) sub-panel (lines + histogram). Needs at least ~35 candles of data, otherwise it is omitted. Default: false. */
   showMacdPanel?: boolean;
   /** Show a volume sub-panel below the main chart. Requires `data[].volume`. Default: false. */
   showVolumePanel?: boolean;
+  /** `'candle'` (default) or `'line'` (close-price line). */
   chartType?: ChartType;
   /** Increment this value to jump the viewport to the latest candle. */
   scrollToLatestTrigger?: number;
+  /** Called with the inspected candle while the crosshair is active, and with `null` when it is released. Requires `showOhlcHud`. */
   onCrosshairChange?: (candle: Candle | null) => void;
   /**
    * How many extra screen-widths of candles to keep rendered on each side of

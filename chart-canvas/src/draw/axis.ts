@@ -35,6 +35,7 @@ export interface AxisDrawOptions {
 
 const AXIS_FONT = '10px ui-monospace, SFMono-Regular, Menlo, monospace';
 
+/** Draws the price axis (right gutter), time axis (bottom), and — when `showGrid` — the dashed grid, onto a 2D context in CSS-pixel coordinates. */
 export function drawAxis(ctx: CanvasRenderingContext2D, opts: AxisDrawOptions): void {
   const {
     sortedData, viewportStart, viewportEnd, intervalMs,

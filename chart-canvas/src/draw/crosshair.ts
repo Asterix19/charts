@@ -8,6 +8,7 @@
 
 import { strokeDashedLine } from './path';
 
+/** Dashed horizontal + vertical crosshair lines through (x, y) across the plot. */
 export function drawCrosshairLines(
   ctx: CanvasRenderingContext2D,
   opts: {

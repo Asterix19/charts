@@ -125,19 +125,26 @@ export interface BollingerParams {
 export type OverlayType = 'sma' | 'ema' | 'bollinger_bands' | 'vwap';
 
 export interface SmaOverlay {
+  /** Simple moving average of close. */
   type: 'sma';
   /** Must be unique within this config. Referenced by ShadedAreaConfig. */
   id: string;
+  /** `{ period }` — integer 1–500. */
   params: PeriodParams;
+  /** Named palette color (never a raw hex string). */
   color: PaletteColor;
   /** Defaults to "SMA {period}" when omitted. Applied by normalizeChartConfig. */
   label?: string;
 }
 
 export interface EmaOverlay {
+  /** Exponential moving average of close. */
   type: 'ema';
+  /** Must be unique within this config. Referenced by ShadedAreaConfig. */
   id: string;
+  /** `{ period }` — integer 1–500. */
   params: PeriodParams;
+  /** Named palette color (never a raw hex string). */
   color: PaletteColor;
   /** Defaults to "EMA {period}" when omitted. */
   label?: string;
@@ -152,8 +159,11 @@ export interface EmaOverlay {
  * Band ids are also unique within the config — treat them like overlay ids.
  */
 export interface BollingerOverlay {
+  /** Bollinger Bands: expands to three lines (upper, lower, basis). */
   type: 'bollinger_bands';
+  /** `{ period, stdDev }` — period integer 1–500, stdDev in (0, 10]. */
   params: BollingerParams;
+  /** Each band needs its own unique id; use the upper/lower ids in a `shadedAreas` entry to fill between them. */
   bands: {
     upper: { id: string; color: PaletteColor; label?: string };
     lower: { id: string; color: PaletteColor; label?: string };
@@ -163,10 +173,15 @@ export interface BollingerOverlay {
 
 /** VWAP has no configurable parameters. */
 export interface VwapOverlay {
+  /** Volume-weighted average price. Needs `volume` on the candles. */
   type: 'vwap';
+  /** Unique across all overlays in the config. */
   id: string;
+  /** No parameters — pass `{}`. */
   params: Record<never, never>;
+  /** Named palette color (never a raw hex string). */
   color: PaletteColor;
+  /** Optional HUD label. */
   label?: string;
 }
 
@@ -183,8 +198,11 @@ export type OverlayConfig =
  * Both ids must match an existing overlay id (or a Bollinger band id).
  */
 export interface ShadedAreaConfig {
+  /** `id` of an overlay (or Bollinger band id). Must exist and differ from `toOverlayId`. */
   fromOverlayId: string;
+  /** `id` of the other boundary overlay. */
   toOverlayId: string;
+  /** Named palette color. */
   color: PaletteColor;
   /**
    * Fill opacity.
@@ -203,6 +221,7 @@ export interface ShadedAreaConfig {
 export type SubPanelType = 'rsi' | 'macd' | 'volume';
 
 export interface RsiPanelConfig {
+  /** RSI sub-panel with 30/70 thresholds. */
   type: 'rsi';
   /** Defaults to 14 when omitted. Applied by normalizeChartConfig. */
   params: PeriodParams;
@@ -210,11 +229,13 @@ export interface RsiPanelConfig {
 
 /** MACD(12,26,9) sub-panel. No configurable params — matches ChartProps.showMacdPanel. */
 export interface MacdPanelConfig {
+  /** MACD(12,26,9) sub-panel. Takes no parameters. */
   type: 'macd';
 }
 
 /** Volume sub-panel. No configurable params — matches ChartProps.showVolumePanel. */
 export interface VolumePanelConfig {
+  /** Volume sub-panel. Takes no parameters; candles need a `volume` field. */
   type: 'volume';
 }
 
@@ -237,9 +258,13 @@ export type MarkerKindConfig =
  * through to ChartProps.markers — see ChartMarker for the rendered shape.
  */
 export interface MarkerConfig {
+  /** Candle time in Unix milliseconds. */
   timestamp: number;
+  /** Price level the marker sits at. */
   price: number;
+  /** One of the six fixed marker kinds. */
   kind: MarkerKindConfig;
+  /** Optional tooltip heading. */
   label?: string;
 }
 
@@ -305,8 +330,11 @@ export interface HudConfig {
 export interface ChartConfig {
   /** Schema version. Must be '1'. The pipeline rejects unknown versions. */
   version: ChartConfigVersion;
+  /** `"dark"` or `"light"`. */
   theme: ThemePreset;
+  /** `"candle"` or `"line"` (close-price line). */
   priceDisplay: PriceDisplay;
+  /** Candle interval label: `1m 5m 15m 30m 1h 4h 1d 1w`. */
   interval: ChartInterval;
   /** Indicator lines rendered on top of the price series. */
   overlays: OverlayConfig[];
@@ -316,6 +344,8 @@ export interface ChartConfig {
   subPanels: SubPanelConfig[];
   /** Trade/event markers drawn on the main price panel. Defaults to [] when omitted. */
   markers?: MarkerConfig[];
+  /** Zoom and follow-live behaviour. */
   viewport: ViewportConfig;
+  /** HUD / crosshair settings. */
   hud: HudConfig;
 }

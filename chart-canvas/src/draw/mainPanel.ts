@@ -11,6 +11,7 @@
 import type { CandleBar, Point } from '@stacklatte/chart-engine';
 import { fillPolygon, strokeSmoothPath } from './path';
 
+/** Draws candle bodies and wicks from geometry produced by `buildCandleGeometry`. */
 export function drawCandles(ctx: CanvasRenderingContext2D, bars: CandleBar[]): void {
   ctx.save();
   for (const bar of bars) {
@@ -29,6 +30,7 @@ export function drawCandles(ctx: CanvasRenderingContext2D, bars: CandleBar[]): v
   ctx.restore();
 }
 
+/** Strokes a smooth Catmull-Rom curve through the points (used for line charts and indicator overlays). */
 export function drawLineSeries(
   ctx: CanvasRenderingContext2D,
   pts: Point[],
@@ -37,6 +39,7 @@ export function drawLineSeries(
   strokeSmoothPath(ctx, pts, { color, lineWidth: 2 });
 }
 
+/** Fills the polygon between a `top` and `bottom` point series (see `buildShadedAreaPoints`). */
 export function drawShadedArea(
   ctx: CanvasRenderingContext2D,
   top: Point[],
@@ -47,6 +50,7 @@ export function drawShadedArea(
   fillPolygon(ctx, [...top, ...bottom], { color, opacity });
 }
 
+/** A filled dot with a contrasting ring, marking a series value under the crosshair. */
 export function drawCrosshairDot(
   ctx: CanvasRenderingContext2D,
   point: Point,

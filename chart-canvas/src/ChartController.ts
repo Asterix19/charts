@@ -51,6 +51,10 @@ const MACD_WARMUP = 35; // slowPeriod(26) + signalPeriod(9)
 
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
 
+/**
+ * Framework-agnostic chart: `new ChartController(hostElement, props)`, then `update(props)` on every change
+ * and `destroy()` when done. Owns the canvases, pan / pinch / wheel gestures and the crosshair.
+ */
 export class ChartController {
   private props: ChartProps;
   private sortedData: Candle[] = [];
@@ -131,6 +135,7 @@ export class ChartController {
     this.scheduleRender();
   }
 
+  /** Removes the chart's DOM, event listeners and any pending animation frame. Call when the host is torn down. */
   destroy(): void {
     this.destroyed = true;
     if (this.rafId !== null) cancelAnimationFrame(this.rafId);

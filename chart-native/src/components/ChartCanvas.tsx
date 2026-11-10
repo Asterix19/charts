@@ -51,6 +51,16 @@ const MIN_VISIBLE_CANDLES = 4;
 const clamp = (value: number, min: number, max: number) =>
   Math.max(min, Math.min(max, value));
 
+/**
+ * GPU-accelerated trading chart for React Native (Skia). Candlestick or line price panel, optional
+ * SMA/EMA/Bollinger overlays, volume / RSI / MACD / custom sub-panels, trade markers, pinch zoom, pan,
+ * crosshair inspection and live-streaming updates. Props are identical to the web `SLChart`.
+ * Requires `@shopify/react-native-skia` and `react-native-gesture-handler` (wrap the app in `GestureHandlerRootView`).
+ *
+ * ```tsx
+ * <SLChart data={candles} width={screenWidth} height={420} theme="dark" showRsiPanel showOhlcHud />
+ * ```
+ */
 const SLChart: React.FC<ChartProps> = ({
   data,
   indicators,
