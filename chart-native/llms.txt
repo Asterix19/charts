@@ -1,6 +1,6 @@
 # @stacklatte/chart-native
 
-> GPU-accelerated (Skia) React Native trading chart. Candlesticks, line charts, SMA/EMA/Bollinger Bands overlays, RSI/MACD/volume sub-panels, trade markers (entry/exit/stop-loss/take-profit), pinch-zoom/pan, crosshair inspection, live-streaming updates, dark/light themes — one component, MIT licensed. Ships an LLM-safe declarative `ChartConfig` + generated JSON Schema.
+> React Native / Expo (iOS, Android) trading chart: `SLChart`, GPU-rendered with Skia. Candlesticks, SMA/EMA/Bollinger overlays, RSI/MACD/volume/custom panels, trade markers, pinch zoom, pan, crosshair, live updates. Same props as the web, Angular and vanilla renderers. The 50,000-candle scenario is part of the iOS end-to-end suite.
 
 ## Install
 
@@ -8,33 +8,35 @@
 npm install @stacklatte/chart-native @shopify/react-native-skia react-native-gesture-handler
 ```
 
-Peers: `react >=19`, `react-native >=0.79`, `@shopify/react-native-skia >=2.0`, `react-native-gesture-handler >=2.0`.
+Peers: `react` 19+, `react-native` 0.79+, `@shopify/react-native-skia` 2+, `react-native-gesture-handler` 2+. Wrap the app root in `GestureHandlerRootView`.
 
-## Minimal usage
+## Minimal example
 
 ```tsx
 import { SLChart } from '@stacklatte/chart-native';
 import type { Candle } from '@stacklatte/chart-native';
+import { useWindowDimensions } from 'react-native';
 
-<SLChart data={candles /* Candle[]: {timestamp, open, high, low, close} */} width={width} height={400} theme="dark" />
+export function PriceChart({ candles }: { candles: Candle[] }) {
+  const { width } = useWindowDimensions();
+  return <SLChart data={candles} width={width} height={420} theme="dark" showRsiPanel showOhlcHud />;
+}
 ```
 
-## Generating config with an LLM
+The legacy name `@stacklatte/chart-core` re-exports this package.
 
-Prefer emitting a `ChartConfig` document over hand-written props when a model is generating chart setup — every string field is a closed enum (no raw hex colors, no arbitrary interval strings), and `buildChartPipeline` throws a structured, itemized error if the document doesn't validate instead of rendering something silently wrong.
+## Rules for correct code
 
-```ts
-import { buildChartPipeline } from '@stacklatte/chart-native';
-const compiled = buildChartPipeline(config, candles); // -> spread into <SLChart {...compiled} width height />
-```
+- A `Candle` is `{ timestamp, open, high, low, close, volume? }`; `timestamp` is Unix **milliseconds**. The array may be unsorted or dirty — it is sorted, deduped and cleaned for you.
+- `width` and `height` are **required numbers in pixels** (never `"100%"`).
+- `calcSMA` / `calcEMA` / `calcBollingerBands` / `calcMACD` return `null` (and `calcRSI` returns `[]`) when there are too few candles or the period is invalid — filter `null` before passing `indicators`.
+- Props: `data`, `width`, `height`, `theme` (`'dark' | 'light' | ChartThemeColors`), `chartType`, `indicators`, `shadedAreas`, `markers`, `customPanels`, `showRsiPanel`, `rsiPeriod`, `showMacdPanel`, `showVolumePanel`, `showOhlcHud`, `visibleDataPoints`, `intervalMs`, `hour12`, `showGrid`, `maxZoom`, `scrollToLatestTrigger`, `onCrosshairChange`. (The visible-candle count is `visibleDataPoints`.)
+- Live data: pass a new `data` array per tick; increment `scrollToLatestTrigger` to jump to the newest candle.
+- Declarative path for LLM output: `buildChartPipeline(config, candles)` with a closed-enum `ChartConfig`; JSON Schema at `@stacklatte/chart-engine/ChartConfig.schema.json`.
 
-The matching JSON Schema (draft-07, `additionalProperties: false` everywhere) is published as `@stacklatte/chart-engine/ChartConfig.schema.json` (installed with this package) — use it directly as a structured-output / tool-call schema.
+## More
 
-## Full docs
-
-See [README.md](./README.md) for the complete prop table, every indicator/overlay example, the `markers` prop (`ChartMarker[]`), gesture reference, theming, and the architecture of individual render layers (`AxisLayer`, `CandlestickLayer`, `IndicatorLayer`, `MarkerLayer`, `VolumeLayer`, etc., all exported for custom compositions).
-
-## Related
-
-- Same API on the web: [`@stacklatte/chart-web`](../chart-web/llms.txt) (Canvas 2D, no React Native)
-- Monorepo overview: [`../llms.txt`](../llms.txt)
+- All guides in one file: https://github.com/Asterix19/charts/blob/main/llms-full.txt
+- API reference (generated from the shipped types): https://github.com/Asterix19/charts/blob/main/docs/api-reference.md
+- Choosing between the packages: https://github.com/Asterix19/charts/blob/main/docs/choosing-a-package.md
+- Repository (MIT): https://github.com/Asterix19/charts — tutorials with live demos: https://stacklatte.com

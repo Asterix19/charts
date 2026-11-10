@@ -28,3 +28,10 @@ const props = buildChartPipeline(config, candles); // validated renderer props
 ```
 
 MIT licensed.
+
+## Guides, demos and tests
+
+- **Guide:** [Node / headless guide](../docs/node-engine.md) · [all docs](../docs/README.md) · [API reference](../docs/api-reference.md) · [for LLMs: `llms.txt`](./llms.txt)
+- **Runnable demo:** `npm run demo -w engine-demo` and `npm run bench -w engine-demo` — serves 27 scenarios (feature, edge, stress, live) at `/#/scenarios/<id>`
+- **Measured:** RSI over 1,000,000 candles in ~78 ms; `calcRSI` alone is 657 B gzipped; the whole engine 8.4 kB.
+- **Tested like people depend on it:** the same scenario catalogue runs on every platform, with performance budgets and a compatibility oracle against the published packages — see [Testing](../docs/testing.md).

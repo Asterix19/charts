@@ -1,7 +1,7 @@
 {
   "name": "@stacklatte/chart-web",
   "version": "1.4.0",
-  "description": "React trading chart for the web \u2014 plain HTML5 Canvas 2D, no WASM, no react-native-web. Candlesticks, RSI/MACD/Bollinger/Volume, trade markers, pinch-zoom, live streaming. Ships an LLM-safe declarative ChartConfig + JSON Schema so agents can generate charts without hallucinating props.",
+  "description": "React / Next.js trading chart (SLChart): candlesticks, RSI/MACD/Bollinger/volume, trade markers, pan/zoom, crosshair, live streaming. HTML5 Canvas 2D, no WASM; 60 fps at 50,000 candles; ~10 kB gzipped. Ships an LLM-safe ChartConfig + JSON Schema.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -57,7 +57,11 @@
     "ai-agent",
     "structured-output",
     "open-source",
-    "typescript"
+    "typescript",
+    "llms-friendly",
+    "ohlc",
+    "financial-chart",
+    "technical-indicators"
   ],
   "author": "Stacklatte",
   "license": "MIT",

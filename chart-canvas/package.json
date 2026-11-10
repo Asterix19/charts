@@ -1,7 +1,7 @@
 {
   "name": "@stacklatte/chart-canvas",
   "version": "1.0.0",
-  "description": "Framework-agnostic Canvas 2D drawing primitives for Stacklatte trading charts (candles, indicators, RSI/MACD/volume panels, markers, axes). Shared by chart-web (React) and chart-angular.",
+  "description": "Framework-agnostic Canvas 2D trading chart: new ChartController(host, props). Candlesticks, RSI/MACD/Bollinger/volume, markers, pan/zoom, crosshair, live data. 60 fps at 50,000 candles. Use with Vue, Svelte, Solid or plain JS; powers chart-web and chart-angular.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -56,7 +56,11 @@
     "engine",
     "framework-agnostic",
     "canvas",
-    "canvas2d"
+    "canvas2d",
+    "llms-friendly",
+    "ohlc",
+    "financial-chart",
+    "technical-indicators"
   ],
   "author": "Stacklatte",
   "license": "MIT",

@@ -1,7 +1,7 @@
 {
   "name": "@stacklatte/chart-engine",
   "version": "1.0.0",
-  "description": "Framework-agnostic trading chart engine: viewport, indicators (RSI/MACD/Bollinger/SMA/EMA), layout, and an LLM-safe declarative ChartConfig + JSON Schema. Zero dependencies; powers the React Native, web and Angular renderers.",
+  "description": "Zero-dependency trading chart engine: Wilder RSI, MACD, SMA/EMA, Bollinger Bands, viewport math, candle geometry and a validated closed-enum ChartConfig + JSON Schema for LLM structured output. ESM + CJS, 657 B for one indicator, 8.4 kB whole. Powers the React, React Native, Angular and vanilla renderers.",
   "sideEffects": false,
   "author": "Stacklatte",
   "license": "MIT",
@@ -34,7 +34,11 @@
     "open-source",
     "typescript",
     "engine",
-    "framework-agnostic"
+    "framework-agnostic",
+    "llms-friendly",
+    "ohlc",
+    "financial-chart",
+    "technical-indicators"
   ],
   "repository": {
     "type": "git",

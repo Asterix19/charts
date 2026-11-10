@@ -1,20 +1,41 @@
-# Stacklatte Chart Engine
+# @stacklatte/chart-engine
 
-> Framework-agnostic, zero-dependency engine for trading charts: candle/viewport/pan-zoom math, tested indicators (SMA, EMA, Wilder RSI, MACD 12/26/9, Bollinger Bands), marker geometry, themes, and an LLM-safe declarative `ChartConfig` with a generated JSON Schema. Renderers: @stacklatte/chart-native (React Native/Skia), @stacklatte/chart-web (Canvas 2D).
+> Framework-agnostic, zero-dependency engine behind the Stacklatte charts: Wilder RSI, MACD(12,26,9), SMA/EMA, Bollinger Bands, viewport/zoom math, candle geometry, themes, and a validated closed-enum `ChartConfig` with a JSON Schema for LLM structured output. RSI over 1,000,000 candles in ~78 ms; `calcRSI` alone is 657 B gzipped; the whole engine 8.4 kB. ESM and CommonJS.
 
-Use this package directly when you need the indicator math, the validated `ChartConfig` pipeline, or you are writing a renderer for another framework (Angular, Vue, Svelte, Blazor via JS interop). If you just want a chart on screen, install a renderer instead.
+## Install
 
-## ChartConfig → props (safe for LLM-generated input)
-
-`buildChartPipeline(config, candles)` validates → normalizes → compiles a versioned `ChartConfig` into renderer props. Every string field is a closed enum (never raw hex); unknown keys are rejected with `[code] path: message` errors. The JSON Schema for the exact type ships at `dist/ChartConfig.schema.json` — pass it as a `response_format` / tool-call schema.
-
-```ts
-import { buildChartPipeline, calcRSI, calcEMA } from '@stacklatte/chart-engine';
-const props = buildChartPipeline(config, candles); // spread into <SLChart {...props} />
+```sh
+npm install @stacklatte/chart-engine
 ```
 
-## Pure functions you can call without any UI
+## Example
 
-`calcSMA`, `calcEMA`, `calcRSI`, `calcMACD`, `calcBollingerBands`, `normalizeCandles`, `computeViewport`, `clampViewport`, `buildCandleGeometry`, `buildMarkerPoints`.
+```ts
+import { buildChartPipeline, calcRSI, normalizeCandles } from '@stacklatte/chart-engine';
+import type { Candle, ChartConfig } from '@stacklatte/chart-engine';
 
-- Repository: https://github.com/Asterix19/charts — MIT
+export function analyse(raw: Candle[], config: ChartConfig) {
+  const candles = normalizeCandles(raw); // sort, dedupe, drop undrawable candles
+  const rsi = calcRSI(candles, 14); // [{ timestamp, value }]
+  const props = buildChartPipeline(config, candles); // throws an itemised error if the config is invalid
+  return { rsi, props };
+}
+```
+
+Use this package directly only for headless work (servers, workers, backtests) or to build a new renderer; apps that render a chart already get the engine re-exported from their renderer package.
+
+## Rules for correct code
+
+- A `Candle` is `{ timestamp, open, high, low, close, volume? }`; `timestamp` is Unix **milliseconds**. The array may be unsorted or dirty — it is sorted, deduped and cleaned for you.
+- `width` and `height` are **required numbers in pixels** (never `"100%"`).
+- `calcSMA` / `calcEMA` / `calcBollingerBands` / `calcMACD` return `null` (and `calcRSI` returns `[]`) when there are too few candles or the period is invalid — filter `null` before passing `indicators`.
+- Props: `data`, `width`, `height`, `theme` (`'dark' | 'light' | ChartThemeColors`), `chartType`, `indicators`, `shadedAreas`, `markers`, `customPanels`, `showRsiPanel`, `rsiPeriod`, `showMacdPanel`, `showVolumePanel`, `showOhlcHud`, `visibleDataPoints`, `intervalMs`, `hour12`, `showGrid`, `maxZoom`, `scrollToLatestTrigger`, `onCrosshairChange`. (The visible-candle count is `visibleDataPoints`.)
+- Live data: pass a new `data` array per tick; increment `scrollToLatestTrigger` to jump to the newest candle.
+- Declarative path for LLM output: `buildChartPipeline(config, candles)` with a closed-enum `ChartConfig`; JSON Schema at `@stacklatte/chart-engine/ChartConfig.schema.json`.
+
+## More
+
+- All guides in one file: https://github.com/Asterix19/charts/blob/main/llms-full.txt
+- API reference (generated from the shipped types): https://github.com/Asterix19/charts/blob/main/docs/api-reference.md
+- Choosing between the packages: https://github.com/Asterix19/charts/blob/main/docs/choosing-a-package.md
+- Repository (MIT): https://github.com/Asterix19/charts — tutorials with live demos: https://stacklatte.com

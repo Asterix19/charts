@@ -65,3 +65,10 @@ Props are identical to the React `SLChart`, so documentation for [`@stacklatte/c
 **Not yet in the Angular wrapper** (present in the React renderer): the hover tooltip for trade markers. Markers themselves are drawn.
 
 Supports Angular 19+. MIT licensed.
+
+## Guides, demos and tests
+
+- **Guide:** [Angular guide](../docs/angular.md) · [all docs](../docs/README.md) · [API reference](../docs/api-reference.md) · [for LLMs: `llms.txt`](./llms.txt)
+- **Runnable demo:** `npm run demo:angular` — serves 27 scenarios (feature, edge, stress, live) at `/#/scenarios/<id>`
+- **Measured:** 60 fps (p95 frame ≈ 17–18 ms) with 50,000 candles; the wrapper itself is under 2 kB gzipped.
+- **Tested like people depend on it:** the same scenario catalogue runs on every platform, with performance budgets and a compatibility oracle against the published packages — see [Testing](../docs/testing.md).

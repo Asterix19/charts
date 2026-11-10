@@ -1,0 +1,92 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Fast, deterministic: builds every package, unit tests, type checks, generated-file checks.
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm }
+      - run: npm ci
+      - run: npm run build
+      - run: npm run lint
+      - run: npm test
+      - run: npm run check:generated
+
+  # Real Chromium: every scenario on React, Angular and vanilla JS, plus the performance budgets.
+  e2e-browser:
+    runs-on: ubuntu-latest
+    needs: unit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm }
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+        env: { CI: 'true' }
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: |
+            test-results/
+            e2e/perf-results/
+
+  # Packs every package and installs the tarballs into an empty project, the way consumers do.
+  pack-smoke:
+    runs-on: ubuntu-latest
+    needs: unit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm }
+      - run: npm ci
+      - run: npm run test:pack
+
+  # API locks, backward compatibility with the published packages, docs checks, size budgets.
+  # Needs the npm registry to download the published versions it compares against.
+  contracts:
+    runs-on: ubuntu-latest
+    needs: unit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm }
+      - run: npm ci
+      - run: npm run test:contracts
+        env: { REQUIRE_PUBLISHED: '1' }
+
+  # iOS simulator + Maestro. Slow and macOS-only, so it runs on demand and on main.
+  e2e-native:
+    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+    runs-on: macos-15
+    needs: unit
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm }
+      - run: npm ci
+      - run: brew install maestro || curl -fsSL "https://get.maestro.mobile.dev" | bash
+      - name: Build the Expo dev client for the simulator
+        working-directory: examples/demo
+        run: npx expo run:ios --no-bundler --device "iPhone 16 Pro"
+      - name: Serve the JS bundle
+        working-directory: examples/demo
+        run: npx expo start --dev-client --port 8081 &
+      - run: npm run test:native
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: native-screenshots, path: e2e-native/screenshots/ }

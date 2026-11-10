@@ -5,13 +5,21 @@ High-performance React Native trading charts — GPU-accelerated via [React Nati
 [![npm](https://img.shields.io/npm/v/@stacklatte/chart-native)](https://www.npmjs.com/package/@stacklatte/chart-native)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE.md)
 
+
+## Guides, demos and tests
+
+- **Guide:** [React Native guide](../docs/react-native.md) · [all docs](../docs/README.md) · [API reference](../docs/api-reference.md) · [for LLMs: `llms.txt`](./llms.txt)
+- **Runnable demo:** `npm run demo:native` — serves 27 scenarios (feature, edge, stress, live) at `/#/scenarios/<id>` (Scenarios tab; deep link `demo://scenarios?id=stress-extreme`)
+- **Measured:** the 50,000-candle scenario mounts in ~130 ms on the iOS simulator; every scenario is driven end-to-end with Maestro.
+- **Tested like people depend on it:** the same scenario catalogue runs on every platform, with performance budgets and a compatibility oracle against the published packages — see [Testing](../docs/testing.md).
+
 ---
 
 ## Why chart-native
 
 - **One component, not a kit.** Candlesticks, line series, SMA/EMA/Bollinger Bands overlays, RSI + MACD + volume sub-panels, trade markers, pinch-zoom, pan, crosshair inspection, and live-streaming updates all ship built in — you're not assembling them from a primitives library.
-- **Real indicator math.** RSI uses Wilder smoothing, MACD is seeded and aligned correctly (12/26/9), Bollinger Bands use an O(n) sliding window — not approximations. 200+ unit tests cover the math directly, independent of rendering.
-- **GPU-rendered, not SVG.** Built on Skia via `react-native-skia` — smooth at 60fps with hundreds of visible candles and a live feed ticking underneath.
+- **Real indicator math.** RSI uses Wilder smoothing, MACD is seeded and aligned correctly (12/26/9), Bollinger Bands use an O(n) sliding window — not approximations. The engine is covered by 370+ unit and fuzz tests (including 1,000,000-candle inputs), independent of rendering.
+- **GPU-rendered, not SVG.** Built on Skia via `react-native-skia` — built to stay smooth with a live feed ticking underneath; the 50,000-candle stress scenario is part of the iOS end-to-end suite.
 - **LLM-safe declarative config.** `buildChartPipeline()` takes a versioned `ChartConfig` document — every color and interval is a closed enum, never a raw string an LLM can typo — and returns validated, ready-to-render props, or throws a precise, itemized error. A generated JSON Schema ships as `@stacklatte/chart-engine/ChartConfig.schema.json` for structured output / tool-calling. See [`llms.txt`](./llms.txt) for the quick path.
 - **Also available for the web.** [`@stacklatte/chart-web`](../chart-web) shares the same [`@stacklatte/chart-engine`](../chart-engine), same props, rendered with Canvas 2D — no React Native required.
 

@@ -1,7 +1,20 @@
-# @stacklatte/chart-core (renamed)
+# @stacklatte/chart-core (legacy name)
 
-> Deprecated name. Re-exports @stacklatte/chart-native (React Native/Skia renderer) and, at `/core`, @stacklatte/chart-engine. Use those packages for new code; their llms.txt files are canonical.
+> Deprecated name, fully supported. It now re-exports `@stacklatte/chart-native` (the React Native / Skia renderer) and, at `@stacklatte/chart-core/core`, `@stacklatte/chart-engine`. New code should install the package it actually needs: React Native → `@stacklatte/chart-native`, web → `@stacklatte/chart-web`, Angular → `@stacklatte/chart-angular`, no UI → `@stacklatte/chart-engine`.
 
-- React Native app → ../chart-native/llms.txt
-- Web app → ../chart-web/llms.txt
-- Indicators / ChartConfig / JSON Schema only → ../chart-engine/llms.txt
+Existing imports keep working unchanged:
+
+```tsx
+import { SLChart, calcEMA } from '@stacklatte/chart-core';
+import { calcRSI } from '@stacklatte/chart-core/core';
+```
+
+Compatibility is tested against the published 2.3.3 (every export still exists; identical numbers). Migration is a find-and-replace of the import path — see https://github.com/Asterix19/charts/blob/main/docs/migrating-from-chart-core.md
+
+
+## More
+
+- All guides in one file: https://github.com/Asterix19/charts/blob/main/llms-full.txt
+- API reference (generated from the shipped types): https://github.com/Asterix19/charts/blob/main/docs/api-reference.md
+- Choosing between the packages: https://github.com/Asterix19/charts/blob/main/docs/choosing-a-package.md
+- Repository (MIT): https://github.com/Asterix19/charts — tutorials with live demos: https://stacklatte.com

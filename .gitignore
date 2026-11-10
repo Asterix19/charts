@@ -77,3 +77,6 @@ playwright-report/
 
 # Maestro
 e2e-native/screenshots/
+
+# Perf measurements are regenerated on every e2e run
+e2e/perf-results/

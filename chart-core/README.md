@@ -21,3 +21,7 @@ npm install @stacklatte/chart-engine
 ```
 
 Migration is a find-and-replace of the import path — the exports are identical.
+
+## Compatibility is tested
+
+The contract tests in the repository download the published `@stacklatte/chart-core@2.3.3` and verify that every export still exists and that the engine produces identical numbers (see [Testing](../docs/testing.md)). Migration guide: [migrating from chart-core](../docs/migrating-from-chart-core.md).
