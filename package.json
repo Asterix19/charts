@@ -9,6 +9,7 @@
     "chart-web",
     "chart-angular",
     "examples/shared",
+    "examples/engine-demo",
     "examples/demo",
     "examples/web-demo",
     "examples/canvas-demo",

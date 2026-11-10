@@ -1,0 +1,30 @@
+{
+  "1000": {
+    "normalizeCandles": 0.09643340000000081,
+    "calcRSI": 0.1428750000000008,
+    "calcEMA": 0.05583339999999737,
+    "calcMACD": 0.13254180000000132,
+    "calcBollingerBands": 0.13855839999999944
+  },
+  "10000": {
+    "normalizeCandles": 0.09963339999999903,
+    "calcRSI": 0.19361660000000142,
+    "calcEMA": 0.07336679999999944,
+    "calcMACD": 0.3104249999999979,
+    "calcBollingerBands": 0.47673340000000053
+  },
+  "100000": {
+    "normalizeCandles": 0.44495000000000007,
+    "calcRSI": 3.2439750000000003,
+    "calcEMA": 1.239425,
+    "calcMACD": 8.137216599999999,
+    "calcBollingerBands": 12.695358199999998
+  },
+  "1000000": {
+    "normalizeCandles": 5.03605,
+    "calcRSI": 77.82969160000002,
+    "calcEMA": 55.6570166,
+    "calcMACD": 127.17486680000002,
+    "calcBollingerBands": 135.5729334
+  }
+}

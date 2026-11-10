@@ -1,0 +1,20 @@
+{
+  "name": "engine-demo",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Headless demo of @stacklatte/chart-engine: indicators, viewport math and the LLM-safe ChartConfig pipeline — no UI, no framework.",
+  "type": "module",
+  "scripts": {
+    "demo": "tsx src/demo.ts",
+    "config": "tsx src/config-demo.ts",
+    "bench": "tsx src/bench.ts",
+    "test": "node --test test/esm.test.mjs test/cjs.test.cjs"
+  },
+  "dependencies": {
+    "@stacklatte/chart-engine": "*"
+  },
+  "devDependencies": {
+    "@stacklatte/chart-examples": "*",
+    "tsx": "^4.0.0"
+  }
+}
