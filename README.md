@@ -6,6 +6,8 @@ High-performance trading charts for React Native and the web. Open-source, MIT l
 
 - **[`@stacklatte/chart-native`](./chart-native)** — React Native, GPU-accelerated rendering at 60 fps on iOS and Android via [React Native Skia](https://shopify.github.io/react-native-skia/).
 - **[`@stacklatte/chart-web`](./chart-web)** — plain web, rendered with HTML5 Canvas 2D. No React Native, no WASM.
+- **[`@stacklatte/chart-angular`](./chart-angular)** — Angular standalone `<sl-chart>` component (Canvas 2D, SSR-safe, zoneless-friendly).
+- **[`@stacklatte/chart-canvas`](./chart-canvas)** — framework-agnostic `ChartController` + drawing primitives; wrap the chart in Vue, Svelte or plain JS.
 - **[`@stacklatte/chart-engine`](./chart-engine)** — the zero-dependency, framework-agnostic engine both renderers share (viewport, indicators, geometry, the `ChartConfig` compiler + JSON Schema). Build your own renderer (Angular, Vue, …) on top of it.
 - **[`@stacklatte/chart-core`](./chart-core)** — the original name, kept as a thin re-export of `chart-native` / `chart-engine` so existing installs keep working.
 
@@ -64,13 +66,17 @@ See the [chart-web README](./chart-web/README.md) for all examples.
 
 ```
 ├── chart-engine/         @stacklatte/chart-engine — platform-agnostic logic (no UI deps)
+├── chart-canvas/         @stacklatte/chart-canvas — framework-agnostic Canvas 2D renderer (ChartController)
 ├── chart-native/         @stacklatte/chart-native — React Native / Skia renderer
-├── chart-web/            @stacklatte/chart-web    — Canvas 2D renderer
+├── chart-web/            @stacklatte/chart-web    — React renderer (Canvas 2D)
+├── chart-angular/        @stacklatte/chart-angular — Angular <sl-chart> component
 ├── chart-core/           @stacklatte/chart-core   — legacy name, re-exports native + engine
-├── e2e/                  Playwright tests against the web demo (npm run test:e2e)
+├── e2e/                  Playwright tests against the React + Angular demos (npm run test:e2e)
+├── e2e-native/           Maestro tests driving the Expo demo on an iOS simulator (npm run test:native)
 └── examples/
     ├── demo/             Expo demo app (chart-native)
-    └── web-demo/         Vite + React demo app (chart-web)
+    ├── web-demo/         Vite + React demo app (chart-web)
+    └── angular-demo/     Vite + Angular demo app (chart-angular)
 ```
 
 ---
@@ -88,8 +94,14 @@ npm run build
 # Run unit tests
 npm run test
 
-# Run end-to-end tests (builds, then drives the web demo in Chromium)
+# Browser end-to-end tests (builds, then drives the React and Angular demos in Chromium)
 npm run test:e2e
+
+# Native end-to-end tests (needs a booted iOS simulator + Maestro, see e2e-native/README.md)
+npm run test:native
+
+# Pack every package and smoke-test the tarballs in a clean project
+npm run test:pack
 
 # Start the Expo demo app (React Native)
 npm run demo:native

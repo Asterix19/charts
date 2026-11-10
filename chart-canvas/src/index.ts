@@ -10,3 +10,4 @@ export { drawMarkers } from './draw/markers';
 export { drawRsiPanel } from './draw/rsiPanel';
 export { drawVolumePanel } from './draw/volumePanel';
 export { fillPolygon, strokeDashedLine, strokeSmoothPath, type Point } from './draw/path';
+export { ChartController } from './ChartController';

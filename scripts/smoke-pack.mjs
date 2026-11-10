@@ -7,18 +7,23 @@ import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-const PACKAGES = ['chart-engine', 'chart-canvas', 'chart-native', 'chart-web', 'chart-core'];
+// chart-angular publishes from ng-packagr's dist/ folder, not the package root.
+const PACKAGES = [
+  ['chart-engine'], ['chart-canvas'], ['chart-native'], ['chart-web'], ['chart-core'], ['chart-angular', 'chart-angular/dist'],
+];
 const root = new URL('..', import.meta.url).pathname;
 const work = mkdtempSync(join(tmpdir(), 'stacklatte-smoke-'));
 const run = (cmd, args, cwd) => execFileSync(cmd, args, { cwd, stdio: ['ignore', 'pipe', 'inherit'] }).toString();
 
-const tarballs = PACKAGES.map((w) => {
-  const out = run('npm', ['pack', '-w', w, '--pack-destination', work, '--json'], root);
+const tarballs = PACKAGES.map(([workspace, dir]) => {
+  const args = dir ? ['pack', join(root, dir)] : ['pack', '-w', workspace];
+  const out = run('npm', [...args, '--pack-destination', work, '--json'], root);
   return join(work, JSON.parse(out)[0].filename);
 });
 
 writeFileSync(join(work, 'package.json'), '{"name":"smoke","private":true,"type":"module"}');
-run('npm', ['i', '--no-audit', '--no-fund', ...tarballs, 'react@19.2.8', 'react-dom@19.2.8'], work);
+run('npm', ['i', '--no-audit', '--no-fund', ...tarballs, 'react@19.2.8', 'react-dom@19.2.8',
+  '@angular/core@22.2.5', '@angular/common@22.2.5', '@angular/compiler@22.2.5', '@angular/platform-browser@22.2.5', 'rxjs@^7.8.0'], work);
 
 writeFileSync(join(work, 'check.mjs'), `
 import assert from 'node:assert/strict';
@@ -48,6 +53,12 @@ assert.ok(renderToString(React.createElement(web.SLChart, { data: candles, width
 assert.ok('definitions' in require('@stacklatte/chart-engine/ChartConfig.schema.json'), 'JSON Schema is resolvable');
 assert.ok(require.resolve('@stacklatte/chart-native').includes('chart-native'), 'chart-native resolves');
 assert.ok(require.resolve('@stacklatte/chart-core').includes('chart-core'), 'chart-core shim resolves');
+// Angular: the ng-packagr output must load and expose the component plus the re-exported engine.
+await import('@angular/compiler'); // partial-compiled library code is linked at runtime in Node
+const ng = await import('@stacklatte/chart-angular');
+assert.equal(typeof ng.SlChartComponent, 'function', 'chart-angular exports SlChartComponent');
+assert.equal(typeof ng.calcRSI, 'function', 'chart-angular re-exports the engine');
+assert.equal(typeof canvas.ChartController, 'function', 'chart-canvas exports ChartController');
 console.log('consumer smoke test passed');
 `);
 process.stdout.write(run('node', ['check.mjs'], work));

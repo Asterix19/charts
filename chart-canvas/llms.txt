@@ -1,0 +1,7 @@
+# @stacklatte/chart-canvas
+
+> Framework-agnostic Canvas 2D trading chart: `new ChartController(hostElement, props)`. Use it to embed candlestick/RSI/MACD/volume charts in Vue, Svelte, plain JS, or to write a new framework wrapper. React → @stacklatte/chart-web; Angular → @stacklatte/chart-angular; React Native → @stacklatte/chart-native.
+
+API: `new ChartController(host, ChartProps)`, `.update(ChartProps)`, `.destroy()`; props are the same as `SLChart` (data, width, height, theme, indicators, showRsiPanel, showMacdPanel, showVolumePanel, showOhlcHud, onCrosshairChange, …). Also exports pure draw functions (`drawCandles`, `drawAxis`, …).
+
+- Repository: https://github.com/Asterix19/charts

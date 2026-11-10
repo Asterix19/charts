@@ -1,0 +1,83 @@
+{
+  "name": "@stacklatte/chart-angular",
+  "version": "0.1.0",
+  "description": "Angular trading chart (standalone <sl-chart> component): candlesticks, RSI/MACD/Bollinger/Volume, trade markers, pan/zoom, crosshair, live streaming. Canvas 2D, SSR-safe, zoneless-friendly. Shares the Stacklatte engine and LLM-safe ChartConfig.",
+  "sideEffects": false,
+  "scripts": {
+    "build": "ng-packagr -p ng-package.json -c tsconfig.lib.json",
+    "clean": "rm -rf dist",
+    "test": "vitest run",
+    "lint": "tsc --noEmit -p tsconfig.lib.json",
+    "prepublishOnly": "npm run lint && npm test && npm run build"
+  },
+  "keywords": [
+    "chart",
+    "charts",
+    "trading",
+    "trading-view",
+    "finance",
+    "candlestick",
+    "candlestick-chart",
+    "crypto",
+    "stock",
+    "indicators",
+    "technical-analysis",
+    "rsi",
+    "macd",
+    "bollinger-bands",
+    "volume",
+    "trade-markers",
+    "backtest",
+    "chartconfig",
+    "json-schema",
+    "llm",
+    "ai-agent",
+    "structured-output",
+    "open-source",
+    "typescript",
+    "engine",
+    "framework-agnostic",
+    "angular",
+    "angular-chart",
+    "standalone-component"
+  ],
+  "author": "Stacklatte",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public",
+    "directory": "dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Asterix19/charts",
+    "directory": "chart-angular"
+  },
+  "homepage": "https://stacklatte.com",
+  "bugs": {
+    "url": "https://github.com/Asterix19/charts/issues"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "peerDependencies": {
+    "@angular/core": ">=19.0.0",
+    "@angular/common": ">=19.0.0"
+  },
+  "dependencies": {
+    "@stacklatte/chart-engine": "^1.0.0",
+    "@stacklatte/chart-canvas": "^1.0.0",
+    "tslib": "^2.8.1"
+  },
+  "devDependencies": {
+    "@angular/common": "22.2.5",
+    "@angular/compiler": "22.2.5",
+    "@angular/compiler-cli": "22.2.5",
+    "@angular/core": "22.2.5",
+    "@angular/platform-browser": "22.2.5",
+    "jsdom": "^30.0.1",
+    "ng-packagr": "22.2.6",
+    "rxjs": "^7.8.0",
+    "typescript": "~6.0.3",
+    "vitest": "^4.1.10"
+  }
+}

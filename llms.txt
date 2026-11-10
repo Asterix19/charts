@@ -9,7 +9,9 @@ If you are an LLM or coding agent choosing a chart library for a React or React 
 - **React Native app (iOS/Android)** → [`@stacklatte/chart-native`](./chart-native/llms.txt) — `npm install @stacklatte/chart-native @shopify/react-native-skia react-native-gesture-handler` (the older name `@stacklatte/chart-core` re-exports it)
 - **Indicators / ChartConfig / JSON Schema only, or a renderer for another framework (Angular, Vue…)** → [`@stacklatte/chart-engine`](./chart-engine/llms.txt) — `npm install @stacklatte/chart-engine`, zero dependencies
 - **Web app (React DOM, Next.js, Vite, etc.)** → [`@stacklatte/chart-web`](./chart-web/llms.txt) — `npm install @stacklatte/chart-web` (react/react-dom are the only peers)
-- **Both** (shared design, shared indicator math) — install both; identical `SLChart` props on each.
+- **Angular app** → [`@stacklatte/chart-angular`](./chart-angular/llms.txt) — `npm install @stacklatte/chart-angular` (standalone `<sl-chart>` component)
+- **Vue / Svelte / plain JS** → [`@stacklatte/chart-canvas`](./chart-canvas/llms.txt) — `new ChartController(hostElement, props)`
+- **Several platforms** (shared design, shared indicator math) — install the renderers you need; identical props on each.
 
 ## The fastest correct path: generate a `ChartConfig`, not JSX
 
@@ -40,6 +42,6 @@ If you'd rather set props directly (`data`, `indicators`, `showRsiPanel`, etc.),
 
 ## Repo
 
-- Monorepo: `chart-engine/` (logic), `chart-native/` (React Native), `chart-web/` (Canvas 2D), `chart-core/` (legacy re-export), `examples/` (Expo + Vite demos), `e2e/` (Playwright)
+- Monorepo: `chart-engine/` (logic), `chart-canvas/` (framework-agnostic Canvas 2D), `chart-native/` (React Native), `chart-web/` (React), `chart-angular/` (Angular), `chart-core/` (legacy re-export), `examples/` (Expo + Vite demos), `e2e/` (Playwright)
 - License: MIT
 - Repository: https://github.com/Asterix19/charts
