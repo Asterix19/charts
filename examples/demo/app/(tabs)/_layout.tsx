@@ -23,6 +23,14 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="chart.xyaxis.line" color={color} />,
         }}
       />
+      <Tabs.Screen
+        name="scenarios"
+        options={{
+          title: 'Scenarios',
+          tabBarButtonTestID: 'tab-scenarios',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="chart.xyaxis.line" color={color} />,
+        }}
+      />
     </Tabs>
   );
 }

@@ -27,10 +27,12 @@
     "test:pack": "npm run build && node scripts/smoke-pack.mjs",
     "test:native": "maestro test e2e-native/flows --test-output-dir e2e-native/screenshots && node e2e-native/compare-screenshots.mjs",
     "demo:angular": "npm run dev --workspace=angular-demo",
-    "demo:canvas": "npm run dev --workspace=canvas-demo"
+    "demo:canvas": "npm run dev --workspace=canvas-demo",
+    "check:generated": "tsx e2e-native/generate-flows.mjs --check"
   },
   "devDependencies": {
     "@playwright/test": "^1.65.0",
+    "tsx": "^4.23.15",
     "typescript": "^7.0.2"
   },
   "overrides": {

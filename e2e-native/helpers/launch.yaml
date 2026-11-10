@@ -5,6 +5,14 @@ appId: com.anonymous.demo
 - launchApp:
     clearState: true
 - openLink: com.anonymous.demo://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081
+# iOS asks "Open in demo?" for custom-scheme links; confirm it when it appears.
+- extendedWaitUntil:
+    visible: "Open in.*"
+    timeout: 6000
+    optional: true
+- tapOn:
+    text: "Open"
+    optional: true
 - extendedWaitUntil:
     visible: "Candle"
     timeout: 60000
