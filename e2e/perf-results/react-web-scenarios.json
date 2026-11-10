@@ -1,0 +1,42 @@
+{
+  "stress-2k": {
+    "candles": 2000,
+    "mountMs": 20,
+    "fps": 59,
+    "p50": 16.7,
+    "p95": 18.3,
+    "max": 18.9,
+    "long": 0,
+    "frames": 256
+  },
+  "live-2s": {
+    "candles": 80,
+    "mountMs": 25,
+    "fps": 60,
+    "p50": 16.7,
+    "p95": 16.8,
+    "max": 42.6,
+    "long": 0,
+    "frames": 254
+  },
+  "stress-extreme": {
+    "candles": 50000,
+    "mountMs": 38,
+    "fps": 60,
+    "p50": 16.7,
+    "p95": 17.3,
+    "max": 47.6,
+    "long": 0,
+    "frames": 306
+  },
+  "live-burst": {
+    "candles": 300,
+    "mountMs": 25,
+    "fps": 59,
+    "p50": 16.7,
+    "p95": 16.9,
+    "max": 50.5,
+    "long": 1,
+    "frames": 255
+  }
+}

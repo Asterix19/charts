@@ -11,7 +11,8 @@
   "dependencies": {
     "@stacklatte/chart-web": "*",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "@stacklatte/chart-examples": "*"
   },
   "devDependencies": {
     "@types/react": "~19.2.18",

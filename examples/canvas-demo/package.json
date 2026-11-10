@@ -1,0 +1,19 @@
+{
+  "name": "canvas-demo",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build"
+  },
+  "dependencies": {
+    "@stacklatte/chart-canvas": "*",
+    "@stacklatte/chart-engine": "*",
+    "@stacklatte/chart-examples": "*"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vite": "^8.2.1"
+  }
+}

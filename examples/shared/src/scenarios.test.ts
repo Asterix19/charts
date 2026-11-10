@@ -98,3 +98,34 @@ describe('ChartConfig fixtures stay valid', () => {
     })).toEqual({ valid: true });
   });
 });
+
+import { reportAttributes, summarizeFrames } from './perf';
+import { scenarioHash, scenarioIdFromHash } from './route';
+
+describe('perf + routing helpers', () => {
+  it('summarizeFrames computes percentiles, fps and hitch count', () => {
+    const s = summarizeFrames([16, 16, 17, 16, 80, 16, 16, 16, 16, 120], 1000);
+    expect(s.frames).toBe(10);
+    expect(s.fps).toBe(10);
+    expect(s.max).toBe(120);
+    expect(s.long).toBe(2);
+    expect(s.p50).toBe(16);
+    expect(s.p95).toBeGreaterThanOrEqual(80);
+  });
+
+  it('summarizeFrames tolerates no frames', () => {
+    expect(summarizeFrames([], 0)).toEqual({ frames: 0, durationMs: 0, fps: 0, p50: 0, p95: 0, max: 0, long: 0 });
+  });
+
+  it('round-trips every scenario id through the hash', () => {
+    for (const id of SCENARIO_IDS) expect(scenarioIdFromHash(scenarioHash(id))).toBe(id);
+    expect(scenarioIdFromHash('#/scenarios/nope')).toBeNull();
+    expect(scenarioIdFromHash('')).toBeNull();
+  });
+
+  it('reportAttributes stringifies for data-* attributes', () => {
+    expect(reportAttributes({ scenario: 'x', candles: 5, mountMs: 1.234, ticks: 2 })).toEqual({
+      'data-scenario': 'x', 'data-candles': '5', 'data-mount-ms': '1.2', 'data-ticks': '2',
+    });
+  });
+});

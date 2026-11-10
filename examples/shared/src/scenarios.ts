@@ -1,5 +1,7 @@
 import {
   calcBollingerBands,
+  calcMACD,
+  normalizeCandles,
   calcEMA,
   calcSMA,
   type Candle,
@@ -31,7 +33,11 @@ export interface Scenario {
   props(data: Candle[]): ScenarioProps;
   /** Present on live scenarios: how often the feed ticks and how it mutates the series. */
   live?: { tickMs: number; next(data: Candle[], tick: number): Candle[] };
-  /** Generous upper bounds checked by the e2e suites (headless CI is slower than a phone). */
+  /**
+   * Upper bounds enforced by the e2e suites. Measured headless-Chromium results are ~30-45 ms mount and a
+   * 16.7 ms p95 frame (vsync-capped 60 fps) even at 50,000 candles, so these leave ~10x on mount and 2x on
+   * frames for slower CI machines — tight enough that a real regression fails the build.
+   */
   budget?: { mountMs: number; frameMs: number };
 }
 
@@ -123,7 +129,7 @@ export const SCENARIOS: Scenario[] = [
     data: () => cached('stress-2k', () => generateCandles(2_000, { startPrice: 30_000, seed: 7 })),
     props: (d) => ({ intervalMs: MINUTE, visibleDataPoints: 240, showOhlcHud: true, showRsiPanel: true,
       ...(() => { const b = bollinger(d); return { indicators: [...compact([calcEMA(d, 9, 'ema9', COLORS.yellow), calcEMA(d, 21, 'ema21', COLORS.sky)]), ...b.indicators], shadedAreas: b.shadedAreas }; })() }),
-    budget: { mountMs: 1_500, frameMs: 100 },
+    budget: { mountMs: 500, frameMs: 34 },
   },
   {
     id: 'stress-extreme', title: 'Stress 50k', kind: 'stress', candles: 50_000, height: 640,
@@ -131,7 +137,7 @@ export const SCENARIOS: Scenario[] = [
     data: () => cached('stress-extreme', () => generateCandles(50_000, { startPrice: 20_000, seed: 11 })),
     props: (d) => ({ intervalMs: MINUTE, visibleDataPoints: 500, showOhlcHud: true, showRsiPanel: true, showMacdPanel: true, showVolumePanel: true,
       ...(() => { const b = bollinger(d); return { indicators: [...compact([calcEMA(d, 9, 'ema9', COLORS.yellow)]), ...b.indicators], shadedAreas: b.shadedAreas }; })() }),
-    budget: { mountMs: 4_000, frameMs: 150 },
+    budget: { mountMs: 1_000, frameMs: 34 },
   },
 
   // ── Live feeds ────────────────────────────────────────────────────────────
@@ -141,7 +147,7 @@ export const SCENARIOS: Scenario[] = [
     data: () => cached('live-2s', () => generateCandles(80, { seed: 3 })),
     props: () => ({ intervalMs: MINUTE, visibleDataPoints: 40, showOhlcHud: true }),
     live: { tickMs: 2_000, next: (d, tick) => [...d, nextCandle(d[d.length - 1], createRng(1_000 + tick))] },
-    budget: { mountMs: 1_000, frameMs: 100 },
+    budget: { mountMs: 500, frameMs: 34 },
   },
   {
     id: 'live-burst', title: 'Live Burst', kind: 'live', candles: 300, height: 400,
@@ -156,7 +162,7 @@ export const SCENARIOS: Scenario[] = [
         return out.length > 10_000 ? out.slice(out.length - 10_000) : out;
       },
     },
-    budget: { mountMs: 1_000, frameMs: 100 },
+    budget: { mountMs: 500, frameMs: 34 },
   },
 
   // ── Edge cases: the chart must never throw or render garbage ─────────────
@@ -203,3 +209,17 @@ export function getScenario(id: string): Scenario {
 
 export const scenariosByKind = (kind: ScenarioKind): Scenario[] => SCENARIOS.filter((s) => s.kind === kind);
 export const BASE_TIMESTAMP = BASE_TS;
+
+/**
+ * How many <canvas> elements a renderer should create for a scenario: the main chart plus one per
+ * visible sub-panel. The MACD panel is omitted while there is too little data for MACD(12,26,9) to exist.
+ * With no data, the React renderer shows a placeholder <div> (`emptyHasCanvas: false`); the DOM-controller
+ * renderers (canvas, Angular) draw "No data" on the main canvas (`true`).
+ */
+export function expectedCanvasCount(s: Scenario, opts: { emptyHasCanvas: boolean }): number {
+  const data = s.data();
+  if (data.length === 0) return opts.emptyHasCanvas ? 1 : 0;
+  const p = s.props(data);
+  const macdShown = !!p.showMacdPanel && calcMACD(normalizeCandles(data)) !== null;
+  return 1 + [p.showVolumePanel, p.showRsiPanel, macdShown].filter(Boolean).length + (p.customPanels?.length ?? 0);
+}

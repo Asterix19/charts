@@ -11,6 +11,7 @@
     "examples/shared",
     "examples/demo",
     "examples/web-demo",
+    "examples/canvas-demo",
     "examples/angular-demo"
   ],
   "scripts": {
@@ -25,7 +26,8 @@
     "test:e2e": "npm run build -w @stacklatte/chart-engine -w @stacklatte/chart-canvas -w @stacklatte/chart-web -w @stacklatte/chart-angular && playwright test",
     "test:pack": "npm run build && node scripts/smoke-pack.mjs",
     "test:native": "maestro test e2e-native/flows --test-output-dir e2e-native/screenshots && node e2e-native/compare-screenshots.mjs",
-    "demo:angular": "npm run dev --workspace=angular-demo"
+    "demo:angular": "npm run dev --workspace=angular-demo",
+    "demo:canvas": "npm run dev --workspace=canvas-demo"
   },
   "devDependencies": {
     "@playwright/test": "^1.65.0",
