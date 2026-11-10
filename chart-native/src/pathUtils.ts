@@ -14,6 +14,31 @@ interface Point {
   y: number;
 }
 
+/** The path-construction verbs both `SkPathBuilder` and the legacy `SkPath` support. */
+export interface PathOps {
+  moveTo(x: number, y: number): unknown;
+  lineTo(x: number, y: number): unknown;
+  cubicTo(cp1x: number, cp1y: number, cp2x: number, cp2y: number, x: number, y: number): unknown;
+  close(): unknown;
+}
+
+/**
+ * Builds an SkPath, preferring `Skia.PathBuilder` (the supported API since
+ * react-native-skia 2.10 — mutating `SkPath` directly is deprecated and will be
+ * removed) and falling back to `Skia.Path.Make()` on older peer versions.
+ */
+export const buildPath = (draw: (path: PathOps) => void): SkPath => {
+  const factory = (Skia as { PathBuilder?: { Make(): PathOps & { build(): SkPath } } }).PathBuilder;
+  if (factory) {
+    const builder = factory.Make();
+    draw(builder);
+    return builder.build();
+  }
+  const path = Skia.Path.Make();
+  draw(path);
+  return path;
+};
+
 /**
  * Builds a smooth cubic-bezier path through the given points.
  *
@@ -26,26 +51,25 @@ interface Point {
 export const buildSmoothPath = (pts: Point[]): SkPath | null => {
   if (pts.length < 2) return null;
 
-  const path = Skia.Path.Make();
-  path.moveTo(pts[0].x, pts[0].y);
-
   const n = pts.length;
 
-  for (let i = 0; i < n - 1; i++) {
-    const p0 = pts[i > 0 ? i - 1 : 0];
-    const p1 = pts[i];
-    const p2 = pts[i + 1];
-    const p3 = pts[i + 2 < n ? i + 2 : n - 1];
+  return buildPath((path) => {
+    path.moveTo(pts[0].x, pts[0].y);
 
-    const cp1x = p1.x + (p2.x - p0.x) / 6;
-    const cp1y = p1.y + (p2.y - p0.y) / 6;
-    const cp2x = p2.x - (p3.x - p1.x) / 6;
-    const cp2y = p2.y - (p3.y - p1.y) / 6;
+    for (let i = 0; i < n - 1; i++) {
+      const p0 = pts[i > 0 ? i - 1 : 0];
+      const p1 = pts[i];
+      const p2 = pts[i + 1];
+      const p3 = pts[i + 2 < n ? i + 2 : n - 1];
 
-    path.cubicTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y);
-  }
+      const cp1x = p1.x + (p2.x - p0.x) / 6;
+      const cp1y = p1.y + (p2.y - p0.y) / 6;
+      const cp2x = p2.x - (p3.x - p1.x) / 6;
+      const cp2y = p2.y - (p3.y - p1.y) / 6;
 
-  return path;
+      path.cubicTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y);
+    }
+  });
 };
 
 /**
@@ -53,19 +77,18 @@ export const buildSmoothPath = (pts: Point[]): SkPath | null => {
  * pointing up or down. Used by MarkerLayer for entry/exit trade markers.
  */
 export const buildTrianglePath = (cx: number, cy: number, size: number, pointingUp: boolean): SkPath => {
-  const path = Skia.Path.Make();
   const half = size / 2;
 
-  if (pointingUp) {
-    path.moveTo(cx, cy - half);
-    path.lineTo(cx + half, cy + half);
-    path.lineTo(cx - half, cy + half);
-  } else {
-    path.moveTo(cx, cy + half);
-    path.lineTo(cx + half, cy - half);
-    path.lineTo(cx - half, cy - half);
-  }
-
-  path.close();
-  return path;
+  return buildPath((path) => {
+    if (pointingUp) {
+      path.moveTo(cx, cy - half);
+      path.lineTo(cx + half, cy + half);
+      path.lineTo(cx - half, cy + half);
+    } else {
+      path.moveTo(cx, cy + half);
+      path.lineTo(cx + half, cy - half);
+      path.lineTo(cx - half, cy - half);
+    }
+    path.close();
+  });
 };

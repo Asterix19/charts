@@ -1,0 +1,27 @@
+appId: com.anonymous.demo
+---
+- runFlow: ../helpers/launch.yaml
+# Scroll the overlay/panel toolbar row to reveal the live-tick pills, then stop the ticks
+# so screenshots only differ because of the gesture.
+- swipe:
+    start: 90%, 11%
+    end: 5%, 11%
+    duration: 400
+- tapOn: "Off"
+- assertVisible: "LIVE"
+- takeScreenshot: gesture-1-before
+# Dragging pans the viewport (the crosshair HUD only locks while the finger is down).
+- swipe:
+    start: 30%, 50%
+    end: 80%, 50%
+    duration: 600
+- takeScreenshot: gesture-2-panned
+- swipe:
+    start: 80%, 50%
+    end: 30%, 50%
+    duration: 600
+- takeScreenshot: gesture-3-panned-back
+# "Now" jumps back to the latest candle; the chart is still alive afterwards.
+- tapOn: ".*Now"   # label is rendered as "↵ Now"
+- assertVisible: "LIVE"
+- takeScreenshot: gesture-4-now

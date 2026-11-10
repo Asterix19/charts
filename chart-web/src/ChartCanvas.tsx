@@ -38,15 +38,20 @@ import {
 import type { CandleViewport, ChartProps, MarkerPoint } from '@stacklatte/chart-engine';
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
-import { getScaledContext } from './canvasDpr';
-import { drawAxis } from './draw/axis';
-import { drawCrosshairLines } from './draw/crosshair';
-import { drawCustomPanel } from './draw/customPanel';
-import { drawMacdPanel } from './draw/macdPanel';
-import { drawCandles, drawCrosshairDot, drawLineSeries, drawShadedArea } from './draw/mainPanel';
-import { drawMarkers } from './draw/markers';
-import { drawRsiPanel } from './draw/rsiPanel';
-import { drawVolumePanel } from './draw/volumePanel';
+import {
+  drawAxis,
+  drawCandles,
+  drawCrosshairDot,
+  drawCrosshairLines,
+  drawCustomPanel,
+  drawLineSeries,
+  drawMacdPanel,
+  drawMarkers,
+  drawRsiPanel,
+  drawShadedArea,
+  drawVolumePanel,
+  getScaledContext,
+} from '@stacklatte/chart-canvas';
 import OhlcHud from './components/OhlcHud';
 import MarkerTooltip from './components/MarkerTooltip';
 

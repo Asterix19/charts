@@ -81,7 +81,8 @@
     "react-dom": ">=19.0.0"
   },
   "dependencies": {
-    "@stacklatte/chart-engine": "^1.0.0"
+    "@stacklatte/chart-engine": "^1.0.0",
+    "@stacklatte/chart-canvas": "^1.0.0"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^7.0.1",

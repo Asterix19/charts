@@ -1,0 +1,10 @@
+# (helper — not a test) Shared launch step: opens the Expo dev-client against the local Metro bundler.
+# (A release build would use plain `launchApp`; the dev client needs the bundler URL.)
+appId: com.anonymous.demo
+---
+- launchApp:
+    clearState: true
+- openLink: com.anonymous.demo://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081
+- extendedWaitUntil:
+    visible: "Candle"
+    timeout: 60000

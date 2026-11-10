@@ -1,0 +1,85 @@
+{
+  "name": "@stacklatte/chart-canvas",
+  "version": "1.0.0",
+  "description": "Framework-agnostic Canvas 2D drawing primitives for Stacklatte trading charts (candles, indicators, RSI/MACD/volume panels, markers, axes). Shared by chart-web (React) and chart-angular.",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "default": "./dist/index.mjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE.md"
+  ],
+  "scripts": {
+    "build": "tsup && tsc -p tsconfig.json --emitDeclarationOnly --declarationMap",
+    "dev": "tsup --watch",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run lint && npm run build",
+    "test": "vitest run",
+    "lint": "tsc --noEmit"
+  },
+  "keywords": [
+    "chart",
+    "charts",
+    "trading",
+    "trading-view",
+    "finance",
+    "candlestick",
+    "candlestick-chart",
+    "crypto",
+    "stock",
+    "indicators",
+    "technical-analysis",
+    "rsi",
+    "macd",
+    "bollinger-bands",
+    "volume",
+    "trade-markers",
+    "backtest",
+    "chartconfig",
+    "json-schema",
+    "llm",
+    "ai-agent",
+    "structured-output",
+    "open-source",
+    "typescript",
+    "engine",
+    "framework-agnostic",
+    "canvas",
+    "canvas2d"
+  ],
+  "author": "Stacklatte",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Asterix19/charts",
+    "directory": "chart-canvas"
+  },
+  "homepage": "https://stacklatte.com",
+  "bugs": {
+    "url": "https://github.com/Asterix19/charts/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@stacklatte/chart-engine": "^1.0.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.1",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  }
+}

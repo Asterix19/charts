@@ -1,0 +1,6 @@
+appId: com.anonymous.demo
+---
+- runFlow: ../helpers/launch.yaml
+- assertVisible: "Zoom"
+- assertVisible: "LIVE"      # OHLC HUD is drawn by chart-native over the Skia canvas
+- takeScreenshot: native-initial

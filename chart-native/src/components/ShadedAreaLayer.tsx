@@ -9,10 +9,11 @@
  * Color and opacity are injected by the parent — this layer is theme-agnostic.
  */
 
-import { Path, Skia } from '@shopify/react-native-skia';
+import { Path } from '@shopify/react-native-skia';
 import React, { useMemo } from 'react';
 import { buildShadedAreaPoints, buildTimestampIndex, resolveYRange } from '@stacklatte/chart-engine';
 import type { Candle, TsPoint } from '@stacklatte/chart-engine';
+import { buildPath } from '../pathUtils';
 
 interface Props {
   /** Upper boundary series (timestamps must match candles). */
@@ -47,11 +48,11 @@ const ShadedAreaLayer: React.FC<Props> = ({ from, to, candleData, width, height,
     const pts = [...top, ...bottom];
     if (pts.length < 3) return null;
 
-    const path = Skia.Path.Make();
-    path.moveTo(pts[0].x, pts[0].y);
-    for (let i = 1; i < pts.length; i++) path.lineTo(pts[i].x, pts[i].y);
-    path.close();
-    return path;
+    return buildPath((path) => {
+      path.moveTo(pts[0].x, pts[0].y);
+      for (let i = 1; i < pts.length; i++) path.lineTo(pts[i].x, pts[i].y);
+      path.close();
+    });
   }, [from, to, indexByTimestamp, total, width, height, min, max]);
 
   if (!areaPath) return null;

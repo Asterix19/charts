@@ -7,7 +7,7 @@ import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-const PACKAGES = ['chart-engine', 'chart-native', 'chart-web', 'chart-core'];
+const PACKAGES = ['chart-engine', 'chart-canvas', 'chart-native', 'chart-web', 'chart-core'];
 const root = new URL('..', import.meta.url).pathname;
 const work = mkdtempSync(join(tmpdir(), 'stacklatte-smoke-'));
 const run = (cmd, args, cwd) => execFileSync(cmd, args, { cwd, stdio: ['ignore', 'pipe', 'inherit'] }).toString();
@@ -28,6 +28,7 @@ import { renderToString } from 'react-dom/server';
 import * as engine from '@stacklatte/chart-engine';
 import * as coreShim from '@stacklatte/chart-core/core';
 import * as web from '@stacklatte/chart-web';
+import * as canvas from '@stacklatte/chart-canvas';
 const require = createRequire(import.meta.url);
 
 const candles = Array.from({ length: 50 }, (_, i) => ({ timestamp: i * 60000, open: 100 + i, high: 102 + i, low: 99 + i, close: 101 + i, volume: 10 }));
@@ -42,6 +43,7 @@ for (const bad of [{ ...config, theme: 'neon' }, { ...config, interval: '2h' }, 
   assert.throws(() => engine.buildChartPipeline(bad, candles), /Invalid ChartConfig/, 'invalid config must throw');
 }
 assert.equal(typeof web.SLChart, 'function', 'chart-web exports SLChart');
+assert.equal(typeof canvas.drawCandles, 'function', 'chart-canvas exports its drawing primitives');
 assert.ok(renderToString(React.createElement(web.SLChart, { data: candles, width: 400, height: 300 })).includes('<canvas'), 'chart-web SSR renders a canvas');
 assert.ok('definitions' in require('@stacklatte/chart-engine/ChartConfig.schema.json'), 'JSON Schema is resolvable');
 assert.ok(require.resolve('@stacklatte/chart-native').includes('chart-native'), 'chart-native resolves');

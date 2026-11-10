@@ -74,3 +74,6 @@ coverage/
 # Playwright
 test-results/
 playwright-report/
+
+# Maestro
+e2e-native/screenshots/

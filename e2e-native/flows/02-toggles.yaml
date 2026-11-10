@@ -1,0 +1,25 @@
+appId: com.anonymous.demo
+---
+- runFlow: ../helpers/launch.yaml
+# Every control must keep the chart alive (HUD still present) after toggling on and off.
+- tapOn: "RSI"
+- assertVisible: "LIVE"
+- takeScreenshot: native-rsi
+- tapOn: "MACD"
+- assertVisible: "LIVE"
+- takeScreenshot: native-rsi-macd
+- tapOn: "RSI"
+- tapOn: "MACD"
+- tapOn: "SMA"
+- tapOn: "EMA"
+- tapOn: "BB"
+- assertVisible: "LIVE"
+- takeScreenshot: native-overlays
+- tapOn: "Line"
+- assertVisible: "LIVE"
+- takeScreenshot: native-line
+- tapOn: "Candle"
+- tapOn: "240"
+- assertVisible: "LIVE"
+- tapOn: "20"
+- assertVisible: "LIVE"
