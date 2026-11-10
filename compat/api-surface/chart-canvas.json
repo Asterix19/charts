@@ -1,0 +1,74 @@
+[
+  {
+    "name": "AxisDrawOptions",
+    "kind": "type"
+  },
+  {
+    "name": "ChartController",
+    "kind": "both"
+  },
+  {
+    "name": "drawAxis",
+    "kind": "value"
+  },
+  {
+    "name": "drawCandles",
+    "kind": "value"
+  },
+  {
+    "name": "drawCrosshairDot",
+    "kind": "value"
+  },
+  {
+    "name": "drawCrosshairLines",
+    "kind": "value"
+  },
+  {
+    "name": "drawCustomPanel",
+    "kind": "value"
+  },
+  {
+    "name": "drawLineSeries",
+    "kind": "value"
+  },
+  {
+    "name": "drawMacdPanel",
+    "kind": "value"
+  },
+  {
+    "name": "drawMarkers",
+    "kind": "value"
+  },
+  {
+    "name": "drawRsiPanel",
+    "kind": "value"
+  },
+  {
+    "name": "drawShadedArea",
+    "kind": "value"
+  },
+  {
+    "name": "drawVolumePanel",
+    "kind": "value"
+  },
+  {
+    "name": "fillPolygon",
+    "kind": "value"
+  },
+  {
+    "name": "getScaledContext",
+    "kind": "value"
+  },
+  {
+    "name": "Point",
+    "kind": "type"
+  },
+  {
+    "name": "strokeDashedLine",
+    "kind": "value"
+  },
+  {
+    "name": "strokeSmoothPath",
+    "kind": "value"
+  }
+]

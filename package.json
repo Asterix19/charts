@@ -8,6 +8,7 @@
     "chart-core",
     "chart-web",
     "chart-angular",
+    "compat",
     "examples/shared",
     "examples/engine-demo",
     "examples/demo",
@@ -29,7 +30,8 @@
     "test:native": "maestro test e2e-native/flows --test-output-dir e2e-native/screenshots && node e2e-native/compare-screenshots.mjs",
     "demo:angular": "npm run dev --workspace=angular-demo",
     "demo:canvas": "npm run dev --workspace=canvas-demo",
-    "check:generated": "tsx e2e-native/generate-flows.mjs --check"
+    "check:generated": "tsx e2e-native/generate-flows.mjs --check",
+    "test:contracts": "npm run build -w @stacklatte/chart-engine -w @stacklatte/chart-canvas -w @stacklatte/chart-native -w @stacklatte/chart-web -w @stacklatte/chart-core -w @stacklatte/chart-angular && npm test -w @stacklatte/chart-contracts"
   },
   "devDependencies": {
     "@playwright/test": "^1.65.0",

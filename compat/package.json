@@ -1,0 +1,22 @@
+{
+  "name": "@stacklatte/chart-contracts",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Contract tests: public API surface locks, backward-compatibility against the published packages, docs/symbol checks and size budgets.",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "update-api": "UPDATE_API=1 vitest run src/api-surface.test.ts"
+  },
+  "devDependencies": {
+    "@stacklatte/chart-engine": "*",
+    "@stacklatte/chart-canvas": "*",
+    "@stacklatte/chart-native": "*",
+    "@stacklatte/chart-web": "*",
+    "@stacklatte/chart-core": "*",
+    "@stacklatte/chart-angular": "*",
+    "typescript": "~6.0.3",
+    "vitest": "^4.1.10",
+    "@stacklatte/chart-examples": "*"
+  }
+}
