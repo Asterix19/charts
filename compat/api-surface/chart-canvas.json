@@ -1,11 +1,223 @@
 [
   {
+    "name": "abbrevName",
+    "kind": "value"
+  },
+  {
+    "name": "applyZoomOutResistance",
+    "kind": "value"
+  },
+  {
     "name": "AxisDrawOptions",
+    "kind": "type"
+  },
+  {
+    "name": "BollingerOverlay",
+    "kind": "type"
+  },
+  {
+    "name": "BollingerParams",
+    "kind": "type"
+  },
+  {
+    "name": "BufferWindow",
+    "kind": "type"
+  },
+  {
+    "name": "buildCandleGeometry",
+    "kind": "value"
+  },
+  {
+    "name": "buildChartPipeline",
+    "kind": "value"
+  },
+  {
+    "name": "buildLinePoints",
+    "kind": "value"
+  },
+  {
+    "name": "buildMacdHistogramBars",
+    "kind": "value"
+  },
+  {
+    "name": "buildMarkerPoints",
+    "kind": "value"
+  },
+  {
+    "name": "buildPaddedRange",
+    "kind": "value"
+  },
+  {
+    "name": "buildSeriesPoints",
+    "kind": "value"
+  },
+  {
+    "name": "buildShadedAreaPoints",
+    "kind": "value"
+  },
+  {
+    "name": "buildTimestampIndex",
+    "kind": "value"
+  },
+  {
+    "name": "buildVolumeBars",
+    "kind": "value"
+  },
+  {
+    "name": "calcBollingerBands",
+    "kind": "value"
+  },
+  {
+    "name": "calcEMA",
+    "kind": "value"
+  },
+  {
+    "name": "calcMACD",
+    "kind": "value"
+  },
+  {
+    "name": "calcRSI",
+    "kind": "value"
+  },
+  {
+    "name": "calcSMA",
+    "kind": "value"
+  },
+  {
+    "name": "Candle",
+    "kind": "type"
+  },
+  {
+    "name": "CandleBar",
+    "kind": "type"
+  },
+  {
+    "name": "CandleViewport",
+    "kind": "type"
+  },
+  {
+    "name": "CHART_CONFIG_VERSION",
+    "kind": "value"
+  },
+  {
+    "name": "ChartConfig",
+    "kind": "type"
+  },
+  {
+    "name": "ChartConfigVersion",
     "kind": "type"
   },
   {
     "name": "ChartController",
     "kind": "both"
+  },
+  {
+    "name": "ChartInterval",
+    "kind": "type"
+  },
+  {
+    "name": "ChartLayout",
+    "kind": "type"
+  },
+  {
+    "name": "ChartMarker",
+    "kind": "type"
+  },
+  {
+    "name": "ChartPadding",
+    "kind": "type"
+  },
+  {
+    "name": "ChartProps",
+    "kind": "type"
+  },
+  {
+    "name": "ChartTheme",
+    "kind": "type"
+  },
+  {
+    "name": "ChartThemeColors",
+    "kind": "type"
+  },
+  {
+    "name": "ChartType",
+    "kind": "type"
+  },
+  {
+    "name": "clampTickX",
+    "kind": "value"
+  },
+  {
+    "name": "clampViewport",
+    "kind": "value"
+  },
+  {
+    "name": "compileChartConfig",
+    "kind": "value"
+  },
+  {
+    "name": "CompiledChart",
+    "kind": "type"
+  },
+  {
+    "name": "computeBufferWindow",
+    "kind": "value"
+  },
+  {
+    "name": "computeCustomPanelYRange",
+    "kind": "value"
+  },
+  {
+    "name": "computeLayout",
+    "kind": "value"
+  },
+  {
+    "name": "computeMacdYRange",
+    "kind": "value"
+  },
+  {
+    "name": "computePinchDistance",
+    "kind": "value"
+  },
+  {
+    "name": "computePinchZoom",
+    "kind": "value"
+  },
+  {
+    "name": "computePriceRange",
+    "kind": "value"
+  },
+  {
+    "name": "computeScrollBounds",
+    "kind": "value"
+  },
+  {
+    "name": "computeTimeShift",
+    "kind": "value"
+  },
+  {
+    "name": "computeViewport",
+    "kind": "value"
+  },
+  {
+    "name": "computeVolumeYRange",
+    "kind": "value"
+  },
+  {
+    "name": "computeXGeometry",
+    "kind": "value"
+  },
+  {
+    "name": "crosshairAtIndex",
+    "kind": "value"
+  },
+  {
+    "name": "CustomPanel",
+    "kind": "type"
+  },
+  {
+    "name": "detectLiveUpdateMode",
+    "kind": "value"
   },
   {
     "name": "drawAxis",
@@ -52,7 +264,51 @@
     "kind": "value"
   },
   {
+    "name": "EmaOverlay",
+    "kind": "type"
+  },
+  {
+    "name": "extendToEdges",
+    "kind": "value"
+  },
+  {
     "name": "fillPolygon",
+    "kind": "value"
+  },
+  {
+    "name": "filterByWindow",
+    "kind": "value"
+  },
+  {
+    "name": "findIndicatorById",
+    "kind": "value"
+  },
+  {
+    "name": "findIndicatorValue",
+    "kind": "value"
+  },
+  {
+    "name": "findMarkerAt",
+    "kind": "value"
+  },
+  {
+    "name": "formatTimeLabel",
+    "kind": "value"
+  },
+  {
+    "name": "getCandleX",
+    "kind": "value"
+  },
+  {
+    "name": "getMarkerKindLabel",
+    "kind": "value"
+  },
+  {
+    "name": "getMarkerStyle",
+    "kind": "value"
+  },
+  {
+    "name": "getPriceTicks",
     "kind": "value"
   },
   {
@@ -60,8 +316,196 @@
     "kind": "value"
   },
   {
+    "name": "getSeriesX",
+    "kind": "value"
+  },
+  {
+    "name": "getThemeColors",
+    "kind": "value"
+  },
+  {
+    "name": "getTimeTicks",
+    "kind": "value"
+  },
+  {
+    "name": "getY",
+    "kind": "value"
+  },
+  {
+    "name": "HudConfig",
+    "kind": "type"
+  },
+  {
+    "name": "indexFromViewX",
+    "kind": "value"
+  },
+  {
+    "name": "IndicatorLine",
+    "kind": "type"
+  },
+  {
+    "name": "inferIntervalMs",
+    "kind": "value"
+  },
+  {
+    "name": "INTERVAL_MS",
+    "kind": "value"
+  },
+  {
+    "name": "LiveUpdateMode",
+    "kind": "type"
+  },
+  {
+    "name": "MACD_COLORS",
+    "kind": "value"
+  },
+  {
+    "name": "MacdHistogramBar",
+    "kind": "type"
+  },
+  {
+    "name": "MacdPanelConfig",
+    "kind": "type"
+  },
+  {
+    "name": "MacdResult",
+    "kind": "type"
+  },
+  {
+    "name": "MARKER_HIT_RADIUS",
+    "kind": "value"
+  },
+  {
+    "name": "MARKER_SIZE",
+    "kind": "value"
+  },
+  {
+    "name": "MarkerConfig",
+    "kind": "type"
+  },
+  {
+    "name": "MarkerKind",
+    "kind": "type"
+  },
+  {
+    "name": "MarkerKindConfig",
+    "kind": "type"
+  },
+  {
+    "name": "MarkerPoint",
+    "kind": "type"
+  },
+  {
+    "name": "MarkerShape",
+    "kind": "type"
+  },
+  {
+    "name": "MarkerStyle",
+    "kind": "type"
+  },
+  {
+    "name": "maxLegibleVisibleCandles",
+    "kind": "value"
+  },
+  {
+    "name": "MIN_PX_PER_CANDLE",
+    "kind": "value"
+  },
+  {
+    "name": "normalizeCandles",
+    "kind": "value"
+  },
+  {
+    "name": "normalizeChartConfig",
+    "kind": "value"
+  },
+  {
+    "name": "OverlayConfig",
+    "kind": "type"
+  },
+  {
+    "name": "OverlayType",
+    "kind": "type"
+  },
+  {
+    "name": "PALETTE",
+    "kind": "value"
+  },
+  {
+    "name": "PaletteColor",
+    "kind": "type"
+  },
+  {
+    "name": "parseDashArray",
+    "kind": "value"
+  },
+  {
+    "name": "PeriodParams",
+    "kind": "type"
+  },
+  {
     "name": "Point",
     "kind": "type"
+  },
+  {
+    "name": "precomputeYRanges",
+    "kind": "value"
+  },
+  {
+    "name": "prepareIndicatorData",
+    "kind": "value"
+  },
+  {
+    "name": "PriceDisplay",
+    "kind": "type"
+  },
+  {
+    "name": "priceTickCount",
+    "kind": "value"
+  },
+  {
+    "name": "resolveIntervalMs",
+    "kind": "value"
+  },
+  {
+    "name": "resolveYRange",
+    "kind": "value"
+  },
+  {
+    "name": "RSI_MAX",
+    "kind": "value"
+  },
+  {
+    "name": "RSI_MIN",
+    "kind": "value"
+  },
+  {
+    "name": "RsiPanelConfig",
+    "kind": "type"
+  },
+  {
+    "name": "RsiPoint",
+    "kind": "type"
+  },
+  {
+    "name": "sameOhlc",
+    "kind": "value"
+  },
+  {
+    "name": "ShadedArea",
+    "kind": "type"
+  },
+  {
+    "name": "ShadedAreaConfig",
+    "kind": "type"
+  },
+  {
+    "name": "SmaOverlay",
+    "kind": "type"
+  },
+  {
+    "name": "softZoomOutCeiling",
+    "kind": "value"
   },
   {
     "name": "strokeDashedLine",
@@ -70,5 +514,61 @@
   {
     "name": "strokeSmoothPath",
     "kind": "value"
+  },
+  {
+    "name": "SubPanelConfig",
+    "kind": "type"
+  },
+  {
+    "name": "SubPanelType",
+    "kind": "type"
+  },
+  {
+    "name": "ThemePreset",
+    "kind": "type"
+  },
+  {
+    "name": "THEMES",
+    "kind": "value"
+  },
+  {
+    "name": "TsPoint",
+    "kind": "type"
+  },
+  {
+    "name": "validateChartConfig",
+    "kind": "value"
+  },
+  {
+    "name": "ValidationError",
+    "kind": "type"
+  },
+  {
+    "name": "ValidationErrorCode",
+    "kind": "type"
+  },
+  {
+    "name": "ValidationResult",
+    "kind": "type"
+  },
+  {
+    "name": "ViewportConfig",
+    "kind": "type"
+  },
+  {
+    "name": "ViewportWindow",
+    "kind": "type"
+  },
+  {
+    "name": "VolumeBar",
+    "kind": "type"
+  },
+  {
+    "name": "VolumePanelConfig",
+    "kind": "type"
+  },
+  {
+    "name": "VwapOverlay",
+    "kind": "type"
   }
 ]

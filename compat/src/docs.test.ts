@@ -1,10 +1,14 @@
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { dirname, join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { validateChartConfig } from '@stacklatte/chart-engine';
 
 import { ROOT, abs, listExports } from './exports';
+import type * as TS from 'typescript';
+
+const tsApi: typeof TS = createRequire(import.meta.url)('typescript');
 
 /**
  * Documentation is part of the product — especially for LLMs, which copy snippets verbatim. These checks fail
@@ -115,7 +119,9 @@ describe('documentation', () => {
     });
 
     it('mentions only real @stacklatte packages', () => {
-      const bad = [...text.matchAll(/@stacklatte\/([a-z][a-z-]*)/g)].map((m) => m[1]).filter((n) => !KNOWN_PACKAGES.includes(n) && n !== 'chart-examples' && n !== 'chart-contracts');
+      // The "Names that do NOT exist" section deliberately lists hallucinated names so agents avoid them.
+      const scanned = text.replace(/## Names that do NOT exist[^\n]*\n[\s\S]*?(?=\n## |$)/, '');
+      const bad = [...scanned.matchAll(/@stacklatte\/([a-z][a-z-]*)/g)].map((m) => m[1]).filter((n) => !KNOWN_PACKAGES.includes(n) && n !== 'chart-examples' && n !== 'chart-contracts');
       expect([...new Set(bad)]).toEqual([]);
     });
 
@@ -129,3 +135,54 @@ describe('documentation', () => {
     });
   });
 });
+
+/**
+ * Complete examples must compile. A block counts as "complete" when it imports from an @stacklatte package and has an
+ * `export` — fragments (a bare JSX line, a config literal) are skipped. Each is type-checked strictly against the
+ * built packages, so a snippet that imports fine but misuses a prop fails here.
+ */
+describe('complete TypeScript examples compile', () => {
+  const dir = join(ROOT, 'compat', '.cache', 'snippets');
+  const snippets: Array<{ doc: string; line: number; file: string }> = [];
+
+  for (const file of files) {
+    const rel = relative(ROOT, file) || file;
+    for (const b of blocks(readFileSync(file, 'utf8'))) {
+      if (!['ts', 'tsx', 'typescript'].includes(b.lang)) continue;
+      if (!/from ['"]@stacklatte\//.test(b.code) || !/^export /m.test(b.code)) continue;
+      if (/\bnocheck\b/.test(b.info)) continue;
+      snippets.push({ doc: rel, line: b.line, file: `${rel.replace(/[^a-z0-9]+/gi, '_')}_L${b.line}.${b.lang === 'ts' || b.lang === 'typescript' ? 'ts' : 'tsx'}` });
+    }
+  }
+
+  it('finds complete examples to check', () => {
+    expect(snippets.length).toBeGreaterThan(0);
+  });
+
+  it('every complete example type-checks', () => {
+    rmSync(dir, { recursive: true, force: true });
+    mkdirSync(dir, { recursive: true });
+    const byFile = new Map<string, { doc: string; line: number }>();
+    for (const sn of snippets) {
+      const src = blocks(readFileSync(join(ROOT, sn.doc), 'utf8')).find((b) => b.line === sn.line)!;
+      writeFileSync(join(dir, sn.file), src.code);
+      byFile.set(join(dir, sn.file), sn);
+    }
+    const program = tsApi.createProgram([...byFile.keys()], {
+      strict: true, noEmit: true, skipLibCheck: true, target: tsApi.ScriptTarget.ES2022, module: tsApi.ModuleKind.ESNext,
+      moduleResolution: tsApi.ModuleResolutionKind.Bundler, jsx: tsApi.JsxEmit.ReactJSX, lib: ['lib.es2022.d.ts', 'lib.dom.d.ts', 'lib.dom.iterable.d.ts'],
+      experimentalDecorators: true, types: [], esModuleInterop: true,
+      // Consumers get chart-angular's types from the ng-packagr output (dist/), not the source package root.
+      paths: { '@stacklatte/chart-angular': [join(ROOT, 'chart-angular/dist/types/stacklatte-chart-angular.d.ts')] },
+    });
+    const problems = [...byFile.keys()].flatMap((f) =>
+      tsApi.getPreEmitDiagnostics(program, program.getSourceFile(f)).map((d) => {
+        const sn = byFile.get(f)!;
+        const pos = d.file && d.start != null ? d.file.getLineAndCharacterOfPosition(d.start).line + 1 : 0;
+        return `${sn.doc}:${sn.line + pos}  TS${d.code}: ${tsApi.flattenDiagnosticMessageText(d.messageText, ' ').slice(0, 220)}`;
+      }),
+    );
+    expect(problems).toEqual([]);
+  });
+});
+

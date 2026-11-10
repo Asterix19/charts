@@ -2,115 +2,128 @@
 
 ![Demo](./assets/gifs/demo.gif)
 
-High-performance trading charts for React Native and the web. Open-source, MIT licensed.
+**Trading charts for React, React Native, Angular, plain JavaScript and Node** — candlesticks, SMA/EMA/Bollinger overlays, RSI / MACD / volume panels, trade markers, pan and pinch-zoom, crosshair, live streaming. One shared, zero-dependency engine; five renderers. MIT.
 
-- **[`@stacklatte/chart-native`](./chart-native)** — React Native, GPU-accelerated rendering at 60 fps on iOS and Android via [React Native Skia](https://shopify.github.io/react-native-skia/).
-- **[`@stacklatte/chart-web`](./chart-web)** — plain web, rendered with HTML5 Canvas 2D. No React Native, no WASM.
-- **[`@stacklatte/chart-angular`](./chart-angular)** — Angular standalone `<sl-chart>` component (Canvas 2D, SSR-safe, zoneless-friendly).
-- **[`@stacklatte/chart-canvas`](./chart-canvas)** — framework-agnostic `ChartController` + drawing primitives; wrap the chart in Vue, Svelte or plain JS.
-- **[`@stacklatte/chart-engine`](./chart-engine)** — the zero-dependency, framework-agnostic engine both renderers share (viewport, indicators, geometry, the `ChartConfig` compiler + JSON Schema). Build your own renderer (Angular, Vue, …) on top of it.
-- **[`@stacklatte/chart-core`](./chart-core)** — the original name, kept as a thin re-export of `chart-native` / `chart-engine` so existing installs keep working.
-
-**Building this with an LLM or coding agent?** Read [`llms.txt`](./llms.txt) first — it points at the declarative `ChartConfig` pipeline (validated, closed-enum config + a generated JSON Schema you can hand directly to structured output / tool-calling) instead of hand-written props, so generated setup can't reference a color or prop that doesn't exist.
-
-[![npm](https://img.shields.io/npm/v/@stacklatte/chart-native)](https://www.npmjs.com/package/@stacklatte/chart-native)
-[![npm](https://img.shields.io/npm/v/@stacklatte/chart-engine)](https://www.npmjs.com/package/@stacklatte/chart-engine)
-[![npm](https://img.shields.io/npm/v/@stacklatte/chart-web)](https://www.npmjs.com/package/@stacklatte/chart-web)
+[![npm](https://img.shields.io/npm/v/@stacklatte/chart-web?label=chart-web)](https://www.npmjs.com/package/@stacklatte/chart-web)
+[![npm](https://img.shields.io/npm/v/@stacklatte/chart-native?label=chart-native)](https://www.npmjs.com/package/@stacklatte/chart-native)
+[![npm](https://img.shields.io/npm/v/@stacklatte/chart-engine?label=chart-engine)](https://www.npmjs.com/package/@stacklatte/chart-engine)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
 
----
+## Why this library
 
-## Install
+- **Fast at scale.** 60 fps with **50,000 candles** and every panel on, in React, Angular and vanilla JS (measured in CI, not claimed). Only the visible window is drawn; repaints are coalesced to one per frame.
+- **Tiny.** `calcRSI` alone is 657 B gzipped; the whole engine is 8.4 kB; a web app using `SLChart` ships about 10 kB.
+- **Same props everywhere.** A snippet for React works in React Native, Angular and vanilla JS with trivial changes.
+- **Hard to break.** Dirty feeds (NaN, Infinity, duplicates, unsorted, null entries) never blank the chart; invalid indicator periods return no data instead of throwing.
+- **Built for LLMs.** A validated, closed-enum `ChartConfig` plus a JSON Schema, so a model's output either compiles or fails with an itemised error it can fix. See [`llms.txt`](./llms.txt) and [Generate charts with an LLM](./docs/chartconfig-llm.md).
+- **Tested like people depend on it** (they do): one 27-scenario catalogue (feature, edge, stress, live) runs on every platform, with performance budgets and a backward-compatibility oracle against the published versions. See [Testing](./docs/testing.md).
 
-```sh
-npm install @stacklatte/chart-native @shopify/react-native-skia react-native-gesture-handler
+## Pick your package
+
+| Platform | Install | Guide |
+|---|---|---|
+| React / Next.js | `npm install @stacklatte/chart-web` | [docs/react.md](./docs/react.md) |
+| React Native | `npm install @stacklatte/chart-native @shopify/react-native-skia react-native-gesture-handler` | [docs/react-native.md](./docs/react-native.md) |
+| Angular 19+ | `npm install @stacklatte/chart-angular` | [docs/angular.md](./docs/angular.md) |
+| Vue / Svelte / plain JS | `npm install @stacklatte/chart-canvas` | [docs/vanilla-js.md](./docs/vanilla-js.md) |
+| Node / headless | `npm install @stacklatte/chart-engine` | [docs/node-engine.md](./docs/node-engine.md) |
+| Already on `@stacklatte/chart-core` | nothing — it keeps working | [docs/migrating-from-chart-core.md](./docs/migrating-from-chart-core.md) |
+
+## 30 seconds
+
+React:
+
+```tsx
+import { SLChart } from '@stacklatte/chart-web';
+import type { Candle } from '@stacklatte/chart-web';
+
+export function PriceChart({ candles }: { candles: Candle[] }) {
+  return <SLChart data={candles} width={800} height={420} theme="dark" showVolumePanel showRsiPanel showOhlcHud />;
+}
 ```
+
+React Native:
 
 ```tsx
 import { SLChart } from '@stacklatte/chart-native';
 import type { Candle } from '@stacklatte/chart-native';
+import { useWindowDimensions } from 'react-native';
 
-export default function App() {
-  return (
-    <SLChart
-      data={candles}
-      width={screenWidth}
-      height={400}
-      theme="dark"
-    />
-  );
+export function PriceChart({ candles }: { candles: Candle[] }) {
+  const { width } = useWindowDimensions();
+  return <SLChart data={candles} width={width} height={420} theme="dark" showRsiPanel showOhlcHud />;
 }
 ```
 
-See the [full README](./chart-native/README.md) for all examples.
+Angular:
 
-For plain web apps, use `@stacklatte/chart-web` instead — same props, no React Native:
+```ts
+import { Component, input } from '@angular/core';
+import { SlChartComponent } from '@stacklatte/chart-angular';
+import type { Candle } from '@stacklatte/chart-angular';
 
-```sh
-npm install @stacklatte/chart-web
-```
-
-```tsx
-import { SLChart } from '@stacklatte/chart-web';
-
-export default function App() {
-  return <SLChart data={candles} width={800} height={400} theme="dark" />;
+@Component({
+  selector: 'app-price-chart',
+  standalone: true,
+  imports: [SlChartComponent],
+  template: `<sl-chart [data]="candles()" [width]="800" [height]="420" theme="dark" [showVolumePanel]="true" />`,
+})
+export class PriceChartComponent {
+  readonly candles = input.required<Candle[]>();
 }
 ```
 
-See the [chart-web README](./chart-web/README.md) for all examples.
+A `Candle` is `{ timestamp, open, high, low, close, volume? }` with `timestamp` in Unix **milliseconds**.
 
----
-
-## Monorepo structure
+## Monorepo layout
 
 ```
-├── chart-engine/         @stacklatte/chart-engine — platform-agnostic logic (no UI deps)
-├── chart-canvas/         @stacklatte/chart-canvas — framework-agnostic Canvas 2D renderer (ChartController)
-├── chart-native/         @stacklatte/chart-native — React Native / Skia renderer
-├── chart-web/            @stacklatte/chart-web    — React renderer (Canvas 2D)
-├── chart-angular/        @stacklatte/chart-angular — Angular <sl-chart> component
-├── chart-core/           @stacklatte/chart-core   — legacy name, re-exports native + engine
-├── e2e/                  Playwright tests against the React + Angular demos (npm run test:e2e)
-├── e2e-native/           Maestro tests driving the Expo demo on an iOS simulator (npm run test:native)
-└── examples/
-    ├── demo/             Expo demo app (chart-native)
-    ├── web-demo/         Vite + React demo app (chart-web)
-    └── angular-demo/     Vite + Angular demo app (chart-angular)
+chart-engine/    @stacklatte/chart-engine   — indicators, viewport math, geometry, ChartConfig (no dependencies)
+chart-canvas/    @stacklatte/chart-canvas   — framework-agnostic Canvas 2D renderer (ChartController)
+chart-web/       @stacklatte/chart-web      — React renderer
+chart-native/    @stacklatte/chart-native   — React Native / Skia renderer
+chart-angular/   @stacklatte/chart-angular  — Angular <sl-chart>
+chart-core/      @stacklatte/chart-core     — legacy name; re-exports chart-native (+ engine at /core)
+examples/
+  shared/        the scenario catalogue every demo and test uses
+  web-demo/      React demo           (npm run demo:web)
+  angular-demo/  Angular demo         (npm run demo:angular)
+  canvas-demo/   vanilla JS demo      (npm run demo:canvas)
+  demo/          Expo / React Native demo (npm run demo:native)
+  engine-demo/   headless Node demo   (npm run demo -w engine-demo)
+e2e/             Playwright: every scenario on React, Angular and vanilla JS, with performance budgets
+e2e-native/      Maestro: every scenario on an iOS simulator
+compat/          contract tests: API locks, backward compatibility, docs checks, size budgets
+docs/            guides and the generated API reference
 ```
 
----
-
-## Running locally
+## Run it locally
 
 ```sh
 git clone https://github.com/asterix19/charts.git
 cd charts
 npm install
-
-# Build the package
 npm run build
 
-# Run unit tests
-npm run test
-
-# Browser end-to-end tests (builds, then drives the React and Angular demos in Chromium)
-npm run test:e2e
-
-# Native end-to-end tests (needs a booted iOS simulator + Maestro, see e2e-native/README.md)
-npm run test:native
-
-# Pack every package and smoke-test the tarballs in a clean project
-npm run test:pack
-
-# Start the Expo demo app (React Native)
-npm run demo:native
-
-# Start the web demo app
-npm run demo:web
+npm run demo:web        # React demo        → open /#/scenarios/stress-extreme for the 50,000-candle case
+npm run demo:angular    # Angular demo
+npm run demo:canvas     # vanilla JS demo
+npm run demo:native     # Expo (iOS / Android)
 ```
 
----
+## Test it
+
+```sh
+npm test                 # unit tests across all packages
+npm run test:e2e         # Chromium: all scenarios × React / Angular / vanilla, with frame-time budgets
+npm run test:pack        # pack every package, install the tarballs into a clean project
+npm run test:contracts   # API locks, compatibility with published versions, docs, bundle sizes
+npm run test:native      # iOS simulator via Maestro (see e2e-native/README.md)
+```
+
+## Documentation
+
+Start at [`docs/README.md`](./docs/README.md). For AI coding agents: [`llms.txt`](./llms.txt) (short) and [`llms-full.txt`](./llms-full.txt) (everything in one file). Tutorials with live demos are on [stacklatte.com](https://stacklatte.com).
 
 ## License
 
