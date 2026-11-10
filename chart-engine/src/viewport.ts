@@ -42,9 +42,11 @@ export function computeLayout(
     bottom: 26,
     left: 0,
   };
-  const chartWidth = width - padding.left - padding.right;
+  // Never negative: a container smaller than the axis gutters still gets a (1px) plot, so no
+  // downstream division or canvas rect ever sees a negative size.
+  const chartWidth = Math.max(1, width - padding.left - padding.right);
   const panelGap = 8;
-  const innerHeight = height - padding.top - padding.bottom;
+  const innerHeight = Math.max(1, height - padding.top - padding.bottom);
 
   const panelCount = (showVolumePanel ? 1 : 0) + (showRsiPanel ? 1 : 0) + (showMacdPanel ? 1 : 0) + Math.max(0, customPanelCount);
   // Each sub-panel gets an equal share; shrinks gracefully as more are shown
@@ -56,7 +58,7 @@ export function computeLayout(
   const rsiPanelHeight  = showRsiPanel  ? subPanelH : 0;
   const macdPanelHeight = showMacdPanel ? subPanelH : 0;
   const customPanelHeight = customPanelCount > 0 ? subPanelH : 0;
-  const mainChartHeight = innerHeight - panelCount * (panelGap + subPanelH);
+  const mainChartHeight = Math.max(1, innerHeight - panelCount * (panelGap + subPanelH));
   const mainCanvasHeight = padding.top + mainChartHeight + padding.bottom;
 
   return { padding, chartWidth, panelGap, innerHeight, rsiPanelHeight, macdPanelHeight, volumePanelHeight, customPanelHeight, mainChartHeight, mainCanvasHeight };

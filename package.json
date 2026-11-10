@@ -8,6 +8,7 @@
     "chart-core",
     "chart-web",
     "chart-angular",
+    "examples/shared",
     "examples/demo",
     "examples/web-demo",
     "examples/angular-demo"

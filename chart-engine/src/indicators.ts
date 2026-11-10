@@ -10,8 +10,11 @@ export const RSI_MAX = 100;
 
 // ─── RSI (Wilder smoothing) ────────────────────────────────────────────────
 
+/** A usable lookback is a positive integer; anything else (0, negative, NaN, 1.5) yields "no data" instead of throwing. */
+const isValidPeriod = (period: number): boolean => Number.isInteger(period) && period >= 1;
+
 export function calcRSI(candles: Candle[], period = 14): RsiPoint[] {
-  if (!candles || candles.length < period + 1) return [];
+  if (!candles || !isValidPeriod(period) || candles.length < period + 1) return [];
 
   const closes = candles.map((c) => c.close);
   let gainSum = 0;
@@ -58,7 +61,7 @@ export function calcSMA(
   id: string,
   color: string
 ): IndicatorLine | null {
-  if (candles.length < period) return null;
+  if (!isValidPeriod(period) || candles.length < period) return null;
 
   const out: TsPoint[] = [];
 
@@ -82,7 +85,7 @@ export function calcEMA(
   id: string,
   color: string
 ): IndicatorLine | null {
-  if (candles.length < period) return null;
+  if (!isValidPeriod(period) || candles.length < period) return null;
 
   const k = 2 / (period + 1);
   const out: TsPoint[] = [];
@@ -171,7 +174,7 @@ export function calcBollingerBands(
   multiplier: number,
   colors: { upper: string; lower: string; basis: string }
 ): { upper: IndicatorLine; lower: IndicatorLine; basis: IndicatorLine } | null {
-  if (candles.length < period) return null;
+  if (!isValidPeriod(period) || candles.length < period) return null;
 
   const basisData: TsPoint[] = [];
   const upperData: TsPoint[] = [];

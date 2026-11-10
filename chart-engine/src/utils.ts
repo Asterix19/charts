@@ -67,19 +67,39 @@ export function sameOhlc(a: Candle | null, b: Candle | null): boolean {
   return a.open === b.open && a.high === b.high && a.low === b.low && a.close === b.close;
 }
 
+/** A candle can be drawn only if its timestamp and all four prices are finite numbers. */
+function isDrawable(c: Candle | null | undefined): c is Candle {
+  return !!c && Number.isFinite(c.timestamp) && Number.isFinite(c.open) && Number.isFinite(c.high)
+    && Number.isFinite(c.low) && Number.isFinite(c.close);
+}
+
+/** `volume` is optional; a present-but-garbage value (NaN, Infinity, a string) would poison the volume panel. */
+const hasBadVolume = (c: Candle) => c.volume != null && !Number.isFinite(c.volume);
+
 /**
- * Deduplicate and sort candles by timestamp.
+ * Prepare raw candles for rendering: drop undrawable candles (non-finite timestamp or price —
+ * one bad tick would otherwise turn the whole price range into NaN and blank the chart),
+ * strip non-finite volume, sort by timestamp and dedupe (first occurrence wins).
+ * Always returns a new array; never mutates the input.
  */
 export function normalizeCandles(candles: Candle[]): Candle[] {
-  // Fast path: live feeds are almost always already strictly ascending, so a
+  // Fast path: live feeds are almost always clean and already strictly ascending, so a
   // linear scan avoids an O(n log n) comparator sort on every tick.
-  let ascending = true;
-  for (let i = 1; i < candles.length; i++) {
-    if (candles[i].timestamp <= candles[i - 1].timestamp) { ascending = false; break; }
+  let clean = true;
+  for (let i = 0; i < candles.length; i++) {
+    const c = candles[i];
+    if (!isDrawable(c) || hasBadVolume(c) || (i > 0 && c.timestamp <= candles[i - 1].timestamp)) { clean = false; break; }
   }
-  if (ascending) return candles.slice();
+  if (clean) return candles.slice();
 
-  const sorted = candles.slice().sort((a, b) => a.timestamp - b.timestamp);
+  const sorted = candles
+    .filter(isDrawable)
+    .map((c) => {
+      if (!hasBadVolume(c)) return c;
+      const { volume: _drop, ...rest } = c;
+      return rest;
+    })
+    .sort((a, b) => a.timestamp - b.timestamp);
   const out: Candle[] = [];
   for (let i = 0; i < sorted.length; i++) {
     if (i === 0 || sorted[i].timestamp !== sorted[i - 1].timestamp) out.push(sorted[i]);
