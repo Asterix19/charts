@@ -193,7 +193,7 @@ describe('SLChart (web)', () => {
     ).not.toThrow();
   });
 
-  it('shows the OHLC HUD and locks the crosshair to the pointed candle on drag', () => {
+  it('shows the OHLC HUD and locks the crosshair to the pointed candle on drag', async () => {
     const candles = makeCandles(30);
     const onCrosshairChange = vi.fn();
     const { container } = render(
@@ -205,6 +205,7 @@ describe('SLChart (web)', () => {
 
     const canvas = container.querySelector('canvas')!;
     fireEvent.pointerDown(canvas, { clientX: 40, clientY: 150, pointerId: 1 });
+    await nextFrame(); // pointer-driven repaints land on the next animation frame
 
     expect(screen.queryByText('LIVE')).not.toBeInTheDocument();
     expect(onCrosshairChange).toHaveBeenCalled();
@@ -212,6 +213,7 @@ describe('SLChart (web)', () => {
     expect(lastCandle).not.toBeNull();
 
     fireEvent.pointerUp(canvas, { clientX: 40, clientY: 150, pointerId: 1 });
+    await nextFrame(); // pointer-driven repaints land on the next animation frame
   });
 
   // ── Marker hover tooltip ──────────────────────────────────────────────
@@ -230,7 +232,7 @@ describe('SLChart (web)', () => {
     };
   }
 
-  it('shows a tooltip with the label, price, and time when hovering a marker, and hides it when the pointer leaves', () => {
+  it('shows a tooltip with the label, price, and time when hovering a marker, and hides it when the pointer leaves', async () => {
     const candles = makeCandles(30);
     const marker: ChartMarker = {
       timestamp: candles[5].timestamp, price: candles[5].close, kind: 'stop-loss', label: 'Stopped out',
@@ -242,16 +244,18 @@ describe('SLChart (web)', () => {
     expect(screen.queryByText('Stopped out')).not.toBeInTheDocument();
 
     fireEvent.pointerMove(canvas, { clientX, clientY, pointerId: 1, pointerType: 'mouse', buttons: 0 });
+    await nextFrame(); // pointer-driven repaints land on the next animation frame
 
     expect(screen.getByText('Stopped out')).toBeInTheDocument();
     expect(screen.getByText(marker.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }))).toBeInTheDocument();
 
     fireEvent.pointerLeave(canvas, { clientX, clientY, pointerId: 1, pointerType: 'mouse' });
+    await nextFrame(); // pointer-driven repaints land on the next animation frame
 
     expect(screen.queryByText('Stopped out')).not.toBeInTheDocument();
   });
 
-  it('falls back to a kind-derived heading and shows changePct when the marker has no label', () => {
+  it('falls back to a kind-derived heading and shows changePct when the marker has no label', async () => {
     const candles = makeCandles(30);
     const marker: ChartMarker = {
       timestamp: candles[10].timestamp, price: candles[10].close, kind: 'exit-long', changePct: -3.25,
@@ -261,6 +265,7 @@ describe('SLChart (web)', () => {
     const { clientX, clientY } = markerScreenPos(candles, 10, marker.price);
 
     fireEvent.pointerMove(canvas, { clientX, clientY, pointerId: 1, pointerType: 'mouse', buttons: 0 });
+    await nextFrame(); // pointer-driven repaints land on the next animation frame
 
     expect(screen.getByText('Exit (long)')).toBeInTheDocument();
     expect(screen.getByText('-3.25%')).toBeInTheDocument();
@@ -428,7 +433,7 @@ describe('SLChart (web)', () => {
     expect(container.querySelectorAll('canvas').length).toBe(1);
   });
 
-  it('shows a custom panel value in the OHLC HUD when hovering a candle', () => {
+  it('shows a custom panel value in the OHLC HUD when hovering a candle', async () => {
     const candles = makeCandles(30);
     const correlation = candles.map((c) => ({ timestamp: c.timestamp, value: 0.42 }));
     const { container } = render(
@@ -443,6 +448,7 @@ describe('SLChart (web)', () => {
 
     const canvas = container.querySelector('canvas')!;
     fireEvent.pointerDown(canvas, { clientX: 40, clientY: 150, pointerId: 1 });
+    await nextFrame(); // pointer-driven repaints land on the next animation frame
 
     expect(screen.getByText('0.42')).toBeInTheDocument();
   });

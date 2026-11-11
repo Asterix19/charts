@@ -69,6 +69,8 @@ export class ChartController {
 
   private readonly root: HTMLDivElement;
   private readonly mainCanvas: HTMLCanvasElement;
+  private readonly mainWrap: HTMLDivElement;
+  private noDataEl: HTMLDivElement | null = null;
   private readonly panelCanvases = new Map<string, HTMLCanvasElement>();
   private readonly panelWrappers = new Map<string, HTMLDivElement>();
 
@@ -102,6 +104,7 @@ export class ChartController {
     this.root.style.overflow = 'hidden';
 
     const mainWrap = document.createElement('div');
+    this.mainWrap = mainWrap;
     mainWrap.style.position = 'relative';
     mainWrap.style.overflow = 'hidden';
     this.mainCanvas = document.createElement('canvas');
@@ -143,6 +146,19 @@ export class ChartController {
         : clampViewport(this.viewport, dataLen, MIN_VISIBLE_CANDLES);
     }
     this.scheduleRender();
+  }
+
+  /**
+   * Paints right now if a repaint is pending, instead of waiting for the next animation frame. Wrappers that must
+   * be visually up to date as soon as their own update returns (e.g. React's layout effect) call it after `update()`.
+   */
+  flush(): void {
+    if (this.destroyed) return;
+    if (this.rafId !== null) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = null;
+    }
+    this.render();
   }
 
   /**
@@ -410,21 +426,29 @@ export class ChartController {
     const visible = sortedData.slice(visibleStart, visibleEnd);
 
     if (!visible.length) {
-      const ctx = getScaledContext(this.mainCanvas, width, mainCanvasHeight);
-      this.mainCanvas.style.width = `${width}px`;
-      this.mainCanvas.style.height = `${mainCanvasHeight}px`;
-      if (ctx) {
-        ctx.fillStyle = colors.priceLabel;
-        ctx.font = '12px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('No data', width / 2, mainCanvasHeight / 2);
-      }
+      // No candles: a plain "No data" text box and no canvases at all (same as the React renderer has always done).
+      this.mainWrap.remove();
       this.syncPanels([], {}, panelGap, width);
+      if (!this.noDataEl) {
+        this.noDataEl = document.createElement('div');
+        this.noDataEl.setAttribute('data-sl-layer', 'no-data');
+        this.noDataEl.appendChild(document.createElement('span'));
+        this.root.appendChild(this.noDataEl);
+      }
+      this.noDataEl.style.cssText = `width:${width}px;height:${height}px;display:flex;align-items:center;justify-content:center;background:${colors.background}`;
+      const label = this.noDataEl.firstElementChild as HTMLElement;
+      label.style.color = colors.priceLabel;
+      label.textContent = 'No data';
       this.geo = { ...this.geo, visible: [] };
       this.renderTooltip(null, colors);
       this.renderHud(null);
       return;
     }
+    if (this.noDataEl) {
+      this.noDataEl.remove();
+      this.noDataEl = null;
+    }
+    if (!this.mainWrap.isConnected) this.root.insertBefore(this.mainWrap, this.root.firstChild);
 
     const range = vp.end - vp.start;
     const slotWidth = range > 0 ? chartWidth / range : chartWidth;

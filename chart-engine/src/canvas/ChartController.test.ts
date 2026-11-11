@@ -59,10 +59,19 @@ describe('ChartController', () => {
     expect(ctx.fillText).toHaveBeenCalled();
   });
 
-  it('shows "No data" instead of crashing when given no candles', async () => {
+  it('shows a "No data" text box (no canvases) instead of crashing when given no candles, and recovers when data arrives', async () => {
     mount({ data: [] });
     await frame();
-    expect(contexts.at(-1)!.fillText).toHaveBeenCalledWith('No data', expect.any(Number), expect.any(Number));
+    expect(host.textContent).toContain('No data');
+    expect(host.querySelectorAll('canvas')).toHaveLength(0);
+    controller!.update({ data: makeCandles(30), width: 400, height: 300 });
+    await frame();
+    expect(host.textContent).not.toContain('No data');
+    expect(host.querySelectorAll('canvas')).toHaveLength(1);
+    controller!.update({ data: [], width: 400, height: 300 });
+    await frame();
+    expect(host.textContent).toContain('No data');
+    expect(host.querySelectorAll('canvas')).toHaveLength(0);
   });
 
   it('adds and removes sub-panel canvases as props change', async () => {

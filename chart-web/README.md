@@ -5,7 +5,7 @@ High-performance web trading charts — rendered with plain HTML5 Canvas 2D. No 
 [![npm](https://img.shields.io/npm/v/@stacklatte/chart-web)](https://www.npmjs.com/package/@stacklatte/chart-web)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE.md)
 
-This package renders the exact same chart engine as [`@stacklatte/chart-native`](../chart-native) (the React Native / Skia version) — same props, same indicators, same themes, same config pipeline. Every piece of pixel-geometry and indicator math is imported directly from [`@stacklatte/chart-engine`](../chart-engine); only the rendering layer (Canvas 2D draw calls instead of Skia JSX) and the gesture layer (Pointer Events + wheel instead of `react-native-gesture-handler`) are reimplemented for the browser.
+This package renders the exact same chart engine as [`@stacklatte/chart-native`](../chart-native) (the React Native / Skia version) — same props, same indicators, same themes, same config pipeline. Every piece of pixel-geometry and indicator math is imported directly from [`@stacklatte/chart-engine`](../chart-engine). `SLChart` itself is a thin React wrapper (~40 lines) around the Canvas 2D renderer in `@stacklatte/chart-engine/canvas` — drawing, pointer / wheel / pinch gestures, the crosshair, the HUD and the marker tooltip all live there and are shared with [`@stacklatte/chart-angular`](../chart-angular), so the two web renderers draw identically. Only the Skia version ([`chart-native`](../chart-native)) has a separate rendering layer.
 
 
 ## Guides, demos and tests

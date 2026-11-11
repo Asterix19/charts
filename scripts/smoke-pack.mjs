@@ -49,7 +49,8 @@ for (const bad of [{ ...config, theme: 'neon' }, { ...config, interval: '2h' }, 
 }
 assert.equal(typeof web.SLChart, 'function', 'chart-web exports SLChart');
 assert.equal(typeof canvas.drawCandles, 'function', 'chart-engine/canvas exports its drawing primitives');
-assert.ok(renderToString(React.createElement(web.SLChart, { data: candles, width: 400, height: 300 })).includes('<canvas'), 'chart-web SSR renders a canvas');
+// The chart paints on a <canvas> in the browser; on the server it renders only its sized container (no DOM APIs touched).
+assert.match(renderToString(React.createElement(web.SLChart, { data: candles, width: 400, height: 300 })), /<div[^>]*width:400px/, 'chart-web SSR renders its container without throwing');
 assert.ok('definitions' in require('@stacklatte/chart-engine/ChartConfig.schema.json'), 'JSON Schema is resolvable');
 assert.ok(require.resolve('@stacklatte/chart-native').includes('chart-native'), 'chart-native resolves');
 assert.ok(require.resolve('@stacklatte/chart-core').includes('chart-core'), 'chart-core shim resolves');

@@ -758,6 +758,7 @@ Framework-agnostic chart: `new ChartController(hostElement, props)`, then `updat
 | member | type | description |
 |---|---|---|
 | `update` | `update(next: ChartProps): void` | Apply new props (cheap to call on every change). |
+| `flush` | `flush(): void` | Paints right now if a repaint is pending, instead of waiting for the next animation frame. Wrappers that must be visually up to date as soon as their own update returns (e.g. React's layout effect) call it after `update()`. |
 | `getVisibleMarkers` | `getVisibleMarkers(): MarkerPoint[]` | The trade markers currently inside the visible window, with `x` / `y` in the host element's pixel coordinate space (the same space as `PointerEvent.offsetX` on the chart). Use it to place your own overlays next to markers. Empty until the first paint. |
 | `destroy` | `destroy(): void` | Removes the chart's DOM, event listeners and any pending animation frame. Call when the host is torn down. |
 
@@ -872,7 +873,6 @@ OhlcHud(props: Props): React.ReactNode | Promise<React.ReactNode>
 ```ts
 SLChart(props: ChartProps): React.ReactNode | Promise<React.ReactNode>
 ```
-Trading chart for React (HTML5 Canvas 2D). Candlestick or line price panel, optional SMA/EMA/Bollinger overlays, volume / RSI / MACD / custom sub-panels, trade markers, pinch / wheel zoom, drag pan, crosshair inspection and live-streaming updates. Props are identical to the React Native `SLChart`.
 
 ## @stacklatte/chart-native
 

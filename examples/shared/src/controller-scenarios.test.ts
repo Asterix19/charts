@@ -38,7 +38,7 @@ const mount = (s: Scenario, extra: Record<string, unknown> = {}) => {
 const expectedCanvases = (s: Scenario) => {
   const p = s.props(s.data());
   const data = s.data();
-  if (data.length === 0) return 1;
+  if (data.length === 0) return 0; // "No data" text box, no canvases
   // The MACD panel is omitted while there is too little data for MACD(12,26,9) to exist (same as the React renderer).
   const macdShown = !!p.showMacdPanel && calcMACD(normalizeCandles(data)) !== null;
   return 1 + [p.showVolumePanel, p.showRsiPanel, macdShown].filter(Boolean).length + (p.customPanels?.length ?? 0);
@@ -49,13 +49,14 @@ describe.each(SCENARIOS.map((s) => [s.id, s] as const))('scenario %s', (_id, s) 
     mount(s);
     await frame();
     expect(host.querySelectorAll('canvas')).toHaveLength(expectedCanvases(s));
-    expect(contexts.length).toBeGreaterThan(0);
+    if (expectedCanvases(s) > 0) expect(contexts.length).toBeGreaterThan(0);
   });
 
   it('survives wheel zoom, drag pan, hover and pinch-like gestures', async () => {
     mount(s);
     await frame();
-    const canvas = host.querySelector('canvas')!;
+    const canvas = host.querySelector('canvas');
+    if (!canvas) return; // "No data" text box: nothing to interact with
     const ptr = (type: string, x: number, id = 1, extra: PointerEventInit = {}) =>
       canvas.dispatchEvent(new PointerEvent(type, { clientX: x, clientY: 100, pointerId: id, pointerType: 'mouse', bubbles: true, ...extra }));
 
@@ -82,7 +83,7 @@ describe.each(SCENARIOS.map((s) => [s.id, s] as const))('scenario %s', (_id, s) 
     }
     c.update({ data, width: 600, height: s.height, ...s.props(data), showRsiPanel: false, showMacdPanel: false, showVolumePanel: false });
     await frame();
-    expect(host.querySelectorAll('canvas')).toHaveLength(data.length ? 1 + (s.props(data).customPanels?.length ?? 0) : 1);
+    expect(host.querySelectorAll('canvas')).toHaveLength(data.length ? 1 + (s.props(data).customPanels?.length ?? 0) : 0);
   });
 
   if (s.live) {

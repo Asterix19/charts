@@ -274,12 +274,11 @@ export const BASE_TIMESTAMP = BASE_TS;
 /**
  * How many <canvas> elements a renderer should create for a scenario: the main chart plus one per
  * visible sub-panel. The MACD panel is omitted while there is too little data for MACD(12,26,9) to exist.
- * With no data, the React renderer shows a placeholder <div> (`emptyHasCanvas: false`); the DOM-controller
- * renderers (canvas, Angular) draw "No data" on the main canvas (`true`).
+ * With no data every renderer shows a plain "No data" text box and no canvases at all.
  */
-export function expectedCanvasCount(s: Scenario, opts: { emptyHasCanvas: boolean }): number {
+export function expectedCanvasCount(s: Scenario): number {
   const data = s.data();
-  if (data.length === 0) return opts.emptyHasCanvas ? 1 : 0;
+  if (data.length === 0) return 0;
   const p = s.props(data);
   const macdShown = !!p.showMacdPanel && calcMACD(normalizeCandles(data)) !== null;
   return 1 + [p.showVolumePanel, p.showRsiPanel, macdShown].filter(Boolean).length + (p.customPanels?.length ?? 0);

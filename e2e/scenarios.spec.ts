@@ -8,8 +8,6 @@ import { SCENARIOS, expectedCanvasCount, scenarioHash, type Scenario } from '@st
  * catalogue is loaded, inspected, driven with real input and — for stress / live scenarios — measured.
  */
 
-const emptyHasCanvas = (info: TestInfo) => !info.project.name.startsWith('react');
-
 const errors = new WeakMap<Page, string[]>();
 
 test.beforeEach(async ({ page }) => {
@@ -86,9 +84,9 @@ const saveResults = (info: TestInfo) => {
 
 for (const s of SCENARIOS) {
   test.describe(`scenario ${s.id}`, () => {
-    test('renders the expected canvases with painted content', async ({ page }, info) => {
+    test('renders the expected canvases with painted content', async ({ page }) => {
       await open(page, s);
-      const expected = expectedCanvasCount(s, { emptyHasCanvas: emptyHasCanvas(info) });
+      const expected = expectedCanvasCount(s);
       await expect(page.getByTestId('chart-host').locator('canvas')).toHaveCount(expected);
       if (!s.live) await expect(page.getByTestId('stats')).toHaveAttribute('data-candles', String(s.data().length));
       // Renderers draw on the next animation frame, so the canvas can exist a frame before it is painted.
