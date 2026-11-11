@@ -105,3 +105,14 @@ describe.each(SCENARIOS.map((s) => [s.id, s] as const))('scenario %s', (_id, s) 
     });
   }
 });
+
+describe('marker scenarios actually draw their markers', () => {
+  it.each([['markers', 1], ['edge-unsorted-markers', 6]] as const)('%s reports >= %i visible markers', async (id, min) => {
+    const s = SCENARIOS.find((x) => x.id === id)!;
+    mount(s);
+    await frame();
+    expect(controller!.getVisibleMarkers().length).toBeGreaterThanOrEqual(min);
+    if (id === 'edge-unsorted-markers') expect(controller!.getVisibleMarkers()).toHaveLength(6); // the off-screen one is excluded
+  });
+});
+

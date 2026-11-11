@@ -1,7 +1,7 @@
 import { PLATFORM_ID } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Candle } from '@stacklatte/chart-engine';
+import { buildMarkerPoints, buildPaddedRange, buildTimestampIndex, computeLayout, type Candle } from '@stacklatte/chart-engine';
 
 import { SlChartComponent } from './sl-chart.component';
 import { installCanvasMock, type MockContext2D } from './testing/canvasMock';
@@ -117,4 +117,24 @@ describe('<sl-chart>', () => {
     expect(canvases(fixture)).toHaveLength(0);
     expect(getContext.mock.calls).toHaveLength(0);
   });
+
+  it('shows the marker tooltip on hover (the controller feature, through the component)', async () => {
+    const candles = makeCandles(60);
+    const marker = { timestamp: candles[30].timestamp, price: candles[30].close, kind: 'entry-long' as const, label: 'Buy', changePct: 2.5 };
+    const fixture = await create({ data: candles, markers: [marker], height: 300 });
+
+    const layout = computeLayout(400, 300, false, false, false);
+    const range = buildPaddedRange(Math.min(...candles.map((c) => c.low)), Math.max(...candles.map((c) => c.high)), 0.05);
+    const [pt] = buildMarkerPoints([marker], buildTimestampIndex(candles), candles.length, layout.chartWidth, layout.mainChartHeight, range.min, range.max);
+
+    canvases(fixture)[0].dispatchEvent(new PointerEvent('pointermove', {
+      clientX: layout.padding.left + pt.x, clientY: layout.padding.top + pt.y, pointerId: 1, pointerType: 'mouse', buttons: 0, bubbles: true,
+    }));
+    await frame();
+    const tip = fixture.nativeElement.querySelector('[data-sl-layer="marker-tooltip"]');
+    expect(tip).not.toBeNull();
+    expect(tip.textContent).toContain('Buy');
+    expect(tip.textContent).toContain('+2.50%');
+  });
 });
+

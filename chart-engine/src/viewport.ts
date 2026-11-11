@@ -396,8 +396,27 @@ export function buildPaddedRange(
 // ─── Data filtering helpers ───────────────────────────────────────────────
 
 /**
- * Filter a timestamp-sorted array to [leftTs, rightTs] using binary search.
- * O(log n + k) instead of O(n), where k is the number of matching points.
+ * `data` ordered by timestamp. Returns `data` itself when it already is (the common case); otherwise a sorted
+ * copy. Results are cached per array (and revalidated on length change), so repeated windowing of the same
+ * markers / indicator series costs one O(n) check, not one per repaint.
+ */
+const sortedCache = new WeakMap<object, { length: number; sorted: unknown[] }>();
+function sortedByTimestamp<T extends { timestamp: number }>(data: T[]): T[] {
+  const hit = sortedCache.get(data);
+  if (hit && hit.length === data.length) return hit.sorted as T[];
+  let ordered = true;
+  for (let i = 1; i < data.length; i++) {
+    if (data[i].timestamp < data[i - 1].timestamp) { ordered = false; break; }
+  }
+  const sorted = ordered ? data : [...data].sort((a, b) => a.timestamp - b.timestamp);
+  sortedCache.set(data, { length: data.length, sorted });
+  return sorted;
+}
+
+/**
+ * Filter an array to the timestamps in [leftTs, rightTs], inclusive. O(log n + k) for ordered input
+ * (binary search). Input need not be ordered — markers and indicator series supplied in any order are
+ * sorted (once, cached) rather than silently dropped.
  */
 export function filterByWindow<T extends { timestamp: number }>(
   data: T[],
@@ -406,6 +425,7 @@ export function filterByWindow<T extends { timestamp: number }>(
 ): T[] {
   const n = data.length;
   if (n === 0) return [];
+  data = sortedByTimestamp(data);
 
   // Lower bound: first index where timestamp >= leftTs
   let lo = 0, hi = n;

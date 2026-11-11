@@ -75,6 +75,10 @@ export function useChart(candles: () => Candle[]) {
 }
 ```
 
+## Trade markers
+
+Hovering or touching a marker shows a built-in tooltip. `chart.getVisibleMarkers()` returns the markers currently on screen with `x` / `y` in the host's pixel space, so you can place your own overlays next to them.
+
 ## Drawing primitives
 
 `@stacklatte/chart-canvas` also exports the pure drawing functions (`drawCandles`, `drawAxis`, `drawRsiPanel`, `drawMacdPanel`, `drawVolumePanel`, `drawMarkers`, …) if you want to compose your own layout on a `CanvasRenderingContext2D`. See the [API reference](./api-reference.md).

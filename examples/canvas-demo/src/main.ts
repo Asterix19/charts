@@ -50,6 +50,8 @@ function render(): void {
 
   const width = () => Math.floor(host.getBoundingClientRect().width);
   controller = new ChartController(host, { data, width: width(), height: scenario.height, ...scenario.props(data) });
+  // Test hook: lets the e2e suite find marker positions without re-deriving the layout.
+  (window as unknown as { __SL_CHART__?: ChartController }).__SL_CHART__ = controller;
   paintStats();
   requestAnimationFrame(() => requestAnimationFrame(() => { mountMs = performance.now() - startedAt; paintStats(); }));
 

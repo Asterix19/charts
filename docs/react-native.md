@@ -60,7 +60,7 @@ Memoise indicator arrays: they are recomputed only when `candles` changes, which
 
 ## Testing
 
-The repository's `examples/demo` app serves the same 27-scenario catalogue as every web demo (including a 50,000-candle stress scenario) and is driven end-to-end on an iOS simulator with Maestro — see [Testing](./testing.md).
+The repository's `examples/demo` app serves the same 28-scenario catalogue as every web demo (including a 50,000-candle stress scenario) and is driven end-to-end on an iOS simulator with Maestro — see [Testing](./testing.md).
 
 ## Notes
 

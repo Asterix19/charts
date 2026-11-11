@@ -27,7 +27,7 @@ export class PriceChartComponent {
 }
 ```
 
-Inputs mirror `ChartProps`; the single output is `crosshairChange` (the inspected `Candle` or `null`). Not yet supported: the hover tooltip for trade markers.
+Inputs mirror `ChartProps`; the single output is `crosshairChange` (the inspected `Candle` or `null`).
 
 ## Rules for correct code
 

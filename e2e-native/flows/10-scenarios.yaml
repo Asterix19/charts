@@ -730,6 +730,33 @@ appId: com.anonymous.demo
     id: chart-host
 - takeScreenshot: scenario-edge-bad-period
 
+# ── edge-unsorted-markers (edge) ──
+- openLink: demo://scenarios?id=edge-unsorted-markers
+- extendedWaitUntil:
+    visible: "Open in.*"
+    timeout: 4000
+    optional: true
+- tapOn:
+    text: "Open"
+    optional: true
+- extendedWaitUntil:
+    visible: ".*scenario=edge-unsorted-markers candles=500 .*"
+    timeout: 30000
+- assertVisible:
+    id: title
+- assertVisible: "Unordered markers"
+- swipe:
+    start: 30%, 55%
+    end: 80%, 55%
+    duration: 400
+- swipe:
+    start: 80%, 55%
+    end: 20%, 55%
+    duration: 400
+- assertVisible:
+    id: chart-host
+- takeScreenshot: scenario-edge-unsorted-markers
+
 # ── edge-gaps (edge) ──
 - openLink: demo://scenarios?id=edge-gaps
 - extendedWaitUntil:

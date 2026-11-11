@@ -65,9 +65,9 @@ export class AnalysisComponent {
 
 On the server the component renders only its container; the canvas is created in the browser after the first render. There is nothing to configure.
 
-## Not yet in the Angular wrapper
+## Trade markers
 
-The hover tooltip for trade markers (markers themselves are drawn). Everything else in `ChartProps` is supported.
+Pass `[markers]` and hovering (mouse) or touching (touch) a marker shows a tooltip with its label, price, time and — if you set `changePct` — the signed change. Markers and indicator series may be supplied in any order; they are sorted rather than dropped. Everything in `ChartProps` is supported.
 
 ## How it is tested
 

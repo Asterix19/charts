@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Candle } from '@stacklatte/chart-engine';
+import { buildMarkerPoints, buildPaddedRange, buildTimestampIndex, computeLayout, type Candle, type ChartMarker } from '@stacklatte/chart-engine';
 
 import { ChartController } from './ChartController';
 import { installCanvasMock, type MockContext2D } from './testUtils/canvasMock';
@@ -201,3 +201,115 @@ describe('ChartController', () => {
     controller = undefined;
   });
 });
+
+describe('ChartController — marker tooltip', () => {
+  const candles = makeCandles(60);
+  const marker = (patch: Partial<ChartMarker> = {}): ChartMarker => ({ timestamp: candles[30].timestamp, price: candles[30].close, kind: 'entry-long', label: 'Buy', ...patch });
+
+  /** Client coordinates of a marker, derived with the same engine functions the controller uses. */
+  const clientPosition = (m: ChartMarker) => {
+    const layout = computeLayout(400, 300, false, false, false);
+    const range = buildPaddedRange(Math.min(...candles.map((c) => c.low)), Math.max(...candles.map((c) => c.high)), 0.05);
+    const [pt] = buildMarkerPoints([m], buildTimestampIndex(candles), candles.length, layout.chartWidth, layout.mainChartHeight, range.min, range.max);
+    return { x: layout.padding.left + pt.x, y: layout.padding.top + pt.y };
+  };
+
+  const hover = (x: number, y: number) =>
+    host.querySelector('canvas')!.dispatchEvent(new PointerEvent('pointermove', { clientX: x, clientY: y, pointerId: 1, pointerType: 'mouse', buttons: 0, bubbles: true }));
+  const tooltip = () => host.querySelector('[data-sl-layer="marker-tooltip"]');
+
+  it('shows the label, price and time when hovering a marker, and hides it when the pointer moves away', async () => {
+    const m = marker();
+    mount({ data: candles, markers: [m] });
+    await frame();
+    const pos = clientPosition(m);
+    hover(pos.x, pos.y);
+    await frame();
+    expect(tooltip()).not.toBeNull();
+    expect(tooltip()!.getAttribute('role')).toBe('tooltip');
+    expect(tooltip()!.textContent).toContain('Buy');
+    expect(tooltip()!.textContent).toContain('Price');
+    expect(tooltip()!.textContent).toContain('Time');
+
+    hover(5, 280);
+    await frame();
+    expect(tooltip()).toBeNull();
+  });
+
+  it('shows a signed change row coloured by direction', async () => {
+    const m = marker({ kind: 'exit-long', label: 'Sell', changePct: -3.5 });
+    mount({ data: candles, markers: [m] });
+    await frame();
+    const pos = clientPosition(m);
+    hover(pos.x, pos.y);
+    await frame();
+    expect(tooltip()!.textContent).toContain('-3.50%');
+  });
+
+  it('falls back to a name derived from the marker kind when there is no label', async () => {
+    const m = marker({ kind: 'stop-loss', label: undefined });
+    mount({ data: candles, markers: [m] });
+    await frame();
+    const pos = clientPosition(m);
+    hover(pos.x, pos.y);
+    await frame();
+    expect(tooltip()!.textContent).toMatch(/stop/i);
+  });
+
+  it('hides on pointerleave', async () => {
+    const m = marker();
+    mount({ data: candles, markers: [m] });
+    await frame();
+    const pos = clientPosition(m);
+    hover(pos.x, pos.y);
+    await frame();
+    host.querySelector('canvas')!.dispatchEvent(new PointerEvent('pointerleave', { pointerId: 1, pointerType: 'mouse', bubbles: true }));
+    await frame();
+    expect(tooltip()).toBeNull();
+  });
+
+  it('treats a marker label as text, never as HTML', async () => {
+    const m = marker({ label: '<img src=x onerror="window.__pwned = true">' });
+    mount({ data: candles, markers: [m] });
+    await frame();
+    const pos = clientPosition(m);
+    hover(pos.x, pos.y);
+    await frame();
+    expect(tooltip()!.querySelector('img')).toBeNull();
+    expect(tooltip()!.textContent).toContain('<img src=x');
+    expect((window as unknown as { __pwned?: boolean }).__pwned).toBeUndefined();
+  });
+
+  it('never creates a tooltip when there are no markers', async () => {
+    mount({ data: candles });
+    await frame();
+    hover(200, 100);
+    await frame();
+    expect(tooltip()).toBeNull();
+  });
+
+  it('getVisibleMarkers() reports host-space positions that hit the tooltip', async () => {
+    const m = marker();
+    const c = mount({ data: candles, markers: [m, marker({ timestamp: candles[0].timestamp - 1e9 })] });
+    await frame();
+    const [only, ...rest] = c.getVisibleMarkers();
+    expect(rest).toEqual([]); // the off-window marker is not reported
+    expect(only.kind).toBe('entry-long');
+    const expected = clientPosition(m);
+    expect(only.x).toBeCloseTo(expected.x, 5);
+    expect(only.y).toBeCloseTo(expected.y, 5);
+  });
+
+  it('is removed with the chart on destroy()', async () => {
+    const m = marker();
+    const c = mount({ data: candles, markers: [m] });
+    await frame();
+    const pos = clientPosition(m);
+    hover(pos.x, pos.y);
+    await frame();
+    c.destroy();
+    expect(host.querySelector('[data-sl-layer="marker-tooltip"]')).toBeNull();
+    controller = undefined;
+  });
+});
+

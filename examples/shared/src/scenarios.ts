@@ -68,16 +68,23 @@ function bollinger(data: Candle[]): { indicators: IndicatorLine[]; shadedAreas: 
   return { indicators: [bb.upper, bb.lower, bb.basis], shadedAreas: [{ fromId: bb.upper.id, toId: bb.lower.id, color: COLORS.purple, opacity: 0.12 }] };
 }
 
-function markersFor(data: Candle[]): ChartMarker[] {
+function markersFor(data: Candle[], at_ = [0.55, 0.65, 0.7, 0.78, 0.84, 0.9]): ChartMarker[] {
   if (data.length < 40) return [];
   const at = (f: number) => data[Math.floor(data.length * f)];
   const m = (f: number, kind: ChartMarker['kind'], label: string, price: 'low' | 'high' | 'close' = 'close'): ChartMarker => ({
     timestamp: at(f).timestamp, price: at(f)[price], kind, label,
   });
   return [
-    m(0.55, 'entry-long', 'Buy', 'low'), m(0.65, 'take-profit', 'TP', 'high'), m(0.7, 'exit-long', 'Close'),
-    m(0.78, 'entry-short', 'Sell', 'high'), m(0.84, 'stop-loss', 'SL', 'high'), m(0.9, 'exit-short', 'Cover'),
+    m(at_[0], 'entry-long', 'Buy', 'low'), m(at_[1], 'take-profit', 'TP', 'high'), m(at_[2], 'exit-long', 'Close'),
+    m(at_[3], 'entry-short', 'Sell', 'high'), m(at_[4], 'stop-loss', 'SL', 'high'), m(at_[5], 'exit-short', 'Cover'),
   ];
+}
+
+/** Six in-window markers plus one far outside the window, in a deliberately scrambled order. */
+function scrambled(d: Candle[]): ChartMarker[] {
+  const inside = markersFor(d, [0.82, 0.86, 0.9, 0.93, 0.96, 0.985]);
+  const outside = markersFor(d, [0.1, 0.1, 0.1, 0.1, 0.1, 0.1])[0];
+  return [inside[4], outside, inside[1], inside[5], inside[0], inside[3], inside[2]];
 }
 
 function correlationPanel(data: Candle[]): CustomPanel {
@@ -195,6 +202,11 @@ export const SCENARIOS: Scenario[] = [
   { id: 'edge-bad-period', title: 'Bad period', kind: 'edge', candles: 200, height: 360,
     description: 'rsiPeriod=0 — invalid indicator settings degrade to "no data" instead of crashing the render.',
     data: () => generateCandles(200, { seed: 61 }), props: () => ({ intervalMs: MINUTE, showRsiPanel: true, rsiPeriod: 0 }) },
+  { id: 'edge-unsorted-markers', title: 'Unordered markers', kind: 'edge', candles: 500, height: 340,
+    description: 'Trade markers (one of them far off-screen) and indicator series supplied in scrambled order are still drawn — they are sorted, not dropped.',
+    data: () => base(500),
+    props: (d) => ({ intervalMs: MINUTE, visibleDataPoints: 100, markers: scrambled(d),
+      indicators: movingAverages(d).map((l) => ({ ...l, data: [...l.data].reverse() })) }) },
   { id: 'edge-gaps', title: 'Gaps', kind: 'edge', candles: 200, height: 320, description: 'Irregular spacing: missing candles and an overnight gap.',
     data: () => generateCandles(260, { seed: 41 }).filter((_, i) => i % 7 !== 3 && !(i > 100 && i < 140)), props: () => ({ intervalMs: MINUTE, showVolumePanel: true }) },
 ];

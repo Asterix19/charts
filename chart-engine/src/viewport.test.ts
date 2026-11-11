@@ -723,3 +723,33 @@ describe('softZoomOutCeiling', () => {
     expect(softZoomOutCeiling(0)).toBe(0);
   });
 });
+
+describe('filterByWindow with unordered input', () => {
+  const pts = [5, 1, 9, 3, 7, 2, 8].map((t) => ({ timestamp: t * 100, tag: `p${t}` }));
+
+  it('returns the same points as for sorted input (markers/indicators in any order are not dropped)', () => {
+    const sorted = [...pts].sort((a, b) => a.timestamp - b.timestamp);
+    for (const [l, r] of [[0, 1000], [200, 700], [300, 300], [950, 2000], [-5, 50]] as const) {
+      expect(filterByWindow(pts, l, r)).toEqual(filterByWindow(sorted, l, r));
+    }
+  });
+
+  it('does not mutate the input and returns ascending output', () => {
+    const copy = JSON.stringify(pts);
+    const out = filterByWindow(pts, 0, 1000);
+    expect(JSON.stringify(pts)).toBe(copy);
+    expect(out.map((p) => p.timestamp)).toEqual([...out.map((p) => p.timestamp)].sort((a, b) => a - b));
+  });
+
+  it('notices when the same array grows', () => {
+    const live = [{ timestamp: 1 }, { timestamp: 2 }];
+    expect(filterByWindow(live, 0, 10)).toHaveLength(2);
+    live.push({ timestamp: 0 });
+    expect(filterByWindow(live, 0, 10)).toHaveLength(3);
+  });
+
+  it('still returns the input array slice semantics for ordered input', () => {
+    const ordered = [1, 2, 3, 4].map((t) => ({ timestamp: t }));
+    expect(filterByWindow(ordered, 2, 3)).toEqual([{ timestamp: 2 }, { timestamp: 3 }]);
+  });
+});

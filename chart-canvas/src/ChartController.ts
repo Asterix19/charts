@@ -13,6 +13,7 @@ import {
   applyZoomOutResistance,
   buildCandleGeometry,
   buildLinePoints,
+  buildMarkerPoints,
   buildPaddedRange,
   buildSeriesPoints,
   buildShadedAreaPoints,
@@ -23,8 +24,10 @@ import {
   computeCustomPanelYRange,
   computeLayout,
   filterByWindow,
+  findMarkerAt,
   findIndicatorById,
   findIndicatorValue,
+  getMarkerKindLabel,
   getSeriesX,
   getThemeColors,
   getY,
@@ -34,7 +37,7 @@ import {
   resolveIntervalMs,
   softZoomOutCeiling,
 } from '@stacklatte/chart-engine';
-import type { Candle, CandleViewport, ChartProps } from '@stacklatte/chart-engine';
+import type { Candle, CandleViewport, ChartProps, MarkerPoint } from '@stacklatte/chart-engine';
 
 import { getScaledContext } from './canvasDpr';
 import { drawAxis } from './draw/axis';
@@ -81,7 +84,12 @@ export class ChartController {
   private pinching = false;
 
   // geometry captured by the last render, read by gesture handlers
-  private geo = { chartWidth: 1, padLeft: 0, slotWidth: 1, fractionalOffsetX: 0, visible: [] as Candle[] };
+  private geo = { chartWidth: 1, padLeft: 0, padTop: 0, slotWidth: 1, fractionalOffsetX: 0, visible: [] as Candle[] };
+
+  // marker tooltip: the pointer position (plot-local) is remembered so the hit-test re-runs after every repaint
+  private markerPoints: MarkerPoint[] = [];
+  private hoverPos: { x: number; y: number } | null = null;
+  private tooltipEl: HTMLDivElement | null = null;
   private prevVisibleDataPoints: number | undefined;
   private prevScrollTrigger: number | undefined;
 
@@ -135,6 +143,16 @@ export class ChartController {
     this.scheduleRender();
   }
 
+  /**
+   * The trade markers currently inside the visible window, with `x` / `y` in the host element's pixel
+   * coordinate space (the same space as `PointerEvent.offsetX` on the chart). Use it to place your own
+   * overlays next to markers. Empty until the first paint.
+   */
+  getVisibleMarkers(): MarkerPoint[] {
+    const { padLeft, padTop, fractionalOffsetX } = this.geo;
+    return this.markerPoints.map((m) => ({ ...m, x: m.x + padLeft + fractionalOffsetX, y: m.y + padTop }));
+  }
+
   /** Removes the chart's DOM, event listeners and any pending animation frame. Call when the host is torn down. */
   destroy(): void {
     this.destroyed = true;
@@ -179,6 +197,17 @@ export class ChartController {
   private attachGestures(): void {
     const canvas = this.mainCanvas;
     const localX = (clientX: number) => clientX - canvas.getBoundingClientRect().left;
+    const localY = (clientY: number) => clientY - canvas.getBoundingClientRect().top;
+    // Hover (mouse) or touch-and-drag over a marker shows its tooltip — independent of showOhlcHud.
+    const hoverAt = (e: PointerEvent) => {
+      this.hoverPos = { x: localX(e.clientX), y: localY(e.clientY) };
+      this.scheduleRender();
+    };
+    const unhover = () => {
+      if (this.hoverPos === null) return;
+      this.hoverPos = null;
+      this.scheduleRender();
+    };
 
     const lockAt = (x: number) => {
       const { visible, padLeft, fractionalOffsetX, slotWidth } = this.geo;
@@ -235,6 +264,7 @@ export class ChartController {
       this.panStart = this.viewport;
       this.dragStartX = e.clientX;
       if (this.props.showOhlcHud) lockAt(localX(e.clientX));
+      hoverAt(e);
     };
 
     const onMove = (e: PointerEvent) => {
@@ -252,9 +282,13 @@ export class ChartController {
         this.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
         pan(e.clientX - this.dragStartX);
         if (this.props.showOhlcHud) lockAt(localX(e.clientX));
+        hoverAt(e);
         return;
       }
-      if (e.pointerType === 'mouse' && e.buttons === 0 && this.props.showOhlcHud) lockAt(localX(e.clientX));
+      if (e.pointerType === 'mouse' && e.buttons === 0) {
+        if (this.props.showOhlcHud) lockAt(localX(e.clientX));
+        hoverAt(e);
+      }
     };
 
     const onUp = (e: PointerEvent) => {
@@ -274,12 +308,18 @@ export class ChartController {
       }
       if (this.pointers.size === 0) {
         this.dragging = false;
-        if (e.pointerType !== 'mouse') release();
+        if (e.pointerType !== 'mouse') {
+          release();
+          unhover();
+        }
       }
     };
 
     const onLeave = (e: PointerEvent) => {
-      if (e.pointerType === 'mouse' && !this.dragging && !this.pinching) release();
+      if (e.pointerType === 'mouse' && !this.dragging && !this.pinching) {
+        release();
+        unhover();
+      }
     };
 
     const onWheel = (e: WheelEvent) => {
@@ -378,6 +418,7 @@ export class ChartController {
       }
       this.syncPanels([], {}, panelGap, width);
       this.geo = { ...this.geo, visible: [] };
+      this.renderTooltip(null, colors);
       return;
     }
 
@@ -385,7 +426,7 @@ export class ChartController {
     const slotWidth = range > 0 ? chartWidth / range : chartWidth;
     const virtualWidth = visible.length * slotWidth;
     const fractionalOffsetX = -(vp.start - visibleStart) * slotWidth;
-    this.geo = { chartWidth, padLeft: padding.left, slotWidth, fractionalOffsetX, visible };
+    this.geo = { chartWidth, padLeft: padding.left, padTop: padding.top, slotWidth, fractionalOffsetX, visible };
 
     const intervalMs = resolveIntervalMs(p.intervalMs, sortedData);
     const startTs = visible[0].timestamp - intervalMs;
@@ -413,6 +454,15 @@ export class ChartController {
       ...prepared.flatMap(({ data }) => data.map((pt) => pt.value).filter((v) => typeof v === 'number' && Number.isFinite(v))),
     ];
     const price = buildPaddedRange(Math.min(...values), Math.max(...values), 0.05);
+
+    // marker hit-testing + tooltip (plot-local coordinates, same space the markers are drawn in)
+    const markerPoints = markers.length
+      ? buildMarkerPoints(markers, buildTimestampIndex(visible), visible.length, virtualWidth, mainChartHeight, price.min, price.max)
+      : [];
+    this.markerPoints = markerPoints;
+    const hovered = this.hoverPos
+      ? findMarkerAt(markerPoints, this.hoverPos.x - padding.left - fractionalOffsetX, this.hoverPos.y - padding.top)
+      : null;
 
     // crosshair
     const idx = this.lockedTimestamp === null ? -1 : visible.findIndex((c) => c.timestamp === this.lockedTimestamp);
@@ -556,5 +606,52 @@ export class ChartController {
         },
       );
     }
+    this.renderTooltip(hovered, colors, { width, height, padLeft: padding.left, padTop: padding.top, offsetX: fractionalOffsetX });
+  }
+
+  /** Plain-DOM tooltip for the hovered trade marker (same content and positioning as the React renderer). */
+  private renderTooltip(
+    point: MarkerPoint | null,
+    colors: ReturnType<typeof getThemeColors>,
+    box?: { width: number; height: number; padLeft: number; padTop: number; offsetX: number },
+  ): void {
+    if (!point || !box) {
+      this.tooltipEl?.remove();
+      this.tooltipEl = null;
+      return;
+    }
+    const WIDTH = 132;
+    const HEIGHT = 78; // rough; only used for edge-clamping
+    const clampPx = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
+    const el = this.tooltipEl ?? document.createElement('div');
+    if (!this.tooltipEl) {
+      el.setAttribute('data-sl-layer', 'marker-tooltip');
+      el.setAttribute('role', 'tooltip');
+      this.root.appendChild(el);
+      this.tooltipEl = el;
+    }
+    const absX = box.padLeft + point.x + box.offsetX;
+    const absY = box.padTop + point.y;
+    const date = new Date(point.timestamp);
+    const time = `${date.toLocaleDateString([], { month: 'short', day: 'numeric' })} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    const price = point.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const up = (point.changePct ?? 0) >= 0;
+    const row = (label: string, value: string, color = colors.hudText) =>
+      `<div style="display:flex;justify-content:space-between;padding:1px 0"><span style="font-size:10px;opacity:.75;color:${colors.hudText}">${label}</span><span style="font-size:10px;font-weight:600;color:${color}">${value}</span></div>`;
+
+    el.style.cssText =
+      `position:absolute;z-index:20;pointer-events:none;user-select:none;width:${WIDTH}px;border-radius:6px;padding:6px 10px;` +
+      `left:${clampPx(absX + 10, 0, Math.max(0, box.width - WIDTH))}px;top:${clampPx(absY - HEIGHT - 10, 0, Math.max(0, box.height - HEIGHT))}px;` +
+      `background:${colors.hudBackground};font-family:ui-monospace,SFMono-Regular,Menlo,monospace`;
+    // Text is escaped: marker labels come from the caller's data.
+    const heading = document.createElement('div');
+    heading.style.cssText = `font-size:11px;font-weight:700;margin-bottom:3px;color:${colors.hudText};white-space:nowrap;overflow:hidden;text-overflow:ellipsis`;
+    heading.textContent = point.label ?? getMarkerKindLabel(point.kind);
+    const rows = document.createElement('div');
+    rows.innerHTML =
+      row('Price', price) +
+      row('Time', time) +
+      (point.changePct != null ? row('Chg', `${up ? '+' : ''}${point.changePct.toFixed(2)}%`, up ? colors.candleUp : colors.candleDown) : '');
+    el.replaceChildren(heading, rows);
   }
 }

@@ -188,7 +188,7 @@ Extend a series so it visually fills the entire visible candle window. Adds a le
 ```ts
 filterByWindow<T extends { timestamp: number; }>(data: T[], leftTs: number, rightTs: number): T[]
 ```
-Filter a timestamp-sorted array to [leftTs, rightTs] using binary search. O(log n + k) instead of O(n), where k is the number of matching points.
+Filter an array to the timestamps in [leftTs, rightTs], inclusive. O(log n + k) for ordered input (binary search). Input need not be ordered — markers and indicator series supplied in any order are sorted (once, cached) rather than silently dropped.
 
 ```ts
 findIndicatorById(indicators: IndicatorLine[] | undefined, id: string): IndicatorLine | undefined
@@ -747,6 +747,7 @@ Framework-agnostic chart: `new ChartController(hostElement, props)`, then `updat
 | member | type | description |
 |---|---|---|
 | `update` | `update(next: ChartProps): void` | Apply new props (cheap to call on every change). |
+| `getVisibleMarkers` | `getVisibleMarkers(): MarkerPoint[]` | The trade markers currently inside the visible window, with `x` / `y` in the host element's pixel coordinate space (the same space as `PointerEvent.offsetX` on the chart). Use it to place your own overlays next to markers. Empty until the first paint. |
 | `destroy` | `destroy(): void` | Removes the chart's DOM, event listeners and any pending animation frame. Call when the host is torn down. |
 
 ### Functions

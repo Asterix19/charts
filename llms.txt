@@ -94,7 +94,7 @@ Ask the model for a `ChartConfig` JSON document, then call `buildChartPipeline(c
 
 - 60 fps (p95 frame ≈ 17–18 ms) with 50,000 candles, EMA + Bollinger + volume + RSI + MACD + HUD, on React, Angular and vanilla JS; mount in 20–45 ms.
 - `calcRSI` alone is 657 B gzipped; whole engine 8.4 kB; a web app using `SLChart` ≈ 10.4 kB.
-- 27 reproducible scenarios (feature, edge, stress, live) run on every platform, plus a compatibility oracle against the published `chart-core` 2.3.3 / `chart-web` 1.3.2.
+- 28 reproducible scenarios (feature, edge, stress, live) run on every platform, plus a compatibility oracle against the published `chart-core` 2.3.3 / `chart-web` 1.3.2.
 - Dirty feeds (NaN / Infinity / null candles, garbage volume, duplicates, unsorted) never blank the chart.
 
 ## Documentation
