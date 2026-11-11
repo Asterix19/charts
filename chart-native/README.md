@@ -6,6 +6,8 @@ High-performance React Native trading charts — GPU-accelerated via [React Nati
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE.md)
 
 
+> **iOS and Android only.** In a browser use [`@stacklatte/chart-web`](../chart-web). Importing this package on web throws `Can't find variable: CanvasKit` (Skia's web build needs its WASM loaded first) — see the [React Native guide](../docs/react-native.md#not-for-the-browser).
+
 ## Guides, demos and tests
 
 - **Guide:** [React Native guide](../docs/react-native.md) · [all docs](../docs/README.md) · [API reference](../docs/api-reference.md) · [for LLMs: `llms.txt`](./llms.txt)

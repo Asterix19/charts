@@ -62,6 +62,10 @@ Memoise indicator arrays: they are recomputed only when `candles` changes, which
 
 The repository's `examples/demo` app serves the same 35-scenario catalogue as every web demo (including a 50,000-candle stress scenario) and is driven end-to-end on an iOS simulator with Maestro — see [Testing](./testing.md).
 
+## Not for the browser
+
+`@stacklatte/chart-native` renders with Skia on **iOS and Android only**. Opening a React Native app that imports it in a browser (for example pressing `w` in the Expo terminal) throws `ReferenceError: Can't find variable: CanvasKit`, because Skia's web build needs its WebAssembly loaded before it is imported. For the web use [`@stacklatte/chart-web`](./react.md) — same props, no Skia. If you really need `chart-native` on react-native-web, load Skia's WASM first (`LoadSkiaWeb()` from `@shopify/react-native-skia/lib/module/web`) and import the chart module afterwards.
+
 ## Notes
 
 - Skia draws text on the GPU, so axis labels are not in the accessibility tree; expose any text users need (prices, the inspected candle) through your own `Text` via `onCrosshairChange`.

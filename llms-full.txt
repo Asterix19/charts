@@ -79,6 +79,7 @@ export function mount(host: HTMLElement, candles: Candle[]) {
 - `width` and `height` are **required numbers in pixels** — never `"100%"`. Measure the container with a `ResizeObserver` for responsive layouts.
 - Props (all renderers): `data`, `width`, `height`, `theme` (`'dark' | 'light' | ChartThemeColors`), `chartType` (`'candle' | 'line'`), `indicators`, `shadedAreas`, `markers`, `customPanels`, `showRsiPanel`, `rsiPeriod`, `showMacdPanel`, `showVolumePanel`, `showOhlcHud`, `visibleDataPoints`, `intervalMs`, `hour12`, `showGrid`, `maxZoom`, `scrollToLatestTrigger`, `onCrosshairChange`. The visible-candle count prop is `visibleDataPoints`.
 - Indicators: `calcSMA(candles, period, id, color)`, `calcEMA(candles, period, id, color)` return an `IndicatorLine | null`; `calcBollingerBands(candles, period, multiplier, { upper, lower, basis })` returns `{ upper, lower, basis } | null`; `calcRSI(candles, period)` returns `{ timestamp, value }[]`; `calcVWAP(candles, id, color)` returns an `IndicatorLine | null` (needs `volume`); `calcMACD(candles)` returns `{ macd, signal, histogram } | null`. They return `null` / `[]` when there are too few candles or the period is invalid. **Filter out `null` before passing `indicators`.** Pair `bb.upper.id` and `bb.lower.id` in a `shadedAreas` entry to fill between the bands.
+- `@stacklatte/chart-native` is iOS/Android only; for any browser use `@stacklatte/chart-web` (native-in-browser throws `Can't find variable: CanvasKit`).
 - Next.js: render the chart from a client component (`'use client'`). React Native: wrap the app in `GestureHandlerRootView`.
 - Live data: pass a new `data` array on every tick (replace the last candle while its interval is open, append when it rolls over). Increment `scrollToLatestTrigger` to jump to the newest candle. Cap the array you keep (e.g. 10,000).
 - Import types and helpers from the renderer package you already use (`import { calcRSI } from '@stacklatte/chart-web'`).
@@ -327,6 +328,10 @@ Memoise indicator arrays: they are recomputed only when `candles` changes, which
 ## Testing
 
 The repository's `examples/demo` app serves the same 35-scenario catalogue as every web demo (including a 50,000-candle stress scenario) and is driven end-to-end on an iOS simulator with Maestro — see [Testing](https://github.com/Asterix19/charts/blob/main/testing.md).
+
+## Not for the browser
+
+`@stacklatte/chart-native` renders with Skia on **iOS and Android only**. Opening a React Native app that imports it in a browser (for example pressing `w` in the Expo terminal) throws `ReferenceError: Can't find variable: CanvasKit`, because Skia's web build needs its WebAssembly loaded before it is imported. For the web use [`@stacklatte/chart-web`](https://github.com/Asterix19/charts/blob/main/react.md) — same props, no Skia. If you really need `chart-native` on react-native-web, load Skia's WASM first (`LoadSkiaWeb()` from `@shopify/react-native-skia/lib/module/web`) and import the chart module afterwards.
 
 ## Notes
 
@@ -985,6 +990,7 @@ These are deliberate fixes; everything else (numbers, props, themes, config comp
 | `Invalid ChartConfig: [UNKNOWN_KEY] …` | a key that is not part of the config | Remove it — see the allowed keys in the message. |
 | Next.js: `window`/`document` is not defined, or hydration warnings | the chart was rendered in a server component | Put it in a client component (`'use client'`). |
 | React Native: gestures do nothing | the app is not wrapped in `GestureHandlerRootView` | See the [React Native guide](https://github.com/Asterix19/charts/blob/main/react-native.md). |
+| `ReferenceError: Can't find variable: CanvasKit` (Safari) / `CanvasKit is not defined` (Chrome) | `@stacklatte/chart-native` (Skia) was loaded in a **browser**. Skia's web build runs `JsiSkApi(global.CanvasKit)` the moment it is imported, and its WebAssembly has not been loaded yet. Typically: pressing `w` in the Expo terminal, or opening the Expo URL in a browser | Use **`@stacklatte/chart-web`** for the browser (no Skia, no WASM). Only if you must run `chart-native` through react-native-web: load Skia's WASM *before* the chart module is imported — `await LoadSkiaWeb()` from `@shopify/react-native-skia/lib/module/web`, then `import('./Chart')` (see Skia's `WithSkiaWeb`). On a device or simulator this error cannot occur — use a development build (`npx expo run:ios`), not a browser |
 | React Native: Skia / reanimated errors at startup | peer versions mismatch | Use `@shopify/react-native-skia` ≥ 2 and `react-native-gesture-handler` ≥ 2; rebuild the dev client after installing native modules. |
 | Angular: nothing draws during SSR | by design — the canvas is created in the browser after first render | Nothing to fix. |
 | `buildChartPipeline` throws `Invalid ChartConfig` after moving from `chart-core` to `chart-native` / `chart-engine` | strict validation is the default there; `chart-core` stays lenient | Fix the config (the error lists the allowed values), or pass `{ strict: false }` to keep the old behaviour. |
