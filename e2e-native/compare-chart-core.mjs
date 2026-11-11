@@ -18,7 +18,10 @@ const { PNG } = createRequire(import.meta.url)('playwright-core/lib/utilsBundle'
 
 // Scenarios whose output is EXPECTED to differ from the published package (documented fixes), plus live ones.
 const EXCLUDE = ['edge-dirty', 'edge-bad-period', 'edge-unsorted-markers'];
-const VARIANTS = ['native', 'core-shim', 'core-published'];
+// `--variants=core-published --keep` re-runs just one variant against the screenshots kept from an earlier run.
+const arg = (n) => process.argv.find((a) => a.startsWith(`--${n}=`))?.split('=')[1];
+const VARIANTS = (arg('variants') ?? 'native,core-shim,core-published').split(',');
+const KEEP = process.argv.includes('--keep');
 
 // 1. the published package
 const cache = join(root, 'compat', '.cache', 'chart-core-2.3.3');
@@ -29,7 +32,7 @@ if (!existsSync(join(cache, 'package', 'package.json'))) {
 }
 
 // 2. one static, clean flow shared by every variant
-rmSync(work, { recursive: true, force: true });
+if (!KEEP) rmSync(work, { recursive: true, force: true });
 mkdirSync(work, { recursive: true });
 const flow = join(work, 'scenarios-clean.yaml');
 execFileSync('npx', ['tsx', 'e2e-native/generate-flows.mjs', '--clean', `--exclude=${EXCLUDE.join(',')}`, `--out=.compare/scenarios-clean.yaml`], { cwd: root, stdio: 'inherit' });
@@ -56,6 +59,7 @@ async function withMetro(impl, fn) {
 // 3. run every variant
 for (const impl of VARIANTS) {
   console.log(`\n=== ${impl} ===`);
+  rmSync(join(work, impl), { recursive: true, force: true }); // never mix an old run's screenshots into a new one
   await withMetro(impl, async () => {
     try {
       execFileSync('maestro', ['test', flow, '--test-output-dir', join(work, impl)], { stdio: 'inherit', timeout: 40 * 60_000 });

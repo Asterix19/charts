@@ -3,7 +3,7 @@ import { SCENARIOS, getScenario } from '@stacklatte/chart-examples';
 import type { Candle } from '@stacklatte/chart-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
+import { LogBox, ScrollView, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 /**
@@ -16,6 +16,10 @@ export default function ScenariosScreen() {
   const router = useRouter();
   const { id: idParam, clean } = useLocalSearchParams<{ id?: string; clean?: string }>();
   const id = SCENARIOS.some((sc) => sc.id === idParam) ? (idParam as string) : SCENARIOS[0].id;
+  // Comparison runs screenshot the chart only: LogBox toasts (e.g. the deprecation warnings an older chart package prints) must not cover it.
+  useEffect(() => {
+    if (clean === '1') LogBox.ignoreAllLogs(true);
+  }, [clean]);
 
   return (
     <View style={[s.screen, { paddingTop: insets.top }]}>
