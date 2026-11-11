@@ -1,41 +1,13 @@
-# Stacklatte Charts — Expo Demo
+# Stacklatte Charts — Expo demo (React Native)
 
-Interactive Expo demo app showcasing `@stacklatte/chart-core`.
+Renders `@stacklatte/chart-native` (Skia) on iOS and Android. Two tabs:
 
-Features demonstrated:
-
-- Candlestick and line chart modes
-- Dark and light themes
-- SMA, EMA, and Bollinger Bands overlays
-- RSI and MACD sub-panels
-- OHLC HUD with crosshair
-- Pinch-zoom and pan gestures
-- Live streaming candle data
-- 12h / 24h time axis toggle
-
----
-
-## Running locally
+- **Chart** — an interactive playground: candle/line, dark/light, SMA / EMA / Bollinger, RSI / MACD panels, OHLC HUD, live ticks (down to 100 ms) and a **+5K** button that appends 5,000 candles.
+- **Scenarios** — the shared 28-scenario catalogue (feature, edge, stress, live; up to **50,000 candles**) that every other demo and test uses. Deep link: `demo://scenarios?id=stress-extreme`.
 
 ```sh
-# From the monorepo root
-npm install
-
-cd examples/demo
-npx expo start
+npm run demo:native            # from the repo root: starts Expo
+npx expo run:ios --no-bundler  # (once) build the dev client for a simulator
 ```
 
-Open in:
-- **iOS Simulator** — press `i`
-- **Android Emulator** — press `a`
-- **Web browser** — press `w`
-- **Expo Go** — scan the QR code
-
----
-
-## Requirements
-
-- Node 18+
-- Expo CLI (`npm install -g expo-cli`)
-- For iOS: Xcode + iOS Simulator
-- For Android: Android Studio + emulator
+The Scenarios tab is driven end-to-end by Maestro — see [`e2e-native/README.md`](../../e2e-native/README.md) and [docs/testing.md](../../docs/testing.md).
