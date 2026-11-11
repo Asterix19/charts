@@ -1,9 +1,11 @@
+// @vitest-environment jsdom
+import './testing/setup';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { calcMACD, normalizeCandles } from '@stacklatte/chart-engine';
-import { SCENARIOS, type Scenario } from '@stacklatte/chart-examples';
+import { SCENARIOS, type Scenario } from './scenarios';
 
-import { ChartController } from './ChartController';
-import { installCanvasMock, type MockContext2D } from './testUtils/canvasMock';
+import { ChartController } from '@stacklatte/chart-engine/canvas';
+import { installCanvasMock, type MockContext2D } from './testing/canvasMock';
 
 const frame = () => new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 

@@ -13,7 +13,7 @@ const ts = require('typescript');
 
 const PACKAGES = [
   ['@stacklatte/chart-engine', 'chart-engine/dist/index.d.ts', 'Platform-agnostic logic: indicators, viewport math, geometry, themes and the ChartConfig pipeline. Zero dependencies.'],
-  ['@stacklatte/chart-canvas', 'chart-canvas/dist/index.d.ts', 'Framework-agnostic Canvas 2D renderer: `ChartController` plus the drawing primitives.'],
+  ['@stacklatte/chart-engine/canvas', 'chart-engine/dist/canvas/index.d.ts', 'Canvas 2D renderer shared by `chart-web` and `chart-angular`: the drawing primitives and `ChartController`. A separate entry point so the main engine entry stays DOM-free.'],
   ['@stacklatte/chart-web', 'chart-web/dist/index.d.ts', 'React renderer (Canvas 2D). Exports `SLChart` plus the whole engine.'],
   ['@stacklatte/chart-native', 'chart-native/dist/index.d.ts', 'React Native renderer (Skia). Exports `SLChart`, the layer components and the whole engine.'],
   ['@stacklatte/chart-angular', 'chart-angular/dist/types/stacklatte-chart-angular.d.ts', 'Angular standalone component `<sl-chart>`. Re-exports the whole engine.'],

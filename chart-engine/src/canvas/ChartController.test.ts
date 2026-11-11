@@ -1,5 +1,6 @@
+// @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { getThemeColors, calcEMA, calcRSI, calcSMA, buildMarkerPoints, buildPaddedRange, buildTimestampIndex, computeLayout, type Candle, type ChartMarker } from '@stacklatte/chart-engine';
+import { getThemeColors, calcEMA, calcRSI, calcSMA, buildMarkerPoints, buildPaddedRange, buildTimestampIndex, computeLayout, type Candle, type ChartMarker } from '../index';
 
 import { ChartController } from './ChartController';
 import { installCanvasMock, type MockContext2D } from './testUtils/canvasMock';

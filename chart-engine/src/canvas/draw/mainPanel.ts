@@ -8,7 +8,7 @@
  * translated the context to the plot origin.
  */
 
-import type { CandleBar, Point } from '@stacklatte/chart-engine';
+import type { CandleBar, Point } from '../../index';
 import { fillPolygon, strokeSmoothPath } from './path';
 
 /** Draws candle bodies and wicks from geometry produced by `buildCandleGeometry`. */

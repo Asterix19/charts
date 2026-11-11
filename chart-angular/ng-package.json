@@ -5,7 +5,6 @@
     "entryFile": "src/public-api.ts"
   },
   "allowedNonPeerDependencies": [
-    "@stacklatte/chart-canvas",
     "@stacklatte/chart-engine"
   ],
   "assets": [

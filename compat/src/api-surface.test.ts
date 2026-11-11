@@ -51,10 +51,10 @@ describe('cross-package consistency', () => {
     expect([...engine].filter((n) => !coreSub.has(n))).toEqual([]);
   });
 
-  it('every renderer exposes SLChart or its framework equivalent', () => {
+  it('every renderer exposes SLChart or its framework equivalent; the engine /canvas entry carries the shared Canvas 2D renderer', () => {
     expect(names('chart-native').has('SLChart')).toBe(true);
     expect(names('chart-web').has('SLChart')).toBe(true);
     expect(names('chart-angular').has('SlChartComponent')).toBe(true);
-    expect(names('chart-canvas').has('ChartController')).toBe(true);
+    expect(names('chart-engine-canvas').has('ChartController')).toBe(true);
   });
 });

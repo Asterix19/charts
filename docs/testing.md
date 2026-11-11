@@ -21,8 +21,8 @@ Every demo serves the same URL shape (`/#/scenarios/<id>`) and the same test ids
 |---|---|---|
 | Engine unit + fuzz | `npm test -w @stacklatte/chart-engine` | indicator math, viewport math, dirty-data robustness, up to 1,000,000 candles |
 | Schema ↔ validator parity | (part of the engine tests) | the JSON Schema given to LLMs and the runtime validator agree (fuzzed) |
-| Renderer unit | `npm test` | every scenario mounts, survives hostile gestures, resizes, panel toggles and 100 live ticks in `ChartController`, React and Angular |
-| Browser e2e | `npm run test:e2e` | every scenario in Chromium on **React, Angular and vanilla JS**; real drag / wheel / hover; stress and live **performance budgets** |
+| Renderer unit | `npm test` | every scenario mounts, survives hostile gestures, resizes, panel toggles and 100 live ticks in `ChartController` (the Angular renderer), React and Angular |
+| Browser e2e | `npm run test:e2e` | every scenario in Chromium on **React and Angular**; real drag / wheel / hover; stress and live **performance budgets** |
 | Native e2e | `npm run test:native` | all scenarios on an **iOS simulator** via Maestro (generated from the catalogue), incl. the 50k stress scenario |
 | **Renderer oracle** | `npm run test:e2e` (project `oracle`) | every scenario is rendered by the **published `chart-web` 1.3.2** and by this workspace, then every canvas pixel and the HUD text are compared — only three documented fixes may differ |
 | **Native compat** | `npm run test:native:compat` | the same React Native app on a simulator with **`chart-native`**, the new **`chart-core` shim** and the **published `chart-core` 2.3.3**, pixel-compared |

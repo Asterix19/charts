@@ -36,8 +36,8 @@ import {
   prepareIndicatorData,
   resolveIntervalMs,
   softZoomOutCeiling,
-} from '@stacklatte/chart-engine';
-import type { Candle, CandleViewport, ChartProps, MarkerPoint } from '@stacklatte/chart-engine';
+} from '../index';
+import type { Candle, CandleViewport, ChartProps, MarkerPoint } from '../index';
 
 import { getScaledContext } from './canvasDpr';
 import { drawAxis } from './draw/axis';

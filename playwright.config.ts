@@ -1,12 +1,11 @@
 import { defineConfig, devices } from '@playwright/test';
 
 // E2E runs against the real demo apps (Vite) in real Chromium — React (chart-web), Angular
-// (chart-angular) and vanilla JS (chart-canvas) — exercising the *built* packages exactly as a
+// (chart-angular) — exercising the *built* packages exactly as a
 // consumer would. Every demo serves the same scenario catalogue at /#/scenarios/<id>.
 const DEMOS = [
   { name: 'react-web', workspace: 'web-demo', port: 5199, legacySpec: /web-chart\.spec\.ts/ },
   { name: 'angular', workspace: 'angular-demo', port: 5200, legacySpec: /angular-chart\.spec\.ts/ },
-  { name: 'vanilla', workspace: 'canvas-demo', port: 5202, legacySpec: null },
 ] as const;
 
 export default defineConfig({

@@ -40,7 +40,7 @@ export function listExports(dtsEntry: string): ExportInfo[] {
 
 export const PACKAGES: Record<string, { dts: string[] }> = {
   'chart-engine': { dts: ['chart-engine/dist/index.d.ts'] },
-  'chart-canvas': { dts: ['chart-canvas/dist/index.d.ts'] },
+  'chart-engine-canvas': { dts: ['chart-engine/dist/canvas/index.d.ts'] }, // @stacklatte/chart-engine/canvas
   'chart-native': { dts: ['chart-native/dist/index.d.ts'] },
   'chart-web': { dts: ['chart-web/dist/index.d.ts'] },
   'chart-core': { dts: ['chart-core/dist/index.d.ts', 'chart-core/dist/core.d.ts'] },

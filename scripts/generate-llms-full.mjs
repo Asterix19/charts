@@ -10,7 +10,7 @@ const root = resolve(new URL('..', import.meta.url).pathname);
 const read = (p) => readFileSync(resolve(root, p), 'utf8').trim();
 
 const GUIDES = [
-  'docs/choosing-a-package.md', 'docs/react.md', 'docs/react-native.md', 'docs/angular.md', 'docs/vanilla-js.md',
+  'docs/choosing-a-package.md', 'docs/react.md', 'docs/react-native.md', 'docs/angular.md',
   'docs/node-engine.md', 'docs/chartconfig-llm.md', 'docs/live-data.md', 'docs/performance.md', 'docs/testing.md',
   'docs/migrating-from-chart-core.md', 'docs/troubleshooting.md', 'docs/api-reference.md',
 ];

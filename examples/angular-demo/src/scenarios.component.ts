@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, afterNextRender, inject, signal, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, afterNextRender, inject, signal, computed, ViewChild } from '@angular/core';
 import { SlChartComponent } from '@stacklatte/chart-angular';
 import {
   SCENARIOS,
@@ -63,6 +63,8 @@ export class ScenariosComponent implements OnDestroy {
   readonly ticks = signal(0);
   readonly mountMs = signal(0);
   readonly width = signal(0);
+  // Decorator form: signal queries need Angular's compiler transform, which this JIT/Vite demo does not apply.
+  @ViewChild(SlChartComponent) private chart?: SlChartComponent;
   readonly toLatest = signal(0);
   readonly crosshair = signal<number | null>(null);
   readonly p = computed(() => this.scenario().props(this.data()));
@@ -75,6 +77,8 @@ export class ScenariosComponent implements OnDestroy {
 
   constructor() {
     installProbe();
+    // Test hook: lets the e2e suite find marker positions without re-deriving the layout.
+    (window as unknown as { __SL_CHART__?: unknown }).__SL_CHART__ = { getVisibleMarkers: () => this.chart?.getVisibleMarkers() ?? [] };
     this.load(this.id());
     window.addEventListener('hashchange', this.onHash);
     afterNextRender(() => {

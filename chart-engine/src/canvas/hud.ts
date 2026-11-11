@@ -9,8 +9,8 @@
  *   • a draggable grip to move it out of the way
  * All caller-supplied text (indicator names, labels) is inserted as text, never as HTML.
  */
-import { abbrevName, findIndicatorValue } from '@stacklatte/chart-engine';
-import type { Candle, ChartThemeColors, IndicatorLine } from '@stacklatte/chart-engine';
+import { abbrevName, findIndicatorValue } from '../index';
+import type { Candle, ChartThemeColors, IndicatorLine } from '../index';
 
 export interface HudCustomValue {
   id: string;

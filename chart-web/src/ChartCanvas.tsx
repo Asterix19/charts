@@ -51,7 +51,7 @@ import {
   drawShadedArea,
   drawVolumePanel,
   getScaledContext,
-} from '@stacklatte/chart-canvas';
+} from '@stacklatte/chart-engine/canvas';
 import OhlcHud from './components/OhlcHud';
 import MarkerTooltip from './components/MarkerTooltip';
 

@@ -16,7 +16,7 @@ import {
   type Candle,
   type ChartPadding,
   type ChartThemeColors,
-} from '@stacklatte/chart-engine';
+} from '../../index';
 
 export interface AxisDrawOptions {
   sortedData: Candle[];

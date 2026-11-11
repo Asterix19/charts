@@ -60,7 +60,7 @@ Props are identical to the React `SLChart`, so documentation for [`@stacklatte/c
 
 ## How it's built
 
-`<sl-chart>` is a thin wrapper over `ChartController` from [`@stacklatte/chart-canvas`](../chart-canvas) — a framework-agnostic class — on top of [`@stacklatte/chart-engine`](../chart-engine). Need Vue, Svelte or plain JS? Use `ChartController` directly.
+`<sl-chart>` is a thin wrapper over `ChartController` from `@stacklatte/chart-engine/canvas` — the same Canvas 2D drawing code the React renderer uses — so both web renderers draw identically.
 
 Every `ChartProps` feature is supported, including the hover tooltip for trade markers.
 

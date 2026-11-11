@@ -10,7 +10,6 @@ Trading charts (candlesticks, RSI, MACD, Bollinger Bands, volume, trade markers,
 | [React / Next.js](./react.md) | `@stacklatte/chart-web` |
 | [React Native](./react-native.md) | `@stacklatte/chart-native` (Skia) |
 | [Angular](./angular.md) | `@stacklatte/chart-angular` (`<sl-chart>`) |
-| [Vanilla JS, Vue, Svelte](./vanilla-js.md) | `@stacklatte/chart-canvas` (`ChartController`) |
 | [Headless / Node](./node-engine.md) | `@stacklatte/chart-engine` — indicators and viewport math without any UI |
 | [Generate charts with an LLM](./chartconfig-llm.md) | The validated, closed-enum `ChartConfig` + JSON Schema workflow |
 | [Live data](./live-data.md) | Streaming candles from a WebSocket or poll |

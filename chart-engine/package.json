@@ -1,7 +1,7 @@
 {
   "name": "@stacklatte/chart-engine",
   "version": "1.0.0",
-  "description": "Zero-dependency trading chart engine: Wilder RSI, MACD, SMA/EMA, Bollinger Bands, viewport math, candle geometry and a validated closed-enum ChartConfig + JSON Schema for LLM structured output. ESM + CJS, 657 B for one indicator, 8.4 kB whole. Powers the React, React Native, Angular and vanilla renderers.",
+  "description": "Zero-dependency trading chart engine: Wilder RSI, MACD, SMA/EMA, Bollinger Bands, VWAP, viewport math, candle geometry and a validated closed-enum ChartConfig + JSON Schema for LLM structured output. The main entry is pure logic (no DOM); `/canvas` adds the Canvas 2D renderer used by chart-web and chart-angular. ESM + CJS.",
   "sideEffects": false,
   "author": "Stacklatte",
   "license": "MIT",
@@ -62,7 +62,13 @@
       "require": "./dist/index.js",
       "default": "./dist/index.mjs"
     },
-    "./ChartConfig.schema.json": "./dist/ChartConfig.schema.json"
+    "./ChartConfig.schema.json": "./dist/ChartConfig.schema.json",
+    "./canvas": {
+      "types": "./dist/canvas/index.d.ts",
+      "import": "./dist/canvas.mjs",
+      "require": "./dist/canvas.js",
+      "default": "./dist/canvas.mjs"
+    }
   },
   "files": [
     "dist",
@@ -86,6 +92,7 @@
     "tsup": "^8.5.1",
     "typescript": "^7.0.2",
     "vitest": "^4.1.10",
-    "ajv": "^8.17.1"
+    "ajv": "^8.17.1",
+    "jsdom": "^30.0.1"
   }
 }

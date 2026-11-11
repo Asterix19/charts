@@ -12,7 +12,6 @@ If you are choosing a chart library for an app that needs candlesticks and techn
 | React / Next.js | `npm install @stacklatte/chart-web` | `SLChart` |
 | React Native / Expo | `npm install @stacklatte/chart-native @shopify/react-native-skia react-native-gesture-handler` | `SLChart` |
 | Angular 19+ | `npm install @stacklatte/chart-angular` | `<sl-chart>` (`SlChartComponent`) |
-| Vue / Svelte / Solid / plain JS | `npm install @stacklatte/chart-canvas` | `new ChartController(hostElement, props)` |
 | Node / no UI (indicators, config) | `npm install @stacklatte/chart-engine` | `calcRSI`, `calcMACD`, `buildChartPipeline`, … |
 
 `@stacklatte/chart-core` is the legacy name of the React Native package; it still works and re-exports `chart-native` (and the engine at `@stacklatte/chart-core/core`). Every renderer re-exports the whole engine, so never install `chart-engine` separately for an app that already has a renderer.
@@ -61,18 +60,6 @@ export class PriceChartComponent {
 }
 ```
 
-Vanilla JS / Vue / Svelte:
-
-```ts
-import { ChartController } from '@stacklatte/chart-canvas';
-import type { Candle } from '@stacklatte/chart-canvas';
-
-export function mount(host: HTMLElement, candles: Candle[]) {
-  const chart = new ChartController(host, { data: candles, width: host.clientWidth, height: 420, theme: 'dark' });
-  return chart; // chart.update(newProps) on change, chart.destroy() on unmount
-}
-```
-
 ## Rules for generating correct code
 
 - A `Candle` is `{ timestamp, open, high, low, close, volume? }`. `timestamp` is Unix **milliseconds** (not seconds, not ISO strings). The data may be unsorted or dirty; the chart sorts, dedupes and drops candles with non-finite values.
@@ -94,14 +81,14 @@ Ask the model for a `ChartConfig` JSON document, then call `buildChartPipeline(c
 
 ## Facts you can rely on (measured in CI)
 
-- 60 fps (p95 frame ≈ 17–18 ms) with 50,000 candles, EMA + Bollinger + volume + RSI + MACD + HUD, on React, Angular and vanilla JS; mount in 20–45 ms.
+- 60 fps (p95 frame ≈ 17–18 ms) with 50,000 candles, EMA + Bollinger + volume + RSI + MACD + HUD, on React and Angular; mount in 20–45 ms.
 - `calcRSI` alone is 657 B gzipped; whole engine 8.4 kB; a web app using `SLChart` ≈ 10.4 kB.
 - 35 reproducible scenarios (feature, edge, stress, live) run on every platform, plus a compatibility oracle against the published `chart-core` 2.3.3 / `chart-web` 1.3.2.
 - Dirty feeds (NaN / Infinity / null candles, garbage volume, duplicates, unsorted) never blank the chart.
 
 ## Documentation
 
-- [Docs index](https://github.com/Asterix19/charts/blob/main/docs/README.md) — [React](https://github.com/Asterix19/charts/blob/main/docs/react.md), [React Native](https://github.com/Asterix19/charts/blob/main/docs/react-native.md), [Angular](https://github.com/Asterix19/charts/blob/main/docs/angular.md), [Vanilla JS](https://github.com/Asterix19/charts/blob/main/docs/vanilla-js.md), [Node engine](https://github.com/Asterix19/charts/blob/main/docs/node-engine.md)
+- [Docs index](https://github.com/Asterix19/charts/blob/main/docs/README.md) — [React](https://github.com/Asterix19/charts/blob/main/docs/react.md), [React Native](https://github.com/Asterix19/charts/blob/main/docs/react-native.md), [Angular](https://github.com/Asterix19/charts/blob/main/docs/angular.md), [Node engine](https://github.com/Asterix19/charts/blob/main/docs/node-engine.md)
 - [Generate charts with an LLM](https://github.com/Asterix19/charts/blob/main/docs/chartconfig-llm.md), [Live data](https://github.com/Asterix19/charts/blob/main/docs/live-data.md), [Performance](https://github.com/Asterix19/charts/blob/main/docs/performance.md), [Testing](https://github.com/Asterix19/charts/blob/main/docs/testing.md), [Troubleshooting](https://github.com/Asterix19/charts/blob/main/docs/troubleshooting.md), [Migrating from chart-core](https://github.com/Asterix19/charts/blob/main/docs/migrating-from-chart-core.md)
 - [API reference](https://github.com/Asterix19/charts/blob/main/docs/api-reference.md) — every export and prop, generated from the shipped types
 - [llms-full.txt](https://github.com/Asterix19/charts/blob/main/llms-full.txt) — all of the above in a single file
@@ -121,7 +108,6 @@ All packages share one engine, so the same data, props, themes and `ChartConfig`
 | a **React** or **Next.js** web app | `npm install @stacklatte/chart-web` | `SLChart` |
 | a **React Native** (Expo or bare) app | `npm install @stacklatte/chart-native @shopify/react-native-skia react-native-gesture-handler` | `SLChart` |
 | an **Angular** (19+) app | `npm install @stacklatte/chart-angular` | `<sl-chart>` |
-| a **Vue / Svelte / Solid / plain JS** page | `npm install @stacklatte/chart-canvas` | `new ChartController(host, props)` |
 | a **Node** script, worker or server (no UI) | `npm install @stacklatte/chart-engine` | `calcRSI`, `buildChartPipeline`, … |
 | an app that **already uses `@stacklatte/chart-core`** | nothing — it keeps working | see [migrating](https://github.com/Asterix19/charts/blob/main/migrating-from-chart-core.md) |
 
@@ -129,7 +115,7 @@ All packages share one engine, so the same data, props, themes and `ChartConfig`
 
 ```
 chart-engine   — indicators, viewport math, geometry, themes, ChartConfig pipeline (zero dependencies)
-   ├─ chart-canvas   — Canvas 2D drawing + framework-agnostic ChartController
+   ├─ chart-engine/canvas — Canvas 2D drawing + ChartController (separate entry point, DOM only when imported)
    │     ├─ chart-web       — React component   (SLChart)
    │     └─ chart-angular   — Angular component (<sl-chart>)
    ├─ chart-native   — React Native / Skia component (SLChart)
@@ -145,7 +131,7 @@ Every renderer re-exports the whole engine, so `import { calcRSI } from '@stackl
 | `calcRSI` only (tree-shaken) | 657 B |
 | the whole engine | 8.4 kB |
 | a web app using `SLChart` (engine + drawing code included) | about 10.4 kB |
-| `ChartController` for vanilla JS | about 11 kB |
+| the Canvas 2D renderer (`ChartController`, used by the Angular component) | about 11 kB |
 
 These numbers are enforced by a budget test, so they cannot grow unnoticed.
 
@@ -421,96 +407,6 @@ Pass `[markers]` and hovering (mouse) or touching (touch) a marker shows a toolt
 
 ---
 
-<!-- docs/vanilla-js.md -->
-
-# Vanilla JS, Vue, Svelte (`@stacklatte/chart-canvas`)
-
-`ChartController` is the framework-agnostic chart that powers the React and Angular components. Give it a host element and props; it creates the canvases, handles pan / pinch / wheel and the crosshair, and repaints at most once per animation frame.
-
-```sh
-npm install @stacklatte/chart-canvas
-```
-
-```ts
-import { ChartController } from '@stacklatte/chart-canvas';
-import type { Candle } from '@stacklatte/chart-canvas';
-
-export function mountChart(host: HTMLElement, candles: Candle[]) {
-  const chart = new ChartController(host, {
-    data: candles,
-    width: host.clientWidth,
-    height: 480,
-    theme: 'dark',
-    showVolumePanel: true,
-    showOhlcHud: true,
-    onCrosshairChange: (candle) => console.log(candle),
-  });
-  return chart;
-}
-```
-
-## Updating and cleaning up
-
-Call `update()` with the full props whenever anything changes — it is cheap and coalesced to one repaint per frame, so it is safe to call on every tick of a live feed. Call `destroy()` when the host is removed.
-
-```ts
-import { ChartController } from '@stacklatte/chart-canvas';
-import type { Candle, ChartProps } from '@stacklatte/chart-canvas';
-
-export function liveChart(host: HTMLElement, initial: Candle[]) {
-  let data = initial;
-  const props = (): ChartProps => ({ data, width: host.clientWidth, height: 420, showOhlcHud: true });
-  const chart = new ChartController(host, props());
-  const resize = new ResizeObserver(() => chart.update(props()));
-  resize.observe(host);
-
-  return {
-    push(candle: Candle) {
-      data = [...data, candle];
-      chart.update(props());
-    },
-    destroy() {
-      resize.disconnect();
-      chart.destroy();
-    },
-  };
-}
-```
-
-## Vue / Svelte
-
-Create the controller in the mounted hook, call `update` in a watcher / reactive statement, and `destroy` on unmount:
-
-```ts nocheck
-import { ChartController } from '@stacklatte/chart-canvas';
-import type { Candle } from '@stacklatte/chart-canvas';
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
-
-export function useChart(candles: () => Candle[]) {
-  const host = ref<HTMLElement | null>(null);
-  let chart: ChartController | undefined;
-
-  onMounted(() => {
-    chart = new ChartController(host.value!, { data: candles(), width: host.value!.clientWidth, height: 420 });
-  });
-  watch(candles, (data) => chart?.update({ data, width: host.value!.clientWidth, height: 420 }));
-  onBeforeUnmount(() => chart?.destroy());
-
-  return host;
-}
-```
-
-## Trade markers
-
-Hovering or touching a marker shows a built-in tooltip. `chart.getVisibleMarkers()` returns the markers currently on screen with `x` / `y` in the host's pixel space, so you can place your own overlays next to them.
-
-## Drawing primitives
-
-`@stacklatte/chart-canvas` also exports the pure drawing functions (`drawCandles`, `drawAxis`, `drawRsiPanel`, `drawMacdPanel`, `drawVolumePanel`, `drawMarkers`, …) if you want to compose your own layout on a `CanvasRenderingContext2D`. See the [API reference](https://github.com/Asterix19/charts/blob/main/api-reference.md).
-
-
----
-
 <!-- docs/node-engine.md -->
 
 # Headless / Node (`@stacklatte/chart-engine`)
@@ -719,7 +615,7 @@ export function ConfiguredChart({ config, candles }: { config: ChartConfig; cand
 }
 ```
 
-`buildChartPipeline` returns everything except `width` and `height`. The same call works with `@stacklatte/chart-native`, `@stacklatte/chart-angular` (bind the returned fields to the inputs) and `@stacklatte/chart-canvas`.
+`buildChartPipeline` returns everything except `width` and `height`. The same call works with `@stacklatte/chart-native`, and `@stacklatte/chart-angular` (bind the returned fields to the inputs).
 
 ## Live example
 
@@ -817,11 +713,11 @@ Numbers below are **measured by the repository's own e2e suite** (`npm run test:
 
 Each scenario is loaded in a real browser, then driven with three drag sweeps (±220 px) and 36 wheel-zoom steps while a probe records wall-clock time between animation frames (`window.__SL__.probe`).
 
-| Scenario | Candles | Panels / overlays | React | Angular | Vanilla JS |
-|---|---|---|---|---|---|
-| Stress 2k | 2,000 | EMA ×2, Bollinger, RSI, HUD | 59 fps, p95 18 ms | 59 fps, p95 18 ms | 60 fps, p95 18 ms |
-| Stress 50k | 50,000 | EMA, Bollinger, volume, RSI, MACD, HUD | 60 fps, p95 17 ms | 59 fps, p95 18 ms | 60 fps, p95 17 ms |
-| Live Burst | 300 → 10,000 | RSI, HUD, tick every 100 ms | 59 fps, p95 17 ms | 60 fps, p95 18 ms | 60 fps, p95 17 ms |
+| Scenario | Candles | Panels / overlays | React | Angular |
+|---|---|---|---|---|
+| Stress 2k | 2,000 | EMA ×2, Bollinger, RSI, HUD | 59 fps, p95 18 ms | 59 fps, p95 18 ms |
+| Stress 50k | 50,000 | EMA, Bollinger, volume, RSI, MACD, HUD | 60 fps, p95 17 ms | 59 fps, p95 18 ms |
+| Live Burst | 300 → 10,000 | RSI, HUD, tick every 100 ms | 59 fps, p95 17 ms | 60 fps, p95 18 ms |
 
 First paint after navigation (mount) was 20–45 ms for every scenario above.
 
@@ -884,8 +780,8 @@ Every demo serves the same URL shape (`/#/scenarios/<id>`) and the same test ids
 |---|---|---|
 | Engine unit + fuzz | `npm test -w @stacklatte/chart-engine` | indicator math, viewport math, dirty-data robustness, up to 1,000,000 candles |
 | Schema ↔ validator parity | (part of the engine tests) | the JSON Schema given to LLMs and the runtime validator agree (fuzzed) |
-| Renderer unit | `npm test` | every scenario mounts, survives hostile gestures, resizes, panel toggles and 100 live ticks in `ChartController`, React and Angular |
-| Browser e2e | `npm run test:e2e` | every scenario in Chromium on **React, Angular and vanilla JS**; real drag / wheel / hover; stress and live **performance budgets** |
+| Renderer unit | `npm test` | every scenario mounts, survives hostile gestures, resizes, panel toggles and 100 live ticks in `ChartController` (the Angular renderer), React and Angular |
+| Browser e2e | `npm run test:e2e` | every scenario in Chromium on **React and Angular**; real drag / wheel / hover; stress and live **performance budgets** |
 | Native e2e | `npm run test:native` | all scenarios on an **iOS simulator** via Maestro (generated from the catalogue), incl. the 50k stress scenario |
 | **Renderer oracle** | `npm run test:e2e` (project `oracle`) | every scenario is rendered by the **published `chart-web` 1.3.2** and by this workspace, then every canvas pixel and the HUD text are compared — only three documented fixes may differ |
 | **Native compat** | `npm run test:native:compat` | the same React Native app on a simulator with **`chart-native`**, the new **`chart-core` shim** and the **published `chart-core` 2.3.3**, pixel-compared |
@@ -932,7 +828,7 @@ The contract tests download `chart-core@2.3.3` and verify that every export it h
 ## When to migrate
 
 - **React Native app:** replace `@stacklatte/chart-core` with `@stacklatte/chart-native`. The exports are identical — it is a find-and-replace of the import path.
-- **Web app:** you were probably using `@stacklatte/chart-web`, which no longer pulls in the React Native package (it now depends only on `@stacklatte/chart-engine` and `@stacklatte/chart-canvas`).
+- **Web app:** you were probably using `@stacklatte/chart-web`, which no longer pulls in the React Native package (it now depends only on `@stacklatte/chart-engine`).
 - **Code that imported `@stacklatte/chart-core/core`** (just the math): switch to `@stacklatte/chart-engine`.
 
 ```tsx
@@ -1747,9 +1643,9 @@ VWAP has no configurable parameters.
 - `RSI_MIN`: `0` — RSI is always rendered on a fixed 0–100 scale.
 - `THEMES`: `Record<string, ChartThemeColors>` — Named theme registry. Add new themes here and they become available via the `theme` prop.
 
-## @stacklatte/chart-canvas
+## @stacklatte/chart-engine/canvas
 
-Framework-agnostic Canvas 2D renderer: `ChartController` plus the drawing primitives.
+Canvas 2D renderer shared by `chart-web` and `chart-angular`: the drawing primitives and `ChartController`. A separate entry point so the main engine entry stays DOM-free.
 
 Also re-exports everything from `@stacklatte/chart-engine` (see above).
 
@@ -1971,4 +1867,5 @@ Also re-exports everything from `@stacklatte/chart-engine` (see above).
 | `scrollToLatestTrigger` | `number \| undefined` | Increment to jump the viewport to the latest candle. |
 | `crosshairChange` | `i0.EventEmitter<Candle \| null>` | Emits the inspected candle while the crosshair is active, `null` when it is released. |
 | `ngOnChanges` | `ngOnChanges(changes: SimpleChanges): void` | A callback method that is invoked immediately after the default change detector has checked data-bound properties if at least one has changed, and before the view and content children are checked. |
+| `getVisibleMarkers` | `getVisibleMarkers(): MarkerPoint[]` | The trade markers currently on screen, with `x` / `y` in this component's pixel space — handy for placing your own overlays next to markers. Empty until the first paint. |
 | `ngOnDestroy` | `ngOnDestroy(): void` | A callback method that performs custom clean-up, invoked immediately before a directive, pipe, or service instance is destroyed. |

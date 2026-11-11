@@ -4,7 +4,7 @@ import { expect, test, type Page, type TestInfo } from '@playwright/test';
 import { SCENARIOS, expectedCanvasCount, scenarioHash, type Scenario } from '@stacklatte/chart-examples';
 
 /**
- * The same suite runs against every web demo (React, Angular, vanilla JS). Each scenario in the shared
+ * The same suite runs against every web demo (React and Angular). Each scenario in the shared
  * catalogue is loaded, inspected, driven with real input and — for stress / live scenarios — measured.
  */
 

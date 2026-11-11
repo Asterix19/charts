@@ -15,7 +15,7 @@ import {
   type Candle,
   type ChartMarker,
   type ChartThemeColors,
-} from '@stacklatte/chart-engine';
+} from '../../index';
 import { fillPolygon } from './path';
 
 /** Draws trade markers (triangles, stop/take-profit glyphs) pinned to their candle and price. */

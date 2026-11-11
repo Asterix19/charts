@@ -1,5 +1,5 @@
 // Bundled by hud-parity.spec.ts: the framework-agnostic ChartController (what Angular wraps), exposed like the React entry.
-import { ChartController } from '@stacklatte/chart-canvas';
+import { ChartController } from '@stacklatte/chart-engine/canvas';
 
 declare global {
   interface Window {

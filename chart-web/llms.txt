@@ -1,6 +1,6 @@
 # @stacklatte/chart-web
 
-> React (19+) / Next.js trading chart: `SLChart`. HTML5 Canvas 2D — no WebAssembly, no react-native-web. Candlesticks, SMA/EMA/Bollinger overlays, RSI/MACD/volume/custom panels, trade markers, drag/wheel/pinch zoom, crosshair, live updates. 60 fps with 50,000 candles; about 10 kB gzipped. Same props as the React Native, Angular and vanilla renderers.
+> React (19+) / Next.js trading chart: `SLChart`. HTML5 Canvas 2D — no WebAssembly, no react-native-web. Candlesticks, SMA/EMA/Bollinger overlays, RSI/MACD/volume/custom panels, trade markers, drag/wheel/pinch zoom, crosshair, live updates. 60 fps with 50,000 candles; about 10 kB gzipped. Same props as the React Native and Angular renderers.
 
 ## Install
 

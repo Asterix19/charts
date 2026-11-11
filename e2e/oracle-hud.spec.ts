@@ -4,7 +4,7 @@ import { SCENARIOS } from '@stacklatte/chart-examples';
 
 /**
  * The OHLC + indicator HUD must read the same on every renderer. This renders a scenario with the React `SLChart`
- * and with the framework-agnostic `ChartController` (which `<sl-chart>` wraps), hovers the same spot, and compares the
+ * and with the `ChartController` from `@stacklatte/chart-engine/canvas` (which `<sl-chart>` wraps), hovers the same spot, and compares the
  * HUD text — live, and while inspecting a candle. (The HUD is the only DOM text on the page: axis labels are canvas.)
  */
 const root = process.cwd();
@@ -49,7 +49,7 @@ declare global {
 for (const id of ['hud', 'indicators', 'config-pipeline', 'custom-panel', 'all-panels', 'markers']) {
   const s = SCENARIOS.find((x) => x.id === id)!;
   for (const hover of [false, true]) {
-    test(`${id} ${hover ? 'while inspecting a candle' : 'live'}: React HUD text === ChartController HUD text`, async ({ browser }) => {
+    test(`${id} ${hover ? 'while inspecting a candle' : 'live'}: React HUD text === Angular/ChartController HUD text`, async ({ browser }) => {
       const data = s.data();
       const props = { data, width: 640, height: s.height, ...s.props(data), showOhlcHud: true };
       const ctx = await browser.newContext({ viewport: { width: 720, height: 900 } });

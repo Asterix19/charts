@@ -11,9 +11,9 @@
 
 ## Why this library
 
-- **Fast at scale.** 60 fps with **50,000 candles** and every panel on, in React, Angular and vanilla JS (measured in CI, not claimed). Only the visible window is drawn; repaints are coalesced to one per frame.
+- **Fast at scale.** 60 fps with **50,000 candles** and every panel on, in React and Angular (measured in CI, not claimed). Only the visible window is drawn; repaints are coalesced to one per frame.
 - **Tiny.** `calcRSI` alone is 657 B gzipped; the whole engine is 8.4 kB; a web app using `SLChart` ships about 10 kB.
-- **Same props everywhere.** A snippet for React works in React Native, Angular and vanilla JS with trivial changes.
+- **Same props everywhere.** A snippet for React works in React Native and Angular with trivial changes.
 - **Hard to break.** Dirty feeds (NaN, Infinity, duplicates, unsorted, null entries) never blank the chart; invalid indicator periods return no data instead of throwing.
 - **Built for LLMs.** A validated, closed-enum `ChartConfig` plus a JSON Schema, so a model's output either compiles or fails with an itemised error it can fix. See [`llms.txt`](./llms.txt) and [Generate charts with an LLM](./docs/chartconfig-llm.md).
 - **Tested like people depend on it** (they do): one 35-scenario catalogue (feature, edge, stress, live) runs on every platform, with performance budgets and a backward-compatibility oracle against the published versions. See [Testing](./docs/testing.md).
@@ -25,7 +25,6 @@
 | React / Next.js | `npm install @stacklatte/chart-web` | [docs/react.md](./docs/react.md) |
 | React Native | `npm install @stacklatte/chart-native @shopify/react-native-skia react-native-gesture-handler` | [docs/react-native.md](./docs/react-native.md) |
 | Angular 19+ | `npm install @stacklatte/chart-angular` | [docs/angular.md](./docs/angular.md) |
-| Vue / Svelte / plain JS | `npm install @stacklatte/chart-canvas` | [docs/vanilla-js.md](./docs/vanilla-js.md) |
 | Node / headless | `npm install @stacklatte/chart-engine` | [docs/node-engine.md](./docs/node-engine.md) |
 | Already on `@stacklatte/chart-core` | nothing — it keeps working | [docs/migrating-from-chart-core.md](./docs/migrating-from-chart-core.md) |
 
@@ -78,8 +77,7 @@ A `Candle` is `{ timestamp, open, high, low, close, volume? }` with `timestamp` 
 ## Monorepo layout
 
 ```
-chart-engine/    @stacklatte/chart-engine   — indicators, viewport math, geometry, ChartConfig (no dependencies)
-chart-canvas/    @stacklatte/chart-canvas   — framework-agnostic Canvas 2D renderer (ChartController)
+chart-engine/    @stacklatte/chart-engine   — indicators, viewport math, geometry, ChartConfig (no dependencies); /canvas = the shared Canvas 2D renderer
 chart-web/       @stacklatte/chart-web      — React renderer
 chart-native/    @stacklatte/chart-native   — React Native / Skia renderer
 chart-angular/   @stacklatte/chart-angular  — Angular <sl-chart>
@@ -88,10 +86,9 @@ examples/
   shared/        the scenario catalogue every demo and test uses
   web-demo/      React demo           (npm run demo:web)
   angular-demo/  Angular demo         (npm run demo:angular)
-  canvas-demo/   vanilla JS demo      (npm run demo:canvas)
   demo/          Expo / React Native demo (npm run demo:native)
   engine-demo/   headless Node demo   (npm run demo -w engine-demo)
-e2e/             Playwright: every scenario on React, Angular and vanilla JS, with performance budgets
+e2e/             Playwright: every scenario on React and Angular, with performance budgets
 e2e-native/      Maestro: every scenario on an iOS simulator
 compat/          contract tests: API locks, backward compatibility, docs checks, size budgets
 docs/            guides and the generated API reference
@@ -107,7 +104,6 @@ npm run build
 
 npm run demo:web        # React demo        → open /#/scenarios/stress-extreme for the 50,000-candle case
 npm run demo:angular    # Angular demo
-npm run demo:canvas     # vanilla JS demo
 npm run demo:native     # Expo (iOS / Android)
 ```
 
@@ -115,7 +111,7 @@ npm run demo:native     # Expo (iOS / Android)
 
 ```sh
 npm test                 # unit tests across all packages
-npm run test:e2e         # Chromium: all scenarios × React / Angular / vanilla, frame-time budgets, and a pixel oracle vs published chart-web 1.3.2
+npm run test:e2e         # Chromium: all scenarios × React / Angular, frame-time budgets, and a pixel oracle vs published chart-web 1.3.2
 npm run test:pack        # pack every package, install the tarballs into a clean project
 npm run test:contracts   # API locks, compatibility with published versions, docs, bundle sizes
 npm run test:native      # iOS simulator via Maestro (see e2e-native/README.md)

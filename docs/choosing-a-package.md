@@ -7,7 +7,6 @@ All packages share one engine, so the same data, props, themes and `ChartConfig`
 | a **React** or **Next.js** web app | `npm install @stacklatte/chart-web` | `SLChart` |
 | a **React Native** (Expo or bare) app | `npm install @stacklatte/chart-native @shopify/react-native-skia react-native-gesture-handler` | `SLChart` |
 | an **Angular** (19+) app | `npm install @stacklatte/chart-angular` | `<sl-chart>` |
-| a **Vue / Svelte / Solid / plain JS** page | `npm install @stacklatte/chart-canvas` | `new ChartController(host, props)` |
 | a **Node** script, worker or server (no UI) | `npm install @stacklatte/chart-engine` | `calcRSI`, `buildChartPipeline`, … |
 | an app that **already uses `@stacklatte/chart-core`** | nothing — it keeps working | see [migrating](./migrating-from-chart-core.md) |
 
@@ -15,7 +14,7 @@ All packages share one engine, so the same data, props, themes and `ChartConfig`
 
 ```
 chart-engine   — indicators, viewport math, geometry, themes, ChartConfig pipeline (zero dependencies)
-   ├─ chart-canvas   — Canvas 2D drawing + framework-agnostic ChartController
+   ├─ chart-engine/canvas — Canvas 2D drawing + ChartController (separate entry point, DOM only when imported)
    │     ├─ chart-web       — React component   (SLChart)
    │     └─ chart-angular   — Angular component (<sl-chart>)
    ├─ chart-native   — React Native / Skia component (SLChart)
@@ -31,7 +30,7 @@ Every renderer re-exports the whole engine, so `import { calcRSI } from '@stackl
 | `calcRSI` only (tree-shaken) | 657 B |
 | the whole engine | 8.4 kB |
 | a web app using `SLChart` (engine + drawing code included) | about 10.4 kB |
-| `ChartController` for vanilla JS | about 11 kB |
+| the Canvas 2D renderer (`ChartController`, used by the Angular component) | about 11 kB |
 
 These numbers are enforced by a budget test, so they cannot grow unnoticed.
 

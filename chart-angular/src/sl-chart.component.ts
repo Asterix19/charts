@@ -14,7 +14,7 @@ import {
   inject,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { ChartController } from '@stacklatte/chart-canvas';
+import { ChartController } from '@stacklatte/chart-engine/canvas';
 import type {
   Candle,
   ChartMarker,
@@ -22,6 +22,7 @@ import type {
   ChartTheme,
   ChartThemeColors,
   ChartType,
+  MarkerPoint,
   CustomPanel,
   IndicatorLine,
   ShadedArea,
@@ -108,6 +109,14 @@ export class SlChartComponent implements OnChanges, OnDestroy {
 
   ngOnChanges(changes: SimpleChanges): void {
     this.controller?.update(this.props());
+  }
+
+  /**
+   * The trade markers currently on screen, with `x` / `y` in this component's pixel space — handy for placing your own
+   * overlays next to markers. Empty until the first paint.
+   */
+  getVisibleMarkers(): MarkerPoint[] {
+    return this.controller?.getVisibleMarkers() ?? [];
   }
 
   ngOnDestroy(): void {

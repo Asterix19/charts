@@ -6,7 +6,7 @@
  * the same visual idea as RSI's 30/70 threshold lines, generalized to any value(s).
  */
 
-import { buildSeriesPoints, buildTimestampIndex, getY, type Candle, type ChartThemeColors, type TsPoint } from '@stacklatte/chart-engine';
+import { buildSeriesPoints, buildTimestampIndex, getY, type Candle, type ChartThemeColors, type TsPoint } from '../../index';
 import { strokeSmoothPath } from './path';
 
 /** Draws a `CustomPanel`'s series, fixed or auto y-range and reference lines into its own sub-panel. */

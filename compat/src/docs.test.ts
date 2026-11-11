@@ -35,10 +35,10 @@ function walk(dir: string, out: string[] = []): string[] {
 const EXTRA_ROOTS = (process.env.DOCS_EXTRA_ROOTS ?? '').split(':').filter(Boolean);
 const files = [...walk(ROOT), ...EXTRA_ROOTS.flatMap((r) => (existsSync(r) ? walk(r) : []))].filter((f) => /(README\.md|llms.*\.txt|docs\/.*\.md|\.md)$/.test(f));
 
-const KNOWN_PACKAGES = ['chart-engine', 'chart-canvas', 'chart-native', 'chart-web', 'chart-angular', 'chart-core'];
+const KNOWN_PACKAGES = ['chart-engine', 'chart-native', 'chart-web', 'chart-angular', 'chart-core'];
 const entry: Record<string, string> = {
   '@stacklatte/chart-engine': 'chart-engine/dist/index.d.ts',
-  '@stacklatte/chart-canvas': 'chart-canvas/dist/index.d.ts',
+  '@stacklatte/chart-engine/canvas': 'chart-engine/dist/canvas/index.d.ts',
   '@stacklatte/chart-native': 'chart-native/dist/index.d.ts',
   '@stacklatte/chart-web': 'chart-web/dist/index.d.ts',
   '@stacklatte/chart-angular': 'chart-angular/dist/types/stacklatte-chart-angular.d.ts',
@@ -79,7 +79,7 @@ describe('documentation', () => {
     it('imports only symbols that exist', () => {
       const problems: string[] = [];
       for (const b of bs.filter((x) => ['ts', 'tsx', 'typescript', 'js', 'jsx', 'javascript', 'mjs'].includes(x.lang))) {
-        for (const m of b.code.matchAll(/import\s+(?:type\s+)?\{([^}]*)\}\s+from\s+['"](@stacklatte\/[a-z-]+(?:\/core)?)['"]/g)) {
+        for (const m of b.code.matchAll(/import\s+(?:type\s+)?\{([^}]*)\}\s+from\s+['"](@stacklatte\/[a-z-]+(?:\/(?:core|canvas))?)['"]/g)) {
           if (!entry[m[2]]) { problems.push(`line ${b.line}: unknown module ${m[2]}`); continue; }
           const have = exportsOf(m[2]);
           for (const raw of m[1].split(',')) {

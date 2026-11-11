@@ -24,7 +24,7 @@ jobs:
       - run: npm test
       - run: npm run check:generated
 
-  # Real Chromium: every scenario on React, Angular and vanilla JS, plus the performance budgets.
+  # Real Chromium: every scenario on React and Angular, plus the performance budgets.
   e2e-browser:
     runs-on: ubuntu-latest
     needs: unit

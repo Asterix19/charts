@@ -7,7 +7,7 @@ import {
   computeVolumeYRange,
   type Candle,
   type ChartThemeColors,
-} from '@stacklatte/chart-engine';
+} from '../../index';
 
 /** Draws volume bars coloured by candle direction into the volume sub-panel. */
 export function drawVolumePanel(

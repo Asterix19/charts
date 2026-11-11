@@ -11,7 +11,7 @@ import {
   type Candle,
   type ChartThemeColors,
   type RsiPoint,
-} from '@stacklatte/chart-engine';
+} from '../../index';
 import { strokeSmoothPath } from './path';
 
 /** Draws the RSI line (0–100) with its 30/70 threshold lines into the RSI sub-panel. */

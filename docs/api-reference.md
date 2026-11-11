@@ -743,9 +743,9 @@ VWAP has no configurable parameters.
 - `RSI_MIN`: `0` — RSI is always rendered on a fixed 0–100 scale.
 - `THEMES`: `Record<string, ChartThemeColors>` — Named theme registry. Add new themes here and they become available via the `theme` prop.
 
-## @stacklatte/chart-canvas
+## @stacklatte/chart-engine/canvas
 
-Framework-agnostic Canvas 2D renderer: `ChartController` plus the drawing primitives.
+Canvas 2D renderer shared by `chart-web` and `chart-angular`: the drawing primitives and `ChartController`. A separate entry point so the main engine entry stays DOM-free.
 
 Also re-exports everything from `@stacklatte/chart-engine` (see above).
 
@@ -967,5 +967,6 @@ Also re-exports everything from `@stacklatte/chart-engine` (see above).
 | `scrollToLatestTrigger` | `number \| undefined` | Increment to jump the viewport to the latest candle. |
 | `crosshairChange` | `i0.EventEmitter<Candle \| null>` | Emits the inspected candle while the crosshair is active, `null` when it is released. |
 | `ngOnChanges` | `ngOnChanges(changes: SimpleChanges): void` | A callback method that is invoked immediately after the default change detector has checked data-bound properties if at least one has changed, and before the view and content children are checked. |
+| `getVisibleMarkers` | `getVisibleMarkers(): MarkerPoint[]` | The trade markers currently on screen, with `x` / `y` in this component's pixel space — handy for placing your own overlays next to markers. Empty until the first paint. |
 | `ngOnDestroy` | `ngOnDestroy(): void` | A callback method that performs custom clean-up, invoked immediately before a directive, pipe, or service instance is destroyed. |
 

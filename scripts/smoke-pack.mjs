@@ -9,7 +9,7 @@ import { join } from 'node:path';
 
 // chart-angular publishes from ng-packagr's dist/ folder, not the package root.
 const PACKAGES = [
-  ['chart-engine'], ['chart-canvas'], ['chart-native'], ['chart-web'], ['chart-core'], ['chart-angular', 'chart-angular/dist'],
+  ['chart-engine'], ['chart-native'], ['chart-web'], ['chart-core'], ['chart-angular', 'chart-angular/dist'],
 ];
 const root = new URL('..', import.meta.url).pathname;
 const work = mkdtempSync(join(tmpdir(), 'stacklatte-smoke-'));
@@ -33,7 +33,7 @@ import { renderToString } from 'react-dom/server';
 import * as engine from '@stacklatte/chart-engine';
 import * as coreShim from '@stacklatte/chart-core/core';
 import * as web from '@stacklatte/chart-web';
-import * as canvas from '@stacklatte/chart-canvas';
+import * as canvas from '@stacklatte/chart-engine/canvas';
 const require = createRequire(import.meta.url);
 
 const candles = Array.from({ length: 50 }, (_, i) => ({ timestamp: i * 60000, open: 100 + i, high: 102 + i, low: 99 + i, close: 101 + i, volume: 10 }));
@@ -48,7 +48,7 @@ for (const bad of [{ ...config, theme: 'neon' }, { ...config, interval: '2h' }, 
   assert.throws(() => engine.buildChartPipeline(bad, candles), /Invalid ChartConfig/, 'invalid config must throw');
 }
 assert.equal(typeof web.SLChart, 'function', 'chart-web exports SLChart');
-assert.equal(typeof canvas.drawCandles, 'function', 'chart-canvas exports its drawing primitives');
+assert.equal(typeof canvas.drawCandles, 'function', 'chart-engine/canvas exports its drawing primitives');
 assert.ok(renderToString(React.createElement(web.SLChart, { data: candles, width: 400, height: 300 })).includes('<canvas'), 'chart-web SSR renders a canvas');
 assert.ok('definitions' in require('@stacklatte/chart-engine/ChartConfig.schema.json'), 'JSON Schema is resolvable');
 assert.ok(require.resolve('@stacklatte/chart-native').includes('chart-native'), 'chart-native resolves');
@@ -58,7 +58,7 @@ await import('@angular/compiler'); // partial-compiled library code is linked at
 const ng = await import('@stacklatte/chart-angular');
 assert.equal(typeof ng.SlChartComponent, 'function', 'chart-angular exports SlChartComponent');
 assert.equal(typeof ng.calcRSI, 'function', 'chart-angular re-exports the engine');
-assert.equal(typeof canvas.ChartController, 'function', 'chart-canvas exports ChartController');
+assert.equal(typeof canvas.ChartController, 'function', 'chart-engine/canvas exports ChartController');
 console.log('consumer smoke test passed');
 `);
 process.stdout.write(run('node', ['check.mjs'], work));

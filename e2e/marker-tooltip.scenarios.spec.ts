@@ -3,11 +3,11 @@ import { scenarioHash } from '@stacklatte/chart-examples';
 import type { MarkerPoint } from '@stacklatte/chart-engine';
 
 /**
- * Real-browser check of the marker tooltip. The vanilla demo exposes its ChartController as `window.__SL_CHART__`
- * so the test can ask where a marker is instead of re-deriving the layout.
+ * Real-browser check of the marker tooltip. The Angular demo exposes the component's `getVisibleMarkers()` as
+ * `window.__SL_CHART__` so the test can ask where a marker is instead of re-deriving the layout.
  */
 test.beforeEach(({}, info) => {
-  test.skip(!info.project.name.startsWith('vanilla'), 'only the vanilla demo exposes its controller');
+  test.skip(!info.project.name.startsWith('angular'), 'only the Angular demo exposes its component for marker positions');
 });
 
 const markers = (page: import('@playwright/test').Page) =>

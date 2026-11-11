@@ -126,7 +126,7 @@ export function ConfiguredChart({ config, candles }: { config: ChartConfig; cand
 }
 ```
 
-`buildChartPipeline` returns everything except `width` and `height`. The same call works with `@stacklatte/chart-native`, `@stacklatte/chart-angular` (bind the returned fields to the inputs) and `@stacklatte/chart-canvas`.
+`buildChartPipeline` returns everything except `width` and `height`. The same call works with `@stacklatte/chart-native`, and `@stacklatte/chart-angular` (bind the returned fields to the inputs).
 
 ## Live example
 

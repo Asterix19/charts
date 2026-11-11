@@ -13,7 +13,8 @@ The framework-agnostic core behind Stacklatte's trading charts. **Zero runtime d
 |---|---|
 | React Native app | [`@stacklatte/chart-native`](../chart-native) |
 | Web app (React) | [`@stacklatte/chart-web`](../chart-web) |
-| Another framework (Angular, Vue, Svelte, Blazor interop) or a headless service | `@stacklatte/chart-engine` + your own renderer |
+| Angular app | [`@stacklatte/chart-angular`](../chart-angular) |
+| A headless service, worker or backtest (no UI) | `@stacklatte/chart-engine` |
 
 ```sh
 npm install @stacklatte/chart-engine

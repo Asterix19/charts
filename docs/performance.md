@@ -6,11 +6,11 @@ Numbers below are **measured by the repository's own e2e suite** (`npm run test:
 
 Each scenario is loaded in a real browser, then driven with three drag sweeps (±220 px) and 36 wheel-zoom steps while a probe records wall-clock time between animation frames (`window.__SL__.probe`).
 
-| Scenario | Candles | Panels / overlays | React | Angular | Vanilla JS |
-|---|---|---|---|---|---|
-| Stress 2k | 2,000 | EMA ×2, Bollinger, RSI, HUD | 59 fps, p95 18 ms | 59 fps, p95 18 ms | 60 fps, p95 18 ms |
-| Stress 50k | 50,000 | EMA, Bollinger, volume, RSI, MACD, HUD | 60 fps, p95 17 ms | 59 fps, p95 18 ms | 60 fps, p95 17 ms |
-| Live Burst | 300 → 10,000 | RSI, HUD, tick every 100 ms | 59 fps, p95 17 ms | 60 fps, p95 18 ms | 60 fps, p95 17 ms |
+| Scenario | Candles | Panels / overlays | React | Angular |
+|---|---|---|---|---|
+| Stress 2k | 2,000 | EMA ×2, Bollinger, RSI, HUD | 59 fps, p95 18 ms | 59 fps, p95 18 ms |
+| Stress 50k | 50,000 | EMA, Bollinger, volume, RSI, MACD, HUD | 60 fps, p95 17 ms | 59 fps, p95 18 ms |
+| Live Burst | 300 → 10,000 | RSI, HUD, tick every 100 ms | 59 fps, p95 17 ms | 60 fps, p95 18 ms |
 
 First paint after navigation (mount) was 20–45 ms for every scenario above.
 

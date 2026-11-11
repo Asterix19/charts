@@ -1,8 +1,5 @@
-// Re-export the engine like every other renderer package does, so one import covers types and helpers.
-export * from '@stacklatte/chart-engine';
-
-// Canvas 2D drawing primitives shared by every DOM renderer (React, Angular, …).
-// Pure functions over a CanvasRenderingContext2D — no framework, no state.
+// @stacklatte/chart-engine/canvas — Canvas 2D drawing primitives and ChartController, shared by the React and Angular
+// renderers. Kept out of the engine's main entry so `import … from '@stacklatte/chart-engine'` stays DOM-free.
 export { getScaledContext } from './canvasDpr';
 export { drawAxis, type AxisDrawOptions } from './draw/axis';
 export { drawCrosshairLines } from './draw/crosshair';

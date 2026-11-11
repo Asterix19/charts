@@ -10,7 +10,6 @@
   },
   "devDependencies": {
     "@stacklatte/chart-engine": "*",
-    "@stacklatte/chart-canvas": "*",
     "@stacklatte/chart-native": "*",
     "@stacklatte/chart-web": "*",
     "@stacklatte/chart-core": "*",

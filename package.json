@@ -3,7 +3,6 @@
   "private": true,
   "workspaces": [
     "chart-engine",
-    "chart-canvas",
     "chart-native",
     "chart-core",
     "chart-web",
@@ -13,7 +12,6 @@
     "examples/engine-demo",
     "examples/demo",
     "examples/web-demo",
-    "examples/canvas-demo",
     "examples/angular-demo"
   ],
   "scripts": {
@@ -25,13 +23,12 @@
     "demo:native": "npm run start --workspace=demo",
     "demo:ios": "npm run ios --workspace=demo",
     "demo:android": "npm run android --workspace=demo",
-    "test:e2e": "npm run build -w @stacklatte/chart-engine -w @stacklatte/chart-canvas -w @stacklatte/chart-web -w @stacklatte/chart-angular && playwright test",
+    "test:e2e": "npm run build -w @stacklatte/chart-engine -w @stacklatte/chart-web -w @stacklatte/chart-angular && playwright test",
     "test:pack": "npm run build && node scripts/smoke-pack.mjs",
     "test:native": "maestro test e2e-native/flows --test-output-dir e2e-native/screenshots && node e2e-native/compare-screenshots.mjs",
     "demo:angular": "npm run dev --workspace=angular-demo",
-    "demo:canvas": "npm run dev --workspace=canvas-demo",
     "check:generated": "tsx e2e-native/generate-flows.mjs --check && node scripts/generate-api-docs.mjs --check && node scripts/generate-llms-full.mjs --check",
-    "test:contracts": "npm run build -w @stacklatte/chart-engine -w @stacklatte/chart-canvas -w @stacklatte/chart-native -w @stacklatte/chart-web -w @stacklatte/chart-core -w @stacklatte/chart-angular && npm test -w @stacklatte/chart-contracts",
+    "test:contracts": "npm run build -w @stacklatte/chart-engine -w @stacklatte/chart-native -w @stacklatte/chart-web -w @stacklatte/chart-core -w @stacklatte/chart-angular && npm test -w @stacklatte/chart-contracts",
     "docs:generate": "npm run build && node scripts/generate-api-docs.mjs && node scripts/generate-llms-full.mjs",
     "test:native:compat": "node e2e-native/compare-chart-core.mjs"
   },

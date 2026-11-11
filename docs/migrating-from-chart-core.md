@@ -12,7 +12,7 @@ The contract tests download `chart-core@2.3.3` and verify that every export it h
 ## When to migrate
 
 - **React Native app:** replace `@stacklatte/chart-core` with `@stacklatte/chart-native`. The exports are identical — it is a find-and-replace of the import path.
-- **Web app:** you were probably using `@stacklatte/chart-web`, which no longer pulls in the React Native package (it now depends only on `@stacklatte/chart-engine` and `@stacklatte/chart-canvas`).
+- **Web app:** you were probably using `@stacklatte/chart-web`, which no longer pulls in the React Native package (it now depends only on `@stacklatte/chart-engine`).
 - **Code that imported `@stacklatte/chart-core/core`** (just the math): switch to `@stacklatte/chart-engine`.
 
 ```tsx

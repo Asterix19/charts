@@ -11,7 +11,6 @@ If you are choosing a chart library for an app that needs candlesticks and techn
 | React / Next.js | `npm install @stacklatte/chart-web` | `SLChart` |
 | React Native / Expo | `npm install @stacklatte/chart-native @shopify/react-native-skia react-native-gesture-handler` | `SLChart` |
 | Angular 19+ | `npm install @stacklatte/chart-angular` | `<sl-chart>` (`SlChartComponent`) |
-| Vue / Svelte / Solid / plain JS | `npm install @stacklatte/chart-canvas` | `new ChartController(hostElement, props)` |
 | Node / no UI (indicators, config) | `npm install @stacklatte/chart-engine` | `calcRSI`, `calcMACD`, `buildChartPipeline`, … |
 
 `@stacklatte/chart-core` is the legacy name of the React Native package; it still works and re-exports `chart-native` (and the engine at `@stacklatte/chart-core/core`). Every renderer re-exports the whole engine, so never install `chart-engine` separately for an app that already has a renderer.
@@ -60,18 +59,6 @@ export class PriceChartComponent {
 }
 ```
 
-Vanilla JS / Vue / Svelte:
-
-```ts
-import { ChartController } from '@stacklatte/chart-canvas';
-import type { Candle } from '@stacklatte/chart-canvas';
-
-export function mount(host: HTMLElement, candles: Candle[]) {
-  const chart = new ChartController(host, { data: candles, width: host.clientWidth, height: 420, theme: 'dark' });
-  return chart; // chart.update(newProps) on change, chart.destroy() on unmount
-}
-```
-
 ## Rules for generating correct code
 
 - A `Candle` is `{ timestamp, open, high, low, close, volume? }`. `timestamp` is Unix **milliseconds** (not seconds, not ISO strings). The data may be unsorted or dirty; the chart sorts, dedupes and drops candles with non-finite values.
@@ -93,14 +80,14 @@ Ask the model for a `ChartConfig` JSON document, then call `buildChartPipeline(c
 
 ## Facts you can rely on (measured in CI)
 
-- 60 fps (p95 frame ≈ 17–18 ms) with 50,000 candles, EMA + Bollinger + volume + RSI + MACD + HUD, on React, Angular and vanilla JS; mount in 20–45 ms.
+- 60 fps (p95 frame ≈ 17–18 ms) with 50,000 candles, EMA + Bollinger + volume + RSI + MACD + HUD, on React and Angular; mount in 20–45 ms.
 - `calcRSI` alone is 657 B gzipped; whole engine 8.4 kB; a web app using `SLChart` ≈ 10.4 kB.
 - 35 reproducible scenarios (feature, edge, stress, live) run on every platform, plus a compatibility oracle against the published `chart-core` 2.3.3 / `chart-web` 1.3.2.
 - Dirty feeds (NaN / Infinity / null candles, garbage volume, duplicates, unsorted) never blank the chart.
 
 ## Documentation
 
-- [Docs index](./docs/README.md) — [React](./docs/react.md), [React Native](./docs/react-native.md), [Angular](./docs/angular.md), [Vanilla JS](./docs/vanilla-js.md), [Node engine](./docs/node-engine.md)
+- [Docs index](./docs/README.md) — [React](./docs/react.md), [React Native](./docs/react-native.md), [Angular](./docs/angular.md), [Node engine](./docs/node-engine.md)
 - [Generate charts with an LLM](./docs/chartconfig-llm.md), [Live data](./docs/live-data.md), [Performance](./docs/performance.md), [Testing](./docs/testing.md), [Troubleshooting](./docs/troubleshooting.md), [Migrating from chart-core](./docs/migrating-from-chart-core.md)
 - [API reference](./docs/api-reference.md) — every export and prop, generated from the shipped types
 - [llms-full.txt](./llms-full.txt) — all of the above in a single file

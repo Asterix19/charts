@@ -11,18 +11,32 @@ import { abs } from './exports';
  */
 const BUDGETS: Array<[string, string, number, number]> = [
   // [name, file, measured gz at time of writing, budget gz]
-  ['@stacklatte/chart-engine', 'chart-engine/dist/index.mjs', 8_340, 11_000],
-  // grew 5.99 → 8.15 kB when the marker tooltip, the full OHLC + indicator HUD and getVisibleMarkers moved into the controller (Angular / vanilla lacked them)
-  ['@stacklatte/chart-canvas', 'chart-canvas/dist/index.mjs', 8_160, 10_500],
   ['@stacklatte/chart-web', 'chart-web/dist/index.mjs', 5_860, 8_000],
   ['@stacklatte/chart-native', 'chart-native/dist/index.mjs', 7_990, 10_500],
   ['@stacklatte/chart-angular', 'chart-angular/dist/fesm2022/stacklatte-chart-angular.mjs', 1_480, 3_000],
+];
+
+/** The engine's ESM build is code-split, so measure what a bundler actually ships for each entry point. */
+const BUNDLED: Array<[string, string, number, number]> = [
+  // [name, import statement, measured gz, budget gz]
+  ['@stacklatte/chart-engine (whole)', "import * as e from '@stacklatte/chart-engine'; console.log(e);", 8_376, 11_000],
+  ['@stacklatte/chart-engine/canvas (ChartController)', "import { ChartController } from '@stacklatte/chart-engine/canvas'; console.log(ChartController);", 11_011, 14_500],
 ];
 
 describe('bundle size budgets (gzip)', () => {
   it.each(BUDGETS)('%s stays under budget', (_name, file, _measured, budget) => {
     const gz = gzipSync(readFileSync(abs(file))).length;
     expect(gz, `${file} is ${gz} B gzipped (budget ${budget})`).toBeLessThanOrEqual(budget);
+  });
+});
+
+describe('bundled size budgets (gzip)', () => {
+  const require2 = createRequire(import.meta.url);
+  const esb = require2('esbuild') as typeof import('esbuild');
+  it.each(BUNDLED)('%s stays under budget', async (_name, code, _measured, budget) => {
+    const r = await esb.build({ stdin: { contents: code, resolveDir: abs('compat'), loader: 'js' }, bundle: true, minify: true, format: 'esm', write: false, platform: 'browser', treeShaking: true });
+    const gz = gzipSync(r.outputFiles[0].contents).length;
+    expect(gz, `${gz} B gzipped (budget ${budget})`).toBeLessThanOrEqual(budget);
   });
 });
 

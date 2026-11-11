@@ -12,7 +12,7 @@ import {
   type Candle,
   type ChartThemeColors,
   type TsPoint,
-} from '@stacklatte/chart-engine';
+} from '../../index';
 import { strokeSmoothPath } from './path';
 
 /** Draws MACD and signal lines plus the histogram (green above zero, red below) into the MACD sub-panel. */
