@@ -60,15 +60,15 @@ test('theme input repaints the chart', async ({ page }) => {
 test('hover drives the (crosshairChange) output and the built-in HUD, and releases on leave', async ({ page }) => {
   const box = (await page.locator('sl-chart canvas').first().boundingBox())!;
   await expect(page.locator('#readout')).toHaveText('no selection');
-  await expect(page.locator('.sl-chart-hud')).toContainText('LIVE');
+  await expect(page.locator('[data-sl-layer="ohlc-hud"]')).toContainText('LIVE');
 
   await page.mouse.move(box.x + 300, box.y + 200);
   await expect(page.locator('#readout')).toContainText('close ');
-  await expect(page.locator('.sl-chart-hud')).toContainText('INSPECT');
+  await expect(page.locator('[data-sl-layer="ohlc-hud"]')).toContainText(/\d{1,2}:\d{2}/);
 
   await page.mouse.move(box.x - 40, box.y - 40);
   await expect(page.locator('#readout')).toHaveText('no selection');
-  await expect(page.locator('.sl-chart-hud')).toContainText('LIVE');
+  await expect(page.locator('[data-sl-layer="ohlc-hud"]')).toContainText('LIVE');
 });
 
 test('drag pans and wheel zooms the viewport', async ({ page }) => {

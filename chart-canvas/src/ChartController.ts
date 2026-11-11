@@ -48,6 +48,7 @@ import { drawCandles, drawCrosshairDot, drawLineSeries, drawShadedArea } from '.
 import { drawMarkers } from './draw/markers';
 import { drawRsiPanel } from './draw/rsiPanel';
 import { drawVolumePanel } from './draw/volumePanel';
+import { OhlcHudView, type HudCustomValue } from './hud';
 
 const MIN_VISIBLE_CANDLES = 4;
 const MACD_WARMUP = 35; // slowPeriod(26) + signalPeriod(9)
@@ -90,6 +91,7 @@ export class ChartController {
   private markerPoints: MarkerPoint[] = [];
   private hoverPos: { x: number; y: number } | null = null;
   private tooltipEl: HTMLDivElement | null = null;
+  private hud: OhlcHudView | null = null;
   private prevVisibleDataPoints: number | undefined;
   private prevScrollTrigger: number | undefined;
 
@@ -158,6 +160,7 @@ export class ChartController {
     this.destroyed = true;
     if (this.rafId !== null) cancelAnimationFrame(this.rafId);
     this.detachGestures?.();
+    this.hud?.destroy();
     this.root.remove();
   }
 
@@ -419,6 +422,7 @@ export class ChartController {
       this.syncPanels([], {}, panelGap, width);
       this.geo = { ...this.geo, visible: [] };
       this.renderTooltip(null, colors);
+      this.renderHud(null);
       return;
     }
 
@@ -607,6 +611,39 @@ export class ChartController {
       );
     }
     this.renderTooltip(hovered, colors, { width, height, padLeft: padding.left, padTop: padding.top, offsetX: fractionalOffsetX });
+
+    // OHLC + indicator HUD: the inspected candle, or the latest visible one while nothing is inspected.
+    if (p.showOhlcHud) {
+      const customPanelValues: HudCustomValue[] = [];
+      if (crossCandle) {
+        for (const { panel, series } of customPanels) {
+          for (const { line, data } of series) {
+            const v = findIndicatorValue(data, crossCandle.timestamp);
+            if (v !== null) customPanelValues.push({ id: `${panel.id}-${line.id}`, label: line.name ?? line.id, color: line.color, value: v });
+          }
+        }
+      }
+      this.renderHud({
+        candle: crossCandle ?? visible[visible.length - 1],
+        isLive: crossCandle === null,
+        colors,
+        indicators: p.indicators,
+        rsiValue: crossCandle && p.showRsiPanel ? findIndicatorValue(rsi, crossCandle.timestamp) : null,
+        customPanelValues,
+      });
+    } else {
+      this.renderHud(null);
+    }
+  }
+
+  private renderHud(data: Parameters<OhlcHudView['update']>[0] | null): void {
+    if (!data) {
+      this.hud?.destroy();
+      this.hud = null;
+      return;
+    }
+    this.hud ??= new OhlcHudView(this.root);
+    this.hud.update(data);
   }
 
   /** Plain-DOM tooltip for the hovered trade marker (same content and positioning as the React renderer). */

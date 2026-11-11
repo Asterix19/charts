@@ -12,7 +12,6 @@ import {
   SimpleChanges,
   afterNextRender,
   inject,
-  signal,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { ChartController } from '@stacklatte/chart-canvas';
@@ -45,17 +44,7 @@ import type {
   selector: 'sl-chart',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <div class="sl-chart-host" [style.width.px]="width" [style.height.px]="height" style="position:relative">
-      @if (showOhlcHud && hudCandle(); as c) {
-        <div class="sl-chart-hud" style="position:absolute;top:8px;left:8px;z-index:1;pointer-events:none;font:11px ui-monospace,monospace;padding:6px 8px;border-radius:6px;background:rgba(0,0,0,.6);color:#fff">
-          <div>{{ inspecting() ? 'INSPECT' : 'LIVE' }}</div>
-          <div>O {{ c.open }}  H {{ c.high }}</div>
-          <div>L {{ c.low }}  C {{ c.close }}</div>
-        </div>
-      }
-    </div>
-  `,
+  template: `<div class="sl-chart-host" [style.width.px]="width" [style.height.px]="height" style="position:relative"></div>`,
   styles: [':host { display: inline-block; }'],
 })
 export class SlChartComponent implements OnChanges, OnDestroy {
@@ -81,7 +70,7 @@ export class SlChartComponent implements OnChanges, OnDestroy {
   @Input() theme?: ChartTheme | ChartThemeColors;
   /** `'candle'` (default) or `'line'`. */
   @Input() chartType?: ChartType;
-  /** Show the OHLC readout and enable the crosshair. */
+  /** Show the OHLC + indicator readout (the same HUD as React / React Native: change %, OHLC, volume, RSI, one row per indicator) and enable the crosshair. */
   @Input() showOhlcHud = false;
   /** Show an RSI sub-panel. */
   @Input() showRsiPanel?: boolean;
@@ -103,11 +92,6 @@ export class SlChartComponent implements OnChanges, OnDestroy {
   /** Emits the inspected candle while the crosshair is active, `null` when it is released. */
   @Output() crosshairChange = new EventEmitter<Candle | null>();
 
-  protected readonly inspecting = signal(false);
-  private readonly lastCandle = signal<Candle | null>(null);
-  private readonly crosshair = signal<Candle | null>(null);
-  protected readonly hudCandle = () => this.crosshair() ?? this.lastCandle();
-
   private controller?: ChartController;
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly zone = inject(NgZone);
@@ -123,7 +107,6 @@ export class SlChartComponent implements OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['data']) this.lastCandle.set(this.data?.length ? this.data[this.data.length - 1] : null);
     this.controller?.update(this.props());
   }
 
@@ -154,11 +137,7 @@ export class SlChartComponent implements OnChanges, OnDestroy {
       hour12: this.hour12,
       maxZoom: this.maxZoom,
       scrollToLatestTrigger: this.scrollToLatestTrigger,
-      onCrosshairChange: (candle) => this.zone.run(() => {
-        this.crosshair.set(candle);
-        this.inspecting.set(candle !== null);
-        this.crosshairChange.emit(candle);
-      }),
+      onCrosshairChange: (candle) => this.zone.run(() => this.crosshairChange.emit(candle)),
     };
   }
 }

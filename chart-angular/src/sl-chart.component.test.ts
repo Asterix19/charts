@@ -74,29 +74,31 @@ describe('<sl-chart>', () => {
     expect((HTMLCanvasElement.prototype.getContext as unknown as { mock: { calls: unknown[] } }).mock.calls.length).toBeGreaterThan(before);
   });
 
-  it('emits crosshairChange and shows the HUD while inspecting, then clears', async () => {
+  it('emits crosshairChange; the HUD shows LIVE, then the inspected candle\'s time, then LIVE again', async () => {
     const fixture = await create({ showOhlcHud: true });
     const emitted: Array<Candle | null> = [];
     fixture.componentInstance.crosshairChange.subscribe((c) => emitted.push(c));
-    expect(fixture.nativeElement.querySelector('.sl-chart-hud')?.textContent).toContain('LIVE');
+    await frame();
+    expect(fixture.nativeElement.querySelector('[data-sl-layer="ohlc-hud"]')?.textContent).toContain('LIVE');
 
     const canvas = canvases(fixture)[0];
     canvas.dispatchEvent(new PointerEvent('pointermove', { clientX: 120, clientY: 100, pointerId: 1, pointerType: 'mouse', buttons: 0, bubbles: true }));
     await frame();
     fixture.detectChanges();
     expect(emitted.at(-1)).toEqual(expect.objectContaining({ close: expect.any(Number) }));
-    expect(fixture.nativeElement.querySelector('.sl-chart-hud')?.textContent).toContain('INSPECT');
+    expect(fixture.nativeElement.querySelector('[data-sl-layer="ohlc-hud"]')?.textContent).not.toContain('LIVE');
+    expect(fixture.nativeElement.querySelector('[data-sl-layer="ohlc-hud"]')?.textContent).toMatch(/\d{1,2}:\d{2}/);
 
     canvas.dispatchEvent(new PointerEvent('pointerleave', { pointerId: 1, pointerType: 'mouse', bubbles: true }));
     await frame();
     fixture.detectChanges();
     expect(emitted.at(-1)).toBeNull();
-    expect(fixture.nativeElement.querySelector('.sl-chart-hud')?.textContent).toContain('LIVE');
+    expect(fixture.nativeElement.querySelector('[data-sl-layer="ohlc-hud"]')?.textContent).toContain('LIVE');
   });
 
   it('hides the HUD unless showOhlcHud is set', async () => {
     const fixture = await create();
-    expect(fixture.nativeElement.querySelector('.sl-chart-hud')).toBeNull();
+    expect(fixture.nativeElement.querySelector('[data-sl-layer="ohlc-hud"]')).toBeNull();
   });
 
   it('tears down its canvases and listeners on destroy', async () => {
@@ -136,5 +138,13 @@ describe('<sl-chart>', () => {
     expect(tip.textContent).toContain('Buy');
     expect(tip.textContent).toContain('+2.50%');
   });
-});
 
+  it('the HUD is the full one: change %, OHLC, volume and a row per indicator (same as React / React Native)', async () => {
+    const candles = makeCandles(60);
+    const ema = { id: 'ema9', name: 'EMA(9)', color: '#00ff00', data: candles.map((c) => ({ timestamp: c.timestamp, value: c.close })) };
+    const fixture = await create({ data: candles, showOhlcHud: true, indicators: [ema] });
+    const text = fixture.nativeElement.querySelector('[data-sl-layer="ohlc-hud"]')!.textContent as string;
+    for (const needle of ['LIVE', '%', 'O', 'H', 'L', 'C', 'V', 'EMA']) expect(text, needle).toContain(needle);
+    expect(fixture.nativeElement.querySelector('[data-sl-hud-grip]')).not.toBeNull(); // draggable
+  });
+});

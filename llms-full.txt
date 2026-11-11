@@ -145,7 +145,7 @@ Every renderer re-exports the whole engine, so `import { calcRSI } from '@stackl
 | `calcRSI` only (tree-shaken) | 657 B |
 | the whole engine | 8.4 kB |
 | a web app using `SLChart` (engine + drawing code included) | about 10.4 kB |
-| `ChartController` for vanilla JS | about 8.7 kB |
+| `ChartController` for vanilla JS | about 11 kB |
 
 These numbers are enforced by a budget test, so they cannot grow unnoticed.
 
@@ -400,7 +400,7 @@ export class AnalysisComponent {
 }
 ```
 
-`(crosshairChange)` emits the inspected candle, or `null` when the pointer leaves. `[showOhlcHud]="true"` also renders a small built-in OHLC readout above the chart.
+`(crosshairChange)` emits the inspected candle, or `null` when the pointer leaves. `[showOhlcHud]="true"` turns on the crosshair and the **full OHLC + indicator HUD** — the same one React and React Native show: LIVE (or the inspected candle's time), the % change, O/H/L/C and volume, the RSI while inspecting, one row per entry in `[indicators]` and one per custom-panel series. Drag its grip to move it out of the way.
 
 ## Inputs
 
@@ -1960,7 +1960,7 @@ Also re-exports everything from `@stacklatte/chart-engine` (see above).
 | `visibleDataPoints` | `number \| undefined` | How many candles are visible at once. Default 60. |
 | `theme` | `ChartTheme \| ChartThemeColors \| undefined` | `'dark'` (default), `'light'`, or a full `ChartThemeColors` object. |
 | `chartType` | `ChartType \| undefined` | `'candle'` (default) or `'line'`. |
-| `showOhlcHud` | `boolean` | Show the OHLC readout and enable the crosshair. |
+| `showOhlcHud` | `boolean` | Show the OHLC + indicator readout (the same HUD as React / React Native: change %, OHLC, volume, RSI, one row per indicator) and enable the crosshair. |
 | `showRsiPanel` | `boolean \| undefined` | Show an RSI sub-panel. |
 | `rsiPeriod` | `number \| undefined` | RSI lookback period. Default 14. |
 | `showMacdPanel` | `boolean \| undefined` | Show a MACD(12,26,9) sub-panel. |

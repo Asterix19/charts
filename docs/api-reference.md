@@ -956,7 +956,7 @@ Also re-exports everything from `@stacklatte/chart-engine` (see above).
 | `visibleDataPoints` | `number \| undefined` | How many candles are visible at once. Default 60. |
 | `theme` | `ChartTheme \| ChartThemeColors \| undefined` | `'dark'` (default), `'light'`, or a full `ChartThemeColors` object. |
 | `chartType` | `ChartType \| undefined` | `'candle'` (default) or `'line'`. |
-| `showOhlcHud` | `boolean` | Show the OHLC readout and enable the crosshair. |
+| `showOhlcHud` | `boolean` | Show the OHLC + indicator readout (the same HUD as React / React Native: change %, OHLC, volume, RSI, one row per indicator) and enable the crosshair. |
 | `showRsiPanel` | `boolean \| undefined` | Show an RSI sub-panel. |
 | `rsiPeriod` | `number \| undefined` | RSI lookback period. Default 14. |
 | `showMacdPanel` | `boolean \| undefined` | Show a MACD(12,26,9) sub-panel. |

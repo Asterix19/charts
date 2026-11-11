@@ -31,7 +31,7 @@ Every renderer re-exports the whole engine, so `import { calcRSI } from '@stackl
 | `calcRSI` only (tree-shaken) | 657 B |
 | the whole engine | 8.4 kB |
 | a web app using `SLChart` (engine + drawing code included) | about 10.4 kB |
-| `ChartController` for vanilla JS | about 8.7 kB |
+| `ChartController` for vanilla JS | about 11 kB |
 
 These numbers are enforced by a budget test, so they cannot grow unnoticed.
 

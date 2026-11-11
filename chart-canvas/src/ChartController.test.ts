@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { buildMarkerPoints, buildPaddedRange, buildTimestampIndex, computeLayout, type Candle, type ChartMarker } from '@stacklatte/chart-engine';
+import { getThemeColors, calcEMA, calcRSI, calcSMA, buildMarkerPoints, buildPaddedRange, buildTimestampIndex, computeLayout, type Candle, type ChartMarker } from '@stacklatte/chart-engine';
 
 import { ChartController } from './ChartController';
 import { installCanvasMock, type MockContext2D } from './testUtils/canvasMock';
@@ -392,6 +392,137 @@ describe('ChartController — display options', () => {
     c.update({ data: makeCandles(300), width: 400, height: 300, visibleDataPoints: 40, showOhlcHud: true, onCrosshairChange, scrollToLatestTrigger: 1 });
     await frame();
     expect(await newest()).toBe(atEnd);
+  });
+});
+
+describe('ChartController — OHLC + indicator HUD (parity with the React / React Native HUD)', () => {
+  const candles = makeCandles(80);
+  const hud = () => host.querySelector('[data-sl-layer="ohlc-hud"]') as HTMLElement | null;
+  const rows = () => [...hud()!.querySelectorAll(':scope > div:nth-child(2) > div')].map((r) => r.textContent!.replace(/\s+/g, ' ').trim());
+  const hover = (x: number) =>
+    host.querySelector('canvas')!.dispatchEvent(new PointerEvent('pointermove', { clientX: x, clientY: 100, pointerId: 1, pointerType: 'mouse', buttons: 0, bubbles: true }));
+  const price = (n: number) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  it('is absent unless showOhlcHud is set', async () => {
+    mount({ data: candles });
+    await frame();
+    expect(hud()).toBeNull();
+  });
+
+  it('shows LIVE, the change % and the latest candle\'s O/H/L/C and volume when nothing is inspected', async () => {
+    mount({ data: candles, showOhlcHud: true });
+    await frame();
+    const last = candles[candles.length - 1];
+    expect(hud()!.textContent).toContain('LIVE');
+    const pct = (((last.close - last.open) / last.open) * 100);
+    expect(hud()!.textContent).toContain(`${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%`);
+    expect(rows()).toEqual(expect.arrayContaining([`O${price(last.open)}`, `H${price(last.high)}`, `L${price(last.low)}`, `C${price(last.close)}`, 'V1.00K']));
+  });
+
+  it('switches to the inspected candle (time instead of LIVE) while hovering, and back on leave', async () => {
+    mount({ data: candles, showOhlcHud: true });
+    await frame();
+    hover(200);
+    await frame();
+    expect(hud()!.textContent).not.toContain('LIVE');
+    expect(hud()!.textContent).toMatch(/\d{1,2}:\d{2}/);
+    host.querySelector('canvas')!.dispatchEvent(new PointerEvent('pointerleave', { pointerId: 1, pointerType: 'mouse', bubbles: true }));
+    await frame();
+    expect(hud()!.textContent).toContain('LIVE');
+  });
+
+  it('has one row per indicator, with the value AT the shown candle', async () => {
+    const ema = calcEMA(candles, 9, 'ema9', '#00ff00')!;
+    const sma = calcSMA(candles, 20, 'sma20', '#ff00ff')!;
+    mount({ data: candles, showOhlcHud: true, indicators: [ema, sma] });
+    await frame();
+    const last = candles[candles.length - 1].timestamp;
+    const at = (line: typeof ema) => line.data.find((p) => p.timestamp === last)!.value.toFixed(2);
+    expect(rows().some((r) => r.endsWith(at(ema)) && r.startsWith('EMA'))).toBe(true);
+    expect(rows().some((r) => r.endsWith(at(sma)) && r.startsWith('SMA'))).toBe(true);
+    // the dot beside each value uses the indicator's colour
+    const dots = [...hud()!.querySelectorAll('span')].filter((d) => d.style.borderRadius === '3px').map((d) => d.style.background);
+    expect(dots.join('|')).toMatch(/rgb\(0, 255, 0\)/);
+    expect(dots.join('|')).toMatch(/rgb\(255, 0, 255\)/);
+  });
+
+  it('shows the RSI row only while inspecting, with the RSI at the inspected candle', async () => {
+    mount({ data: candles, showOhlcHud: true, showRsiPanel: true });
+    await frame();
+    expect(rows().some((r) => r.startsWith('RSI'))).toBe(false); // live: no RSI row (same as React)
+    hover(250);
+    await frame();
+    expect(rows().some((r) => r.startsWith('RSI'))).toBe(true);
+    const shown = Number(rows().find((r) => r.startsWith('RSI'))!.replace('RSI', ''));
+    // the renderer runs RSI over a window that starts one period before the visible range (80 candles, 60 visible → from index 6)
+    expect(calcRSI(candles.slice(6), 14).some((p) => Math.abs(p.value - shown) < 0.06)).toBe(true);
+  });
+
+  it('shows one row per custom-panel series while inspecting', async () => {
+    const series = [{ id: 'corr', name: 'Correlation', color: '#abcdef', data: candles.map((c) => ({ timestamp: c.timestamp, value: 0.42 })) }];
+    mount({ data: candles, showOhlcHud: true, customPanels: [{ id: 'p', label: 'Panel', series }], height: 500 });
+    await frame();
+    expect(rows().some((r) => r.endsWith('0.42'))).toBe(false);
+    hover(200);
+    await frame();
+    expect(rows().some((r) => r.endsWith('0.42'))).toBe(true);
+  });
+
+  it('can be dragged by its grip, without panning the chart', async () => {
+    mount({ data: candles, showOhlcHud: true, visibleDataPoints: 30 });
+    await frame();
+    const grip = hud()!.querySelector('[data-sl-hud-grip]') as HTMLElement;
+    const before = { top: hud()!.style.top, left: hud()!.style.left };
+    const canvasDraws = () => contexts.length;
+    const drawsBefore = canvasDraws();
+    grip.dispatchEvent(new PointerEvent('pointerdown', { clientX: 10, clientY: 10, pointerId: 5, bubbles: true }));
+    grip.dispatchEvent(new PointerEvent('pointermove', { clientX: 70, clientY: 50, pointerId: 5, bubbles: true }));
+    grip.dispatchEvent(new PointerEvent('pointerup', { clientX: 70, clientY: 50, pointerId: 5, bubbles: true }));
+    expect(hud()!.style.left).toBe('66px'); // 6 + 60
+    expect(hud()!.style.top).toBe('46px'); // 6 + 40
+    expect(`${before.top}/${before.left}`).toBe('6px/6px');
+    await frame();
+    expect(canvasDraws()).toBe(drawsBefore); // dragging the HUD did not pan/repaint the chart
+  });
+
+  it('keeps its dragged position across repaints and data updates', async () => {
+    const c = mount({ data: candles, showOhlcHud: true });
+    await frame();
+    const grip = hud()!.querySelector('[data-sl-hud-grip]') as HTMLElement;
+    grip.dispatchEvent(new PointerEvent('pointerdown', { clientX: 0, clientY: 0, pointerId: 6, bubbles: true }));
+    grip.dispatchEvent(new PointerEvent('pointermove', { clientX: 30, clientY: 30, pointerId: 6, bubbles: true }));
+    grip.dispatchEvent(new PointerEvent('pointerup', { clientX: 30, clientY: 30, pointerId: 6, bubbles: true }));
+    c.update({ data: makeCandles(81), width: 400, height: 300, showOhlcHud: true });
+    await frame();
+    expect(hud()!.style.left).toBe('36px');
+  });
+
+  it('renders caller-supplied indicator names as text, never as HTML', async () => {
+    const ema = { ...calcEMA(candles, 9, 'e', '#fff')!, name: '<img src=x onerror="window.__hudPwned = true">' };
+    mount({ data: candles, showOhlcHud: true, indicators: [ema] });
+    await frame();
+    expect(hud()!.querySelector('img')).toBeNull();
+    expect((window as unknown as { __hudPwned?: boolean }).__hudPwned).toBeUndefined();
+  });
+
+  it('is removed when showOhlcHud is turned off, and on destroy()', async () => {
+    const c = mount({ data: candles, showOhlcHud: true });
+    await frame();
+    expect(hud()).not.toBeNull();
+    c.update({ data: candles, width: 400, height: 300, showOhlcHud: false });
+    await frame();
+    expect(hud()).toBeNull();
+    c.update({ data: candles, width: 400, height: 300, showOhlcHud: true });
+    await frame();
+    c.destroy();
+    expect(host.querySelector('[data-sl-layer="ohlc-hud"]')).toBeNull();
+    controller = undefined;
+  });
+
+  it('uses the theme colours (custom palette)', async () => {
+    mount({ data: candles, showOhlcHud: true, theme: { ...getThemeColors('dark'), hudBackground: '#123456', candleUp: '#00ff00', candleDown: '#00ff00' } });
+    await frame();
+    expect(hud()!.style.background).toMatch(/rgb\(18, 52, 86\)|#123456/);
   });
 });
 

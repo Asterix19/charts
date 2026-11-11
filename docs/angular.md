@@ -55,7 +55,7 @@ export class AnalysisComponent {
 }
 ```
 
-`(crosshairChange)` emits the inspected candle, or `null` when the pointer leaves. `[showOhlcHud]="true"` also renders a small built-in OHLC readout above the chart.
+`(crosshairChange)` emits the inspected candle, or `null` when the pointer leaves. `[showOhlcHud]="true"` turns on the crosshair and the **full OHLC + indicator HUD** — the same one React and React Native show: LIVE (or the inspected candle's time), the % change, O/H/L/C and volume, the RSI while inspecting, one row per entry in `[indicators]` and one per custom-panel series. Drag its grip to move it out of the way.
 
 ## Inputs
 

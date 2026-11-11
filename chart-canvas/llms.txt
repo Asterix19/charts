@@ -1,6 +1,6 @@
 # @stacklatte/chart-canvas
 
-> Framework-agnostic Canvas 2D trading chart: `new ChartController(hostElement, props)`. Embed candlestick/RSI/MACD/volume charts in Vue, Svelte, Solid or plain JS, or write a new framework wrapper (React and Angular are built on it). 60 fps with 50,000 candles; about 8.7 kB gzipped. Also exports the pure drawing functions.
+> Framework-agnostic Canvas 2D trading chart: `new ChartController(hostElement, props)`. Embed candlestick/RSI/MACD/volume charts in Vue, Svelte, Solid or plain JS, or write a new framework wrapper (React and Angular are built on it). 60 fps with 50,000 candles; about 11 kB gzipped. Also exports the pure drawing functions.
 
 ## Install
 

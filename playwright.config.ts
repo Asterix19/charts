@@ -18,7 +18,7 @@ export default defineConfig({
   use: { trace: 'retain-on-failure' },
   projects: [
     // Renderer regression oracle vs the published chart-web (no demo server needed).
-    { name: 'oracle', testMatch: /oracle-web\.spec\.ts/, use: { ...devices['Desktop Chrome'] } },
+    { name: 'oracle', testMatch: /oracle-(web|hud)\.spec\.ts/, use: { ...devices['Desktop Chrome'] } },
     ...DEMOS.flatMap((d) => [
     ...(d.legacySpec ? [{ name: d.name, testMatch: d.legacySpec, use: { ...devices['Desktop Chrome'], baseURL: `http://localhost:${d.port}` } }] : []),
     { name: `${d.name}-scenarios`, testMatch: /scenarios\.spec\.ts/, use: { ...devices['Desktop Chrome'], baseURL: `http://localhost:${d.port}` } },

@@ -47,7 +47,7 @@ export class ChartPage {
 | `indicators` / `shadedAreas` / `markers` / `customPanels` | engine types | — |
 | `showRsiPanel`, `showMacdPanel`, `showVolumePanel` | `boolean` | `false` |
 | `rsiPeriod` | `number` | `14` |
-| `showOhlcHud` | `boolean` (built-in OHLC readout + crosshair) | `false` |
+| `showOhlcHud` | `boolean` (the full OHLC + indicator HUD, draggable, plus the crosshair — identical to React / React Native) | `false` |
 | `visibleDataPoints` | `number` | `60` |
 | `intervalMs`, `hour12`, `showGrid`, `maxZoom` | see the [chart-web README](../chart-web/README.md) | — |
 | `scrollToLatestTrigger` | `number` — increment to jump to the latest candle | — |

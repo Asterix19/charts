@@ -12,10 +12,11 @@ import { abs } from './exports';
 const BUDGETS: Array<[string, string, number, number]> = [
   // [name, file, measured gz at time of writing, budget gz]
   ['@stacklatte/chart-engine', 'chart-engine/dist/index.mjs', 8_340, 11_000],
-  ['@stacklatte/chart-canvas', 'chart-canvas/dist/index.mjs', 5_990, 8_000],
+  // grew 5.99 → 8.15 kB when the marker tooltip, the full OHLC + indicator HUD and getVisibleMarkers moved into the controller (Angular / vanilla lacked them)
+  ['@stacklatte/chart-canvas', 'chart-canvas/dist/index.mjs', 8_160, 10_500],
   ['@stacklatte/chart-web', 'chart-web/dist/index.mjs', 5_860, 8_000],
   ['@stacklatte/chart-native', 'chart-native/dist/index.mjs', 7_990, 10_500],
-  ['@stacklatte/chart-angular', 'chart-angular/dist/fesm2022/stacklatte-chart-angular.mjs', 1_900, 3_000],
+  ['@stacklatte/chart-angular', 'chart-angular/dist/fesm2022/stacklatte-chart-angular.mjs', 1_480, 3_000],
 ];
 
 describe('bundle size budgets (gzip)', () => {
