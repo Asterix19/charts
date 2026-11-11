@@ -31,6 +31,8 @@ function ScenarioView({ id }: { id: string }) {
   const [data, setData] = useState(() => scenario.data());
   const [ticks, setTicks] = useState(0);
   const [mountMs, setMountMs] = useState(0);
+  const [crosshair, setCrosshair] = useState<number | null>(null);
+  const [toLatest, setToLatest] = useState(0);
 
   useEffect(() => {
     const el = hostRef.current;
@@ -71,9 +73,16 @@ function ScenarioView({ id }: { id: string }) {
       <h2 data-testid="title">{scenario.title}</h2>
       <p data-testid="description">{scenario.description}</p>
       <div ref={hostRef} className="sc-host" data-testid="chart-host">
-        {width > 0 && <SLChart data={data} width={width} height={scenario.height} {...props} />}
+        {width > 0 && (
+          <SLChart
+            data={data} width={width} height={scenario.height} {...props}
+            onCrosshairChange={(c) => setCrosshair(c ? c.timestamp : null)}
+            scrollToLatestTrigger={toLatest}
+          />
+        )}
       </div>
-      <div className="sc-stats" data-testid="stats" {...stats}>
+      <button type="button" data-testid="now" className="sc-tab" onClick={() => setToLatest((n) => n + 1)}>Now</button>
+      <div className="sc-stats" data-testid="stats" {...stats} data-crosshair={crosshair ?? ''}>
         {data.length.toLocaleString()} candles · mount {mountMs.toFixed(0)} ms{scenario.live ? ` · ${ticks} ticks` : ''}
       </div>
     </div>

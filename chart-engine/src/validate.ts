@@ -39,7 +39,8 @@ export type ValidationErrorCode =
   | 'INVALID_MARKER_KIND'
   | 'INVALID_ENUM'
   | 'UNKNOWN_KEY'
-  | 'INVALID_STRUCTURE';
+  | 'INVALID_STRUCTURE'
+  | 'INVALID_TYPE';
 
 export interface ValidationError {
   /** Dot-notation path to the offending field. */
@@ -54,6 +55,17 @@ export interface ValidationError {
 export type ValidationResult =
   | { valid: true }
   | { valid: false; errors: ValidationError[] };
+
+export interface ValidateOptions {
+  /**
+   * `true` (default): reject out-of-enum values, unknown keys and wrongly-typed scalars — what you want for
+   * LLM-generated configs. `false`: the lenient behaviour of `@stacklatte/chart-core` 2.x, which silently accepted
+   * those; only shapes that would crash (a missing array/object) and the semantic rules (ids, ranges) still fail.
+   */
+  strict?: boolean;
+}
+
+const LENIENT_IGNORED: ReadonlySet<ValidationErrorCode> = new Set(['INVALID_ENUM', 'UNKNOWN_KEY', 'INVALID_TYPE']);
 
 // ─── Public API ───────────────────────────────────────────────────────────────
 
@@ -70,13 +82,17 @@ export type ValidationResult =
  * }
  * ```
  */
-export function validateChartConfig(config: ChartConfig): ValidationResult {
-  const errors: ValidationError[] = [];
+export function validateChartConfig(config: ChartConfig, options: ValidateOptions = {}): ValidationResult {
+  const { strict = true } = options;
+  let errors: ValidationError[] = [];
 
   // Structural pass first: closed enums, unknown keys, required shapes. If the
   // document isn't shaped like a ChartConfig, the semantic validators below
   // would throw on missing arrays/objects — return the itemized errors instead.
   validateStructure(config, errors);
+  // Lenient (legacy) mode reproduces what @stacklatte/chart-core <= 2.3 accepted: it never checked enums, unknown keys or
+  // scalar types — only the shapes whose absence would crash. Everything else is still checked by the semantic validators.
+  if (!strict) errors = errors.filter((e) => !LENIENT_IGNORED.has(e.code));
   if (errors.some((e) => e.code === 'INVALID_STRUCTURE')) return { valid: false, errors };
 
   validateVersion(config, errors);
@@ -129,15 +145,15 @@ function validateStructure(config: unknown, errors: ValidationError[]): void {
   };
 
   const str = (v: unknown, path: string) => {
-    if (typeof v !== 'string' || v.length === 0) bad(path, 'INVALID_STRUCTURE', 'must be a non-empty string.');
+    if (typeof v !== 'string' || v.length === 0) bad(path, 'INVALID_TYPE', 'must be a non-empty string.');
   };
 
   const bool = (v: unknown, path: string) => {
-    if (typeof v !== 'boolean') bad(path, 'INVALID_STRUCTURE', 'must be a boolean.');
+    if (typeof v !== 'boolean') bad(path, 'INVALID_TYPE', 'must be a boolean.');
   };
 
   const num = (v: unknown, path: string) => {
-    if (typeof v !== 'number') bad(path, 'INVALID_STRUCTURE', 'must be a number.');
+    if (typeof v !== 'number') bad(path, 'INVALID_TYPE', 'must be a number.');
   };
 
   const array = (v: unknown, path: string, required: boolean): v is unknown[] => {
@@ -217,7 +233,7 @@ function validateStructure(config: unknown, errors: ValidationError[]): void {
       const base = `markers[${i}]`;
       if (!keys(m, base, ['timestamp', 'price', 'kind', 'label'])) return;
       // Numeric/kind semantics are reported by validateMarkers; only guard the shape here.
-      if (m.label !== undefined && typeof m.label !== 'string') bad(`${base}.label`, 'INVALID_STRUCTURE', 'must be a string.');
+      if (m.label !== undefined && typeof m.label !== 'string') bad(`${base}.label`, 'INVALID_TYPE', 'must be a string.');
     });
   }
 

@@ -26,7 +26,7 @@ buildCandleGeometry(data: Candle[], width: number, height: number, priceMin: num
 Compute pixel geometry for every candle.
 
 ```ts
-buildChartPipeline(config: ChartConfig, data: Candle[]): CompiledChart
+buildChartPipeline(config: ChartConfig, data: Candle[], options?: ValidateOptions): CompiledChart
 ```
 Full pipeline: validate → normalize → compile.
 
@@ -94,6 +94,11 @@ Relative Strength Index with Wilder smoothing. Returns one point per candle afte
 calcSMA(candles: Candle[], period: number, id: string, color: string): IndicatorLine | null
 ```
 Simple moving average of `close` over `period` candles, as an overlay line. The first point is at candle `period - 1`. Returns `null` when there are fewer candles than `period` or `period` is not a positive integer. `id` is the key `ShadedArea` refers to; `color` is any CSS color.
+
+```ts
+calcVWAP(candles: Candle[], id: string, color: string): IndicatorLine | null
+```
+Volume-weighted average price, cumulative over the supplied candles: `Σ(typicalPrice × volume) / Σ(volume)` where `typicalPrice = (high + low + close) / 3`. There is one point per candle from the first candle that has volume > 0. Candles without a (finite, positive) `volume` are skipped until volume appears. Returns `null` when no candle has volume. For a session VWAP, pass only that session's candles. Never throws.
 
 ```ts
 clampTickX(x: number, width: number, margin?: number): number
@@ -316,7 +321,7 @@ softZoomOutCeiling(maxVisible: number): number
 The absolute ceiling `applyZoomOutResistance` asymptotically approaches but never reaches — use this (not `maxVisible` itself) as the outer `clampViewport`/`clamp` bound so the resisted range is never truncated back down to a hard wall by a later clamp.
 
 ```ts
-validateChartConfig(config: ChartConfig): ValidationResult
+validateChartConfig(config: ChartConfig, options?: ValidateOptions): ValidationResult
 ```
 Validate a ChartConfig document.
 
@@ -463,7 +468,7 @@ Space reserved around the plot area (right = price-axis gutter, bottom = time-ax
 | `chartType` | `ChartType` | no | `'candle'` (default) or `'line'` (close-price line). |
 | `scrollToLatestTrigger` | `number` | no | Increment this value to jump the viewport to the latest candle. |
 | `onCrosshairChange` | `(candle: Candle \| null) => void` | no | Called with the inspected candle while the crosshair is active, and with `null` when it is released. Requires `showOhlcHud`. |
-| `bufferRatio` | `number` | no | How many extra screen-widths of candles to keep rendered on each side of the visible window. Larger values mean smoother panning (fewer redraws) at the cost of more memory. Default: 1.5 |
+| `bufferRatio` | `number` | no |  |
 | `hour12` | `boolean` | no | Use 12-hour (AM/PM) time format on the X axis. Default: false (24-hour). |
 | `maxZoom` | `number` | no | Maximum number of candles the user can zoom out to see at once. Defaults to the full dataset length so the user can never zoom past all available data. Set a lower value to restrict the zoom range. |
 | `showGrid` | `boolean` | no | Show background grid lines on the chart. Default: true. Axis labels are always shown regardless of this setting. |
@@ -640,6 +645,12 @@ Fills the region between two overlay lines with a semi-transparent color. Both i
 | `color` | `PaletteColor` | yes | Named palette color (never a raw hex string). |
 | `label` | `string` | no | Defaults to "SMA {period}" when omitted. Applied by normalizeChartConfig. |
 
+#### `ValidateOptions`
+
+| property | type | required | description |
+|---|---|---|---|
+| `strict` | `boolean` | no | `true` (default): reject out-of-enum values, unknown keys and wrongly-typed scalars — what you want for LLM-generated configs. `false`: the lenient behaviour of `@stacklatte/chart-core` 2.x, which silently accepted those; only shapes that would crash (a missing array/object) and the semantic rules (ids, ranges) still fail. |
+
 #### `ValidationError`
 
 | property | type | required | description |
@@ -716,7 +727,7 @@ VWAP has no configurable parameters.
 - `export type SubPanelType = 'rsi' | 'macd' | 'volume';` — All valid sub-panel type discriminators.
 - `export type ThemePreset = 'dark' | 'light';` — Visual theme preset for the chart.
 - `export type TsPoint = { timestamp: number; value: number; };` — A value aligned to a candle timestamp — the building block of every indicator series.
-- `export type ValidationErrorCode = 'INVALID_VERSION' | 'DUPLICATE_OVERLAY_ID' | 'SHADED_AREA_UNKNOWN_REF' | 'SHADED_AREA_SELF_REF' | 'INVALID_OPACITY' | 'INVALID_VISIBLE_CANDLES' | 'INVALID_PERIOD' | 'INVALID_STD_DEV' | 'INVALID_MARKER_TIMESTAMP' | 'INVALID_MARKER_PRICE' | 'INVALID_MARKER_KIND' | 'INVALID_ENUM' | 'UNKNOWN_KEY' | 'INVALID_STRUCTURE';`
+- `export type ValidationErrorCode = 'INVALID_VERSION' | 'DUPLICATE_OVERLAY_ID' | 'SHADED_AREA_UNKNOWN_REF' | 'SHADED_AREA_SELF_REF' | 'INVALID_OPACITY' | 'INVALID_VISIBLE_CANDLES' | 'INVALID_PERIOD' | 'INVALID_STD_DEV' | 'INVALID_MARKER_TIMESTAMP' | 'INVALID_MARKER_PRICE' | 'INVALID_MARKER_KIND' | 'INVALID_ENUM' | 'UNKNOWN_KEY' | 'INVALID_STRUCTURE' | 'INVALID_TYPE';`
 - `export type ValidationResult = { valid: true; } | { valid: false; errors: ValidationError[]; };` — Discriminated result — check `valid` before using `errors`.
 
 ### Constants

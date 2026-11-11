@@ -23,14 +23,28 @@ import { SLChart, calcEMA } from '@stacklatte/chart-core';
 import { SLChart, calcEMA } from '@stacklatte/chart-native';
 ```
 
+## Upgrading `chart-core` is safe: it keeps its legacy behaviour
+
+`@stacklatte/chart-core` 2.4 is deliberately **not** stricter than 2.3. The `ChartConfig` pipeline (`buildChartPipeline`, `validateChartConfig`) exported from `@stacklatte/chart-core` still accepts what 2.x accepted — an unknown `theme` or `interval`, a raw hex colour, an extra key — so a config that rendered before still renders. Only the genuinely broken cases changed (below). Pass `{ strict: true }` to opt in to strict validation, or import from `@stacklatte/chart-native` / `@stacklatte/chart-engine`, where strict is the default.
+
+```ts
+import { buildChartPipeline } from '@stacklatte/chart-core';
+import type { Candle, ChartConfig } from '@stacklatte/chart-core';
+
+export function compile(config: ChartConfig, candles: Candle[]) {
+  return buildChartPipeline(config, candles, { strict: true }); // opt in to strict validation
+}
+```
+
 ## What changed in behaviour
 
 These are deliberate fixes; everything else (numbers, props, themes, config compilation) is unchanged and verified identical.
 
 | Before | Now |
 |---|---|
-| `buildChartPipeline` accepted any `theme` / `interval` / colour string and fell back silently (e.g. `theme: 'neon'` rendered dark) | closed enums and unknown keys are rejected with an itemised error |
+| `buildChartPipeline` accepted any `theme` / `interval` / colour string and fell back silently (e.g. `theme: 'neon'` rendered dark) | **`chart-native` / `chart-engine` / `chart-web` / `chart-angular`:** closed enums and unknown keys are rejected with an itemised error. **`chart-core` keeps the lenient behaviour** unless you pass `{ strict: true }` |
 | one `NaN` / `Infinity` candle made the whole price range `NaN` and the chart blank | undrawable candles are dropped; a garbage `volume` is stripped |
-| an invalid indicator period (`0`, negative, `NaN`, `1.5`) threw a `TypeError` | indicators return no data (`[]` / `null`) |
+| an invalid indicator period threw a `TypeError` (`calcEMA` for any invalid period; `calcRSI` for negative, `1.5` or `NaN`; `calcSMA` / `calcBollingerBands` for `0`, negative or `1.5`), and `calcRSI(…, 0)` returned `NaN` values — in a chart this crashed the render | indicators return no data (`[]` / `null`) |
 | a container too small for its panels produced a negative plot size | sizes are clamped to at least 1 px |
+| the `vwap` overlay was accepted by `ChartConfig` but silently skipped ("not yet implemented") | it is implemented: cumulative volume-weighted typical price |
 | React Native path building used the deprecated Skia `SkPath` mutation API | uses `Skia.PathBuilder` (with a fallback for older Skia) |

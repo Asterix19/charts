@@ -6,15 +6,18 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { SCENARIOS } from '@stacklatte/chart-examples';
 
-const out = new URL('./flows/10-scenarios.yaml', import.meta.url);
+const arg = (name) => process.argv.find((a) => a.startsWith(`--${name}=`))?.split('=')[1];
+const clean = process.argv.includes('--clean');
+const exclude = new Set((arg('exclude') ?? '').split(',').filter(Boolean));
+const out = new URL(arg('out') ?? './flows/10-scenarios.yaml', import.meta.url);
 
 const steps = [];
 const add = (...lines) => steps.push(...lines);
 
-for (const s of SCENARIOS) {
+for (const s of SCENARIOS.filter((x) => !exclude.has(x.id) && !(clean && x.kind === 'live'))) {
   const n = s.data().length;
   add(`# ── ${s.id} (${s.kind}) ──`);
-  add(`- openLink: demo://scenarios?id=${s.id}`);
+  add(`- openLink: demo://scenarios?id=${s.id}${clean ? '&clean=1' : ''}`);
   // iOS asks "Open in demo?" for custom-scheme links; confirm it when it appears.
   add(`- extendedWaitUntil:`, `    visible: "Open in.*"`, `    timeout: 4000`, `    optional: true`);
   add(`- tapOn:`, `    text: "Open"`, `    optional: true`);
@@ -23,12 +26,12 @@ for (const s of SCENARIOS) {
   add(`- assertVisible:`, `    id: title`);
   add(`- assertVisible: "${s.title.replace(/"/g, '\\"')}"`);
 
-  if (n >= 20 && !s.live) {
+  if (!clean && n >= 20 && !s.live) {
     // pan left then right, like a user scrubbing through history
     add(`- swipe:`, `    start: 30%, 55%`, `    end: 80%, 55%`, `    duration: 400`);
     add(`- swipe:`, `    start: 80%, 55%`, `    end: 20%, 55%`, `    duration: 400`);
   }
-  if (s.kind === 'stress') {
+  if (!clean && s.kind === 'stress') {
     // hammer it: repeated full-width drags
     for (let i = 0; i < 6; i++) add(`- swipe:`, `    start: ${i % 2 ? 85 : 15}%, 55%`, `    end: ${i % 2 ? 15 : 85}%, 55%`, `    duration: 250`);
   }
@@ -58,5 +61,5 @@ if (process.argv.includes('--check')) {
   console.log('native scenario flow is in sync with the catalogue');
 } else {
   writeFileSync(out, yaml);
-  console.log(`wrote ${SCENARIOS.length} scenarios to e2e-native/flows/10-scenarios.yaml`);
+  console.log(`wrote ${steps.filter((l) => l.startsWith("- openLink")).length} scenarios to ${out.pathname.split("e2e-native/")[1]}`);
 }

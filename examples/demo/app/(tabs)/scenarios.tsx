@@ -14,7 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 export default function ScenariosScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { id: idParam } = useLocalSearchParams<{ id?: string }>();
+  const { id: idParam, clean } = useLocalSearchParams<{ id?: string; clean?: string }>();
   const id = SCENARIOS.some((sc) => sc.id === idParam) ? (idParam as string) : SCENARIOS[0].id;
 
   return (
@@ -32,18 +32,19 @@ export default function ScenariosScreen() {
         ))}
       </ScrollView>
       {/* keyed: every scenario starts from fresh state, so nothing needs resetting */}
-      <ScenarioView key={id} id={id} />
+      <ScenarioView key={id} id={id} clean={clean === '1'} />
     </View>
   );
 }
 
-function ScenarioView({ id }: { id: string }) {
+function ScenarioView({ id, clean }: { id: string; clean: boolean }) {
   const scenario = useMemo(() => getScenario(id), [id]);
   const { width } = useWindowDimensions();
   const [data, setData] = useState<Candle[]>(() => scenario.data());
   const [ticks, setTicks] = useState(0);
   const [fps, setFps] = useState(0);
   const [mountMs, setMountMs] = useState(0);
+  const [toLatest, setToLatest] = useState(0);
 
   useEffect(() => {
     // Time from the first effect (the chart has rendered once by now) to the second painted frame.
@@ -87,15 +88,18 @@ function ScenarioView({ id }: { id: string }) {
     <>
       <Text style={s.title} testID="title">{scenario.title}</Text>
       <Text style={s.desc} testID="description">{scenario.description}</Text>
-      <View testID="chart-host" style={s.host}>
-        <SLChart data={data} width={width - 32} height={scenario.height} {...props} />
-      </View>
+      <TouchableOpacity testID="now" accessibilityLabel="now" onPress={() => setToLatest((n) => n + 1)} style={[s.tab, { alignSelf: 'flex-start', marginHorizontal: 16, marginTop: 8 }]}>
+        <Text style={s.tabText}>Now</Text>
+      </TouchableOpacity>
       <Text
-        style={s.stats}
+        style={[s.stats, clean && { color: 'transparent' }]} // clean: comparison runs screenshot the chart only (the stats text changes every frame); transparent, not opacity 0, so it stays in the accessibility tree
         testID="stats"
         accessibilityLabel={`stats scenario=${id} candles=${data.length} ticks=${ticks}`}>
         {`${data.length.toLocaleString()} candles · mount ${mountMs} ms · ${fps} JS fps${scenario.live ? ` · ${ticks} ticks` : ''}`}
       </Text>
+      <View testID="chart-host" style={s.host}>
+        <SLChart data={data} width={width - 32} height={scenario.height} {...props} scrollToLatestTrigger={toLatest} />
+      </View>
     </>
   );
 }

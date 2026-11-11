@@ -163,3 +163,38 @@ for (const s of SCENARIOS) {
     }
   });
 }
+
+// ── props that need real interaction: onCrosshairChange and scrollToLatestTrigger ─────────────────────
+test.describe('interaction props (every web demo)', () => {
+  test('hovering reports the inspected candle through onCrosshairChange and clears on leave', async ({ page }) => {
+    await open(page, SCENARIOS.find((x) => x.id === 'hud')!);
+    const stats = page.getByTestId('stats');
+    await expect(stats).toHaveAttribute('data-crosshair', '');
+    const box = (await page.getByTestId('chart-host').locator('canvas').first().boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, box.y + 120);
+    await expect(stats).not.toHaveAttribute('data-crosshair', '');
+    expect(Number(await stats.getAttribute('data-crosshair'))).toBeGreaterThan(1.7e12); // a real candle timestamp (ms)
+    await page.mouse.move(box.x - 60, box.y - 60);
+    await expect(stats).toHaveAttribute('data-crosshair', '');
+  });
+
+  test('"Now" (scrollToLatestTrigger) brings a panned-away chart back to exactly where it started', async ({ page }) => {
+    await open(page, SCENARIOS.find((x) => x.id === 'basic')!);
+    const box = (await page.getByTestId('chart-host').locator('canvas').first().boundingBox())!;
+    const cx = box.x + box.width / 2;
+    const cy = box.y + 100;
+    await page.mouse.move(box.x - 80, box.y - 80); // park the pointer off the chart: no crosshair in the baseline
+    await expect.poll(() => canvasHash(page)).not.toBe(0);
+    const initial = await canvasHash(page);
+
+    await page.mouse.move(cx, cy);
+    await page.mouse.down();
+    await page.mouse.move(cx + 260, cy, { steps: 10 });
+    await page.mouse.up();
+    await expect.poll(() => canvasHash(page)).not.toBe(initial);
+
+    await page.getByTestId('now').click();
+    await expect.poll(() => canvasHash(page)).toBe(initial);
+  });
+});
+

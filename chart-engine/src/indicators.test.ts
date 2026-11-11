@@ -1,4 +1,4 @@
-import { calcRSI, calcSMA, calcEMA, calcBollingerBands, computeCustomPanelYRange, computeVolumeYRange } from './indicators';
+import { calcVWAP, calcRSI, calcSMA, calcEMA, calcBollingerBands, computeCustomPanelYRange, computeVolumeYRange } from './indicators';
 import type { Candle } from './types';
 
 // ─── helpers ──────────────────────────────────────────────────────────────
@@ -323,5 +323,37 @@ describe('computeCustomPanelYRange', () => {
 
   it('falls back to [0, 1] for no data and no reference lines', () => {
     expect(computeCustomPanelYRange('auto', [])).toEqual({ yMin: 0, yMax: 1 });
+  });
+});
+
+// ─── calcVWAP ─────────────────────────────────────────────────────────────
+
+describe('calcVWAP', () => {
+  const c = (t: number, high: number, low: number, close: number, volume?: number) => ({ timestamp: t, open: close, high, low, close, volume });
+
+  it('is the cumulative volume-weighted typical price', () => {
+    const line = calcVWAP([c(1, 12, 8, 10, 100), c(2, 22, 18, 20, 300)], 'v', '#fff')!;
+    // typical prices 10 and 20; (10*100 + 20*300) / 400 = 17.5
+    expect(line.data[0].value).toBeCloseTo(10, 10);
+    expect(line.data[1].value).toBeCloseTo(17.5, 10);
+    expect(line.id).toBe('v');
+    expect(line.name).toBe('VWAP');
+  });
+
+  it('returns null when no candle has volume (never throws)', () => {
+    expect(calcVWAP([], 'v', '#fff')).toBeNull();
+    expect(calcVWAP([c(1, 2, 1, 1.5), c(2, 2, 1, 1.5, 0), c(3, 2, 1, 1.5, NaN)], 'v', '#fff')).toBeNull();
+  });
+
+  it('starts at the first candle with volume and ignores candles with bad volume afterwards', () => {
+    const line = calcVWAP([c(1, 2, 1, 1.5), c(2, 12, 8, 10, 50), c(3, 100, 100, 100, NaN), c(4, 12, 8, 10, 50)], 'v', '#fff')!;
+    expect(line.data.map((p) => p.timestamp)).toEqual([2, 3, 4]);
+    expect(line.data.every((p) => Number.isFinite(p.value))).toBe(true);
+    expect(line.data[2].value).toBeCloseTo(10, 10);
+  });
+
+  it('stays within the candle range', () => {
+    const candles = Array.from({ length: 200 }, (_, i) => c(i, 100 + (i % 7) + 2, 100 + (i % 7) - 2, 100 + (i % 7), 10 + (i % 5)));
+    for (const p of calcVWAP(candles, 'v', '#fff')!.data) { expect(p.value).toBeGreaterThan(95); expect(p.value).toBeLessThan(110); }
   });
 });

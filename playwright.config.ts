@@ -16,10 +16,14 @@ export default defineConfig({
   workers: process.env.CI ? 2 : 4,
   reporter: [['list']],
   use: { trace: 'retain-on-failure' },
-  projects: DEMOS.flatMap((d) => [
+  projects: [
+    // Renderer regression oracle vs the published chart-web (no demo server needed).
+    { name: 'oracle', testMatch: /oracle-web\.spec\.ts/, use: { ...devices['Desktop Chrome'] } },
+    ...DEMOS.flatMap((d) => [
     ...(d.legacySpec ? [{ name: d.name, testMatch: d.legacySpec, use: { ...devices['Desktop Chrome'], baseURL: `http://localhost:${d.port}` } }] : []),
     { name: `${d.name}-scenarios`, testMatch: /scenarios\.spec\.ts/, use: { ...devices['Desktop Chrome'], baseURL: `http://localhost:${d.port}` } },
   ]),
+  ],
   webServer: DEMOS.map((d) => ({
     command: `npm run dev --workspace=${d.workspace} -- --port ${d.port} --strictPort`,
     url: `http://localhost:${d.port}`,

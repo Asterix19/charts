@@ -1,4 +1,6 @@
 import {
+  buildChartPipeline,
+  type ChartConfig,
   calcBollingerBands,
   calcMACD,
   normalizeCandles,
@@ -94,6 +96,38 @@ function correlationPanel(data: Candle[]): CustomPanel {
   };
 }
 
+
+/** A rich ChartConfig (as an LLM would produce it) — exercised through buildChartPipeline on every renderer. */
+const RICH_CONFIG: ChartConfig = {
+  version: '1', theme: 'dark', priceDisplay: 'candle', interval: '1m',
+  overlays: [
+    { type: 'ema', id: 'ema-9', params: { period: 9 }, color: 'cyan' },
+    { type: 'sma', id: 'sma-30', params: { period: 30 }, color: 'orange', label: 'SMA 30' },
+    { type: 'vwap', id: 'vwap', params: {}, color: 'pink' },
+    { type: 'bollinger_bands', params: { period: 20, stdDev: 2 }, bands: {
+      upper: { id: 'bb-u', color: 'blue' }, lower: { id: 'bb-l', color: 'blue' }, basis: { id: 'bb-b', color: 'gray' } } },
+  ],
+  shadedAreas: [{ fromOverlayId: 'bb-u', toOverlayId: 'bb-l', color: 'purple', opacity: 0.12 }],
+  subPanels: [{ type: 'rsi', params: { period: 14 } }, { type: 'macd' }, { type: 'volume' }],
+  viewport: { visibleCandles: 100, followLive: true },
+  hud: { showOhlcHud: true },
+};
+
+function fromConfig(d: Candle[]): ScenarioProps {
+  const { data: _data, ...props } = buildChartPipeline({ ...RICH_CONFIG, markers: markersFor(d, [0.82, 0.85, 0.88, 0.91, 0.94, 0.97]).slice(0, 3).map(({ timestamp, price, kind, label }) => ({ timestamp, price, kind, label: label ?? '' })) }, d);
+  return props;
+}
+
+function autoRangePanel(data: Candle[]): CustomPanel {
+  return {
+    id: 'spread', label: 'Spread', yRange: 'auto', referenceLines: [0],
+    series: [
+      { id: 'fast', name: 'Fast', color: COLORS.yellow, data: data.map((c, i) => ({ timestamp: c.timestamp, value: Math.sin(i / 9) * 40 })) },
+      { id: 'slow', name: 'Slow', color: COLORS.pink, data: data.map((c, i) => ({ timestamp: c.timestamp, value: Math.cos(i / 23) * 25 })) },
+    ],
+  };
+}
+
 const base = (n = 500) => cached(`base-${n}`, () => generateCandles(n));
 
 const feature = (s: Omit<Scenario, 'kind' | 'data' | 'candles'> & { n?: number }): Scenario => ({
@@ -128,6 +162,21 @@ export const SCENARIOS: Scenario[] = [
     props: (d) => ({ intervalMs: MINUTE, visibleDataPoints: 80, theme: PURPLE_THEME, indicators: movingAverages(d) }) }),
   feature({ id: 'theme-light', title: 'Light Theme', description: 'theme="light".', height: 320,
     props: () => ({ intervalMs: MINUTE, visibleDataPoints: 80, theme: 'light', showGrid: true }) }),
+
+  feature({ id: 'config-pipeline', title: 'ChartConfig', description: 'Props produced by buildChartPipeline() from a closed-enum ChartConfig: EMA, SMA, VWAP, Bollinger + shaded band, RSI, MACD, volume, markers, HUD.', height: 700,
+    props: (d) => fromConfig(d) }),
+  feature({ id: 'hour12', title: '12-hour time', description: 'hour12 switches the time axis to AM/PM labels.', height: 320,
+    props: () => ({ intervalMs: MINUTE, visibleDataPoints: 80, hour12: true }) }),
+  feature({ id: 'no-grid', title: 'No grid', description: 'showGrid={false} removes the background grid; axis labels stay.', height: 320,
+    props: () => ({ intervalMs: MINUTE, visibleDataPoints: 80, showGrid: false }) }),
+  feature({ id: 'max-zoom', title: 'Max zoom', description: 'maxZoom={50} limits how many candles can be visible at once, however far you zoom out.', height: 320,
+    props: () => ({ intervalMs: MINUTE, visibleDataPoints: 200, maxZoom: 50 }) }),
+  feature({ id: 'rsi-period', title: 'RSI(7)', description: 'A valid non-default rsiPeriod (7) — the default is 14.', height: 440,
+    props: () => ({ intervalMs: MINUTE, visibleDataPoints: 80, showRsiPanel: true, rsiPeriod: 7 }) }),
+  feature({ id: 'line-markers', title: 'Line + markers', description: 'chartType="line" combined with overlays, trade markers and the HUD.', height: 360,
+    props: (d) => ({ intervalMs: MINUTE, visibleDataPoints: 120, chartType: 'line', showOhlcHud: true, markers: markersFor(d, [0.8, 0.84, 0.88, 0.92, 0.95, 0.98]), indicators: movingAverages(d).slice(0, 2) }) }),
+  feature({ id: 'custom-panel-auto', title: 'Custom panel (auto)', description: 'A custom panel with yRange "auto", two series sharing one scale, and a reference line.', height: 440,
+    props: (d) => ({ intervalMs: MINUTE, visibleDataPoints: 100, customPanels: [autoRangePanel(d)] }) }),
 
   // ── Stress ────────────────────────────────────────────────────────────────
   {
@@ -200,8 +249,8 @@ export const SCENARIOS: Scenario[] = [
     }),
     props: () => ({ intervalMs: MINUTE, showVolumePanel: true, showRsiPanel: true, showOhlcHud: true }) },
   { id: 'edge-bad-period', title: 'Bad period', kind: 'edge', candles: 200, height: 360,
-    description: 'rsiPeriod=0 — invalid indicator settings degrade to "no data" instead of crashing the render.',
-    data: () => generateCandles(200, { seed: 61 }), props: () => ({ intervalMs: MINUTE, showRsiPanel: true, rsiPeriod: 0 }) },
+    description: 'rsiPeriod={-1} — invalid indicator settings degrade to "no data" instead of crashing the render (the published chart threw a TypeError here).',
+    data: () => generateCandles(200, { seed: 61 }), props: () => ({ intervalMs: MINUTE, showRsiPanel: true, rsiPeriod: -1 }) },
   { id: 'edge-unsorted-markers', title: 'Unordered markers', kind: 'edge', candles: 500, height: 340,
     description: 'Trade markers (one of them far off-screen) and indicator series supplied in scrambled order are still drawn — they are sorted, not dropped.',
     data: () => base(500),

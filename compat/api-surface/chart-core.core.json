@@ -80,6 +80,10 @@
     "kind": "value"
   },
   {
+    "name": "calcVWAP",
+    "kind": "value"
+  },
+  {
     "name": "Candle",
     "kind": "type"
   },
@@ -470,6 +474,10 @@
   {
     "name": "validateChartConfig",
     "kind": "value"
+  },
+  {
+    "name": "ValidateOptions",
+    "kind": "type"
   },
   {
     "name": "ValidationError",

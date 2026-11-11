@@ -186,3 +186,16 @@ describe('complete TypeScript examples compile', () => {
   });
 });
 
+describe('documentation states the real scenario count', () => {
+  it('every "N scenarios" claim matches the catalogue', async () => {
+    const { SCENARIOS } = await import('@stacklatte/chart-examples');
+    const wrong: string[] = [];
+    for (const file of files) {
+      for (const m of readFileSync(file, 'utf8').matchAll(/\b(\d+)[ -](?:reproducible )?scenarios?\b/g)) {
+        if (Number(m[1]) !== SCENARIOS.length && Number(m[1]) > 5) wrong.push(`${relative(ROOT, file)}: says ${m[1]}, catalogue has ${SCENARIOS.length}`);
+      }
+    }
+    expect(wrong).toEqual([]);
+  });
+});
+

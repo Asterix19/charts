@@ -65,6 +65,12 @@ Invalid ChartConfig:
   [INVALID_ENUM] overlays[0].color: "#00ffff" is not allowed. Expected one of: blue, orange, green, red, purple, yellow, cyan, pink, white, gray.
 ```
 
+### Strict by default; `chart-core` stays lenient
+
+`buildChartPipeline(config, candles)` and `validateChartConfig(config)` are **strict** in `@stacklatte/chart-engine`, `-web`, `-native`, `-canvas` and `-angular`. `@stacklatte/chart-core` — the legacy name — keeps the lenient behaviour of 2.x so an upgrade cannot start throwing for configs that used to render. Both accept an option: `{ strict: false }` (lenient: ignores unknown enums, unknown keys and scalar type mismatches, still enforces ids and ranges) or `{ strict: true }`.
+
+The `vwap` overlay needs `volume` on the candles; without volume it is simply absent (no warning, no error).
+
 ## 3. Validate, compile, and let the model retry
 
 `buildChartPipeline(config, candles)` validates, normalises (fills defaults) and compiles the config into props for `SLChart` / `<sl-chart>` / `ChartController`. Feed the error text back to the model and ask again:

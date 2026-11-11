@@ -16,7 +16,7 @@ const { calcRSI: rsi } = require('@stacklatte/chart-engine');
 ## Indicators
 
 ```ts
-import { calcBollingerBands, calcEMA, calcMACD, calcRSI, normalizeCandles } from '@stacklatte/chart-engine';
+import { calcBollingerBands, calcEMA, calcMACD, calcRSI, calcVWAP, normalizeCandles } from '@stacklatte/chart-engine';
 import type { Candle } from '@stacklatte/chart-engine';
 
 export function summarize(raw: Candle[]) {
@@ -25,8 +25,10 @@ export function summarize(raw: Candle[]) {
   const macd = calcMACD(candles); // { macd, signal, histogram } | null
   const ema = calcEMA(candles, 21, 'ema21', '#38bdf8'); // IndicatorLine | null
   const bands = calcBollingerBands(candles, 20, 2, { upper: '#888', lower: '#888', basis: '#fff' });
+  const vwap = calcVWAP(candles, 'vwap', '#f472b6'); // cumulative; null when no candle has volume
 
   return {
+    vwap: vwap?.data.at(-1)?.value,
     rsi: rsi.at(-1)?.value,
     histogram: macd?.histogram.at(-1)?.value,
     ema: ema?.data.at(-1)?.value,

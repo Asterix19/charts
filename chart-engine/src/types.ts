@@ -167,9 +167,8 @@ export interface ChartProps {
   /** Called with the inspected candle while the crosshair is active, and with `null` when it is released. Requires `showOhlcHud`. */
   onCrosshairChange?: (candle: Candle | null) => void;
   /**
-   * How many extra screen-widths of candles to keep rendered on each side of
-   * the visible window. Larger values mean smoother panning (fewer redraws)
-   * at the cost of more memory. Default: 1.5
+   * @deprecated Has no effect — no renderer reads it. Accepted only so existing code that passes it keeps
+   * compiling; it will be removed in the next major version.
    */
   bufferRatio?: number;
   /**

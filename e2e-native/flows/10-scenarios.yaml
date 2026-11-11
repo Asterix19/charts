@@ -353,6 +353,195 @@ appId: com.anonymous.demo
     id: chart-host
 - takeScreenshot: scenario-theme-light
 
+# ── config-pipeline (feature) ──
+- openLink: demo://scenarios?id=config-pipeline
+- extendedWaitUntil:
+    visible: "Open in.*"
+    timeout: 4000
+    optional: true
+- tapOn:
+    text: "Open"
+    optional: true
+- extendedWaitUntil:
+    visible: ".*scenario=config-pipeline candles=500 .*"
+    timeout: 30000
+- assertVisible:
+    id: title
+- assertVisible: "ChartConfig"
+- swipe:
+    start: 30%, 55%
+    end: 80%, 55%
+    duration: 400
+- swipe:
+    start: 80%, 55%
+    end: 20%, 55%
+    duration: 400
+- assertVisible:
+    id: chart-host
+- takeScreenshot: scenario-config-pipeline
+
+# ── hour12 (feature) ──
+- openLink: demo://scenarios?id=hour12
+- extendedWaitUntil:
+    visible: "Open in.*"
+    timeout: 4000
+    optional: true
+- tapOn:
+    text: "Open"
+    optional: true
+- extendedWaitUntil:
+    visible: ".*scenario=hour12 candles=500 .*"
+    timeout: 30000
+- assertVisible:
+    id: title
+- assertVisible: "12-hour time"
+- swipe:
+    start: 30%, 55%
+    end: 80%, 55%
+    duration: 400
+- swipe:
+    start: 80%, 55%
+    end: 20%, 55%
+    duration: 400
+- assertVisible:
+    id: chart-host
+- takeScreenshot: scenario-hour12
+
+# ── no-grid (feature) ──
+- openLink: demo://scenarios?id=no-grid
+- extendedWaitUntil:
+    visible: "Open in.*"
+    timeout: 4000
+    optional: true
+- tapOn:
+    text: "Open"
+    optional: true
+- extendedWaitUntil:
+    visible: ".*scenario=no-grid candles=500 .*"
+    timeout: 30000
+- assertVisible:
+    id: title
+- assertVisible: "No grid"
+- swipe:
+    start: 30%, 55%
+    end: 80%, 55%
+    duration: 400
+- swipe:
+    start: 80%, 55%
+    end: 20%, 55%
+    duration: 400
+- assertVisible:
+    id: chart-host
+- takeScreenshot: scenario-no-grid
+
+# ── max-zoom (feature) ──
+- openLink: demo://scenarios?id=max-zoom
+- extendedWaitUntil:
+    visible: "Open in.*"
+    timeout: 4000
+    optional: true
+- tapOn:
+    text: "Open"
+    optional: true
+- extendedWaitUntil:
+    visible: ".*scenario=max-zoom candles=500 .*"
+    timeout: 30000
+- assertVisible:
+    id: title
+- assertVisible: "Max zoom"
+- swipe:
+    start: 30%, 55%
+    end: 80%, 55%
+    duration: 400
+- swipe:
+    start: 80%, 55%
+    end: 20%, 55%
+    duration: 400
+- assertVisible:
+    id: chart-host
+- takeScreenshot: scenario-max-zoom
+
+# ── rsi-period (feature) ──
+- openLink: demo://scenarios?id=rsi-period
+- extendedWaitUntil:
+    visible: "Open in.*"
+    timeout: 4000
+    optional: true
+- tapOn:
+    text: "Open"
+    optional: true
+- extendedWaitUntil:
+    visible: ".*scenario=rsi-period candles=500 .*"
+    timeout: 30000
+- assertVisible:
+    id: title
+- assertVisible: "RSI(7)"
+- swipe:
+    start: 30%, 55%
+    end: 80%, 55%
+    duration: 400
+- swipe:
+    start: 80%, 55%
+    end: 20%, 55%
+    duration: 400
+- assertVisible:
+    id: chart-host
+- takeScreenshot: scenario-rsi-period
+
+# ── line-markers (feature) ──
+- openLink: demo://scenarios?id=line-markers
+- extendedWaitUntil:
+    visible: "Open in.*"
+    timeout: 4000
+    optional: true
+- tapOn:
+    text: "Open"
+    optional: true
+- extendedWaitUntil:
+    visible: ".*scenario=line-markers candles=500 .*"
+    timeout: 30000
+- assertVisible:
+    id: title
+- assertVisible: "Line + markers"
+- swipe:
+    start: 30%, 55%
+    end: 80%, 55%
+    duration: 400
+- swipe:
+    start: 80%, 55%
+    end: 20%, 55%
+    duration: 400
+- assertVisible:
+    id: chart-host
+- takeScreenshot: scenario-line-markers
+
+# ── custom-panel-auto (feature) ──
+- openLink: demo://scenarios?id=custom-panel-auto
+- extendedWaitUntil:
+    visible: "Open in.*"
+    timeout: 4000
+    optional: true
+- tapOn:
+    text: "Open"
+    optional: true
+- extendedWaitUntil:
+    visible: ".*scenario=custom-panel-auto candles=500 .*"
+    timeout: 30000
+- assertVisible:
+    id: title
+- assertVisible: "Custom panel (auto)"
+- swipe:
+    start: 30%, 55%
+    end: 80%, 55%
+    duration: 400
+- swipe:
+    start: 80%, 55%
+    end: 20%, 55%
+    duration: 400
+- assertVisible:
+    id: chart-host
+- takeScreenshot: scenario-custom-panel-auto
+
 # ── stress-2k (stress) ──
 - openLink: demo://scenarios?id=stress-2k
 - extendedWaitUntil:

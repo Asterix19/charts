@@ -43,10 +43,11 @@ import type { Candle } from '@stacklatte/chart-angular';
             [showOhlcHud]="!!p().showOhlcHud" [showRsiPanel]="p().showRsiPanel" [rsiPeriod]="p().rsiPeriod"
             [showMacdPanel]="p().showMacdPanel" [showVolumePanel]="p().showVolumePanel" [showGrid]="p().showGrid"
             [indicators]="p().indicators" [shadedAreas]="p().shadedAreas" [markers]="p().markers" [customPanels]="p().customPanels"
-            [scrollToLatestTrigger]="p().scrollToLatestTrigger" />
+            [scrollToLatestTrigger]="toLatest()" (crosshairChange)="crosshair.set($event ? $event.timestamp : null)" />
         }
       </div>
-      <div class="sc-stats" data-testid="stats" [attr.data-scenario]="stats()['data-scenario']" [attr.data-candles]="stats()['data-candles']"
+      <button type="button" data-testid="now" class="sc-tab" (click)="toLatest.set(toLatest() + 1)">Now</button>
+      <div class="sc-stats" data-testid="stats" [attr.data-crosshair]="crosshair() ?? ''" [attr.data-scenario]="stats()['data-scenario']" [attr.data-candles]="stats()['data-candles']"
            [attr.data-mount-ms]="stats()['data-mount-ms']" [attr.data-ticks]="stats()['data-ticks']">
         {{ data().length.toLocaleString() }} candles · mount {{ mountMs().toFixed(0) }} ms{{ scenario().live ? ' · ' + ticks() + ' ticks' : '' }}
       </div>
@@ -62,6 +63,8 @@ export class ScenariosComponent implements OnDestroy {
   readonly ticks = signal(0);
   readonly mountMs = signal(0);
   readonly width = signal(0);
+  readonly toLatest = signal(0);
+  readonly crosshair = signal<number | null>(null);
   readonly p = computed(() => this.scenario().props(this.data()));
   readonly stats = computed(() => reportAttributes({ scenario: this.id(), candles: this.data().length, mountMs: this.mountMs(), ticks: this.ticks() }));
 

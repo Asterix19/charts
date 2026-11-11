@@ -13,14 +13,14 @@
  * For the full pipeline (validate → normalize → compile) use buildChartPipeline.
  */
 
-import { calcSMA, calcEMA, calcBollingerBands } from './indicators';
+import { calcSMA, calcEMA, calcBollingerBands, calcVWAP } from './indicators';
 import {
   INTERVAL_MS,
   PALETTE,
   type ChartConfig,
   type OverlayConfig,
 } from './config';
-import { validateChartConfig } from './validate';
+import { validateChartConfig, type ValidateOptions } from './validate';
 import { normalizeChartConfig } from './normalize';
 import type { ChartProps, Candle, IndicatorLine, ShadedArea } from './types';
 
@@ -31,15 +31,16 @@ export type CompiledChart = Omit<ChartProps, 'width' | 'height'>;
  * Full pipeline: validate → normalize → compile.
  *
  * Prefer this over calling compileChartConfig directly. Throws a single error
- * listing all validation problems if the config is structurally invalid.
+ * listing all validation problems if the config is invalid. Pass `{ strict: false }` for the lenient legacy
+ * validation of `@stacklatte/chart-core` 2.x (see `ValidateOptions`).
  *
  * ```ts
  * const compiled = buildChartPipeline(config, candles);
  * // <ChartCanvas {...compiled} width={w} height={h} />
  * ```
  */
-export function buildChartPipeline(config: ChartConfig, data: Candle[]): CompiledChart {
-  const result = validateChartConfig(config);
+export function buildChartPipeline(config: ChartConfig, data: Candle[], options?: ValidateOptions): CompiledChart {
+  const result = validateChartConfig(config, options);
   if (!result.valid) {
     const lines = result.errors.map((e) => `  [${e.code}] ${e.path}: ${e.message}`);
     throw new Error(`Invalid ChartConfig:\n${lines.join('\n')}`);
@@ -140,11 +141,9 @@ function compileOverlay(overlay: OverlayConfig, data: Candle[]): IndicatorLine[]
     }
 
     case 'vwap': {
-      // VWAP requires volume data — not yet available in the Candle type.
-      // Returns an empty series so the config is accepted without crashing.
-      // TODO: add `volume` to Candle and implement calcVWAP in indicators.ts.
-      console.warn('VWAP overlay is not yet implemented; skipping.');
-      return [];
+      // Needs `volume` on the candles; without it there is nothing to weight by, so the overlay is simply absent.
+      const line = calcVWAP(data, overlay.id, PALETTE[overlay.color]);
+      return line ? [{ ...line, name: overlay.label ?? line.name }] : [];
     }
   }
 }

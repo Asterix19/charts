@@ -78,7 +78,7 @@ export function mount(host: HTMLElement, candles: Candle[]) {
 - A `Candle` is `{ timestamp, open, high, low, close, volume? }`. `timestamp` is Unix **milliseconds** (not seconds, not ISO strings). The data may be unsorted or dirty; the chart sorts, dedupes and drops candles with non-finite values.
 - `width` and `height` are **required numbers in pixels** — never `"100%"`. Measure the container with a `ResizeObserver` for responsive layouts.
 - Props (all renderers): `data`, `width`, `height`, `theme` (`'dark' | 'light' | ChartThemeColors`), `chartType` (`'candle' | 'line'`), `indicators`, `shadedAreas`, `markers`, `customPanels`, `showRsiPanel`, `rsiPeriod`, `showMacdPanel`, `showVolumePanel`, `showOhlcHud`, `visibleDataPoints`, `intervalMs`, `hour12`, `showGrid`, `maxZoom`, `scrollToLatestTrigger`, `onCrosshairChange`. The visible-candle count prop is `visibleDataPoints`.
-- Indicators: `calcSMA(candles, period, id, color)`, `calcEMA(candles, period, id, color)` return an `IndicatorLine | null`; `calcBollingerBands(candles, period, multiplier, { upper, lower, basis })` returns `{ upper, lower, basis } | null`; `calcRSI(candles, period)` returns `{ timestamp, value }[]`; `calcMACD(candles)` returns `{ macd, signal, histogram } | null`. They return `null` / `[]` when there are too few candles or the period is invalid. **Filter out `null` before passing `indicators`.** Pair `bb.upper.id` and `bb.lower.id` in a `shadedAreas` entry to fill between the bands.
+- Indicators: `calcSMA(candles, period, id, color)`, `calcEMA(candles, period, id, color)` return an `IndicatorLine | null`; `calcBollingerBands(candles, period, multiplier, { upper, lower, basis })` returns `{ upper, lower, basis } | null`; `calcRSI(candles, period)` returns `{ timestamp, value }[]`; `calcVWAP(candles, id, color)` returns an `IndicatorLine | null` (needs `volume`); `calcMACD(candles)` returns `{ macd, signal, histogram } | null`. They return `null` / `[]` when there are too few candles or the period is invalid. **Filter out `null` before passing `indicators`.** Pair `bb.upper.id` and `bb.lower.id` in a `shadedAreas` entry to fill between the bands.
 - Next.js: render the chart from a client component (`'use client'`). React Native: wrap the app in `GestureHandlerRootView`.
 - Live data: pass a new `data` array on every tick (replace the last candle while its interval is open, append when it rolls over). Increment `scrollToLatestTrigger` to jump to the newest candle. Cap the array you keep (e.g. 10,000).
 - Import types and helpers from the renderer package you already use (`import { calcRSI } from '@stacklatte/chart-web'`).
@@ -89,13 +89,13 @@ export function mount(host: HTMLElement, candles: Candle[]) {
 
 ## Generating charts from natural language (`ChartConfig`)
 
-Ask the model for a `ChartConfig` JSON document, then call `buildChartPipeline(config, candles)` (exported by every package). Every string is a closed enum (`theme` dark|light; `priceDisplay` candle|line; `interval` 1m 5m 15m 30m 1h 4h 1d 1w; overlay `type` sma|ema|bollinger_bands|vwap; sub-panel `type` rsi|macd|volume; `color` blue orange green red purple yellow cyan pink white gray; marker `kind` entry-long exit-long entry-short exit-short stop-loss take-profit), unknown keys are rejected, and failures throw an itemised `[CODE] path: message` error listing the allowed values — feed it back to the model and retry. The JSON Schema is `@stacklatte/chart-engine/ChartConfig.schema.json` (use `definitions.ChartConfig` as a structured-output / tool-input schema). The result spreads into `SLChart` / `<sl-chart>` / `ChartController` props (add `width` and `height`).
+Ask the model for a `ChartConfig` JSON document, then call `buildChartPipeline(config, candles)` (exported by every package). Every string is a closed enum (`theme` dark|light; `priceDisplay` candle|line; `interval` 1m 5m 15m 30m 1h 4h 1d 1w; overlay `type` sma|ema|bollinger_bands|vwap; sub-panel `type` rsi|macd|volume; `color` blue orange green red purple yellow cyan pink white gray; marker `kind` entry-long exit-long entry-short exit-short stop-loss take-profit), unknown keys are rejected, and failures throw an itemised `[CODE] path: message` error listing the allowed values — feed it back to the model and retry. Validation is strict by default (`{ strict: false }` = the lenient legacy behaviour; `@stacklatte/chart-core` defaults to lenient). The JSON Schema is `@stacklatte/chart-engine/ChartConfig.schema.json` (use `definitions.ChartConfig` as a structured-output / tool-input schema). The result spreads into `SLChart` / `<sl-chart>` / `ChartController` props (add `width` and `height`).
 
 ## Facts you can rely on (measured in CI)
 
 - 60 fps (p95 frame ≈ 17–18 ms) with 50,000 candles, EMA + Bollinger + volume + RSI + MACD + HUD, on React, Angular and vanilla JS; mount in 20–45 ms.
 - `calcRSI` alone is 657 B gzipped; whole engine 8.4 kB; a web app using `SLChart` ≈ 10.4 kB.
-- 28 reproducible scenarios (feature, edge, stress, live) run on every platform, plus a compatibility oracle against the published `chart-core` 2.3.3 / `chart-web` 1.3.2.
+- 35 reproducible scenarios (feature, edge, stress, live) run on every platform, plus a compatibility oracle against the published `chart-core` 2.3.3 / `chart-web` 1.3.2.
 - Dirty feeds (NaN / Infinity / null candles, garbage volume, duplicates, unsorted) never blank the chart.
 
 ## Documentation
@@ -326,7 +326,7 @@ Memoise indicator arrays: they are recomputed only when `candles` changes, which
 
 ## Testing
 
-The repository's `examples/demo` app serves the same 28-scenario catalogue as every web demo (including a 50,000-candle stress scenario) and is driven end-to-end on an iOS simulator with Maestro — see [Testing](https://github.com/Asterix19/charts/blob/main/testing.md).
+The repository's `examples/demo` app serves the same 35-scenario catalogue as every web demo (including a 50,000-candle stress scenario) and is driven end-to-end on an iOS simulator with Maestro — see [Testing](https://github.com/Asterix19/charts/blob/main/testing.md).
 
 ## Notes
 
@@ -526,7 +526,7 @@ const { calcRSI: rsi } = require('@stacklatte/chart-engine');
 ## Indicators
 
 ```ts
-import { calcBollingerBands, calcEMA, calcMACD, calcRSI, normalizeCandles } from '@stacklatte/chart-engine';
+import { calcBollingerBands, calcEMA, calcMACD, calcRSI, calcVWAP, normalizeCandles } from '@stacklatte/chart-engine';
 import type { Candle } from '@stacklatte/chart-engine';
 
 export function summarize(raw: Candle[]) {
@@ -535,8 +535,10 @@ export function summarize(raw: Candle[]) {
   const macd = calcMACD(candles); // { macd, signal, histogram } | null
   const ema = calcEMA(candles, 21, 'ema21', '#38bdf8'); // IndicatorLine | null
   const bands = calcBollingerBands(candles, 20, 2, { upper: '#888', lower: '#888', basis: '#fff' });
+  const vwap = calcVWAP(candles, 'vwap', '#f472b6'); // cumulative; null when no candle has volume
 
   return {
+    vwap: vwap?.data.at(-1)?.value,
     rsi: rsi.at(-1)?.value,
     histogram: macd?.histogram.at(-1)?.value,
     ema: ema?.data.at(-1)?.value,
@@ -650,6 +652,12 @@ Invalid ChartConfig:
   [INVALID_ENUM] interval: "2h" is not allowed. Expected one of: 1m, 5m, 15m, 30m, 1h, 4h, 1d, 1w.
   [INVALID_ENUM] overlays[0].color: "#00ffff" is not allowed. Expected one of: blue, orange, green, red, purple, yellow, cyan, pink, white, gray.
 ```
+
+### Strict by default; `chart-core` stays lenient
+
+`buildChartPipeline(config, candles)` and `validateChartConfig(config)` are **strict** in `@stacklatte/chart-engine`, `-web`, `-native`, `-canvas` and `-angular`. `@stacklatte/chart-core` — the legacy name — keeps the lenient behaviour of 2.x so an upgrade cannot start throwing for configs that used to render. Both accept an option: `{ strict: false }` (lenient: ignores unknown enums, unknown keys and scalar type mismatches, still enforces ids and ranges) or `{ strict: true }`.
+
+The `vwap` overlay needs `volume` on the candles; without volume it is simply absent (no warning, no error).
 
 ## 3. Validate, compile, and let the model retry
 
@@ -854,11 +862,11 @@ People depend on these packages, so every platform is tested against the **same 
 
 ## The scenario catalogue
 
-`examples/shared` (`@stacklatte/chart-examples`) defines 28 reproducible scenarios with seeded data — identical on every run and every platform:
+`examples/shared` (`@stacklatte/chart-examples`) defines 35 reproducible scenarios with seeded data — identical on every run and every platform:
 
 | Kind | Scenarios |
 |---|---|
-| **Feature** (13) | Basic, Line, Indicators, Bollinger, RSI, MACD, Volume, OHLC HUD, Trade Markers, Custom Panel, All Panels, Custom Theme, Light Theme |
+| **Feature** (20) | Basic, Line, Indicators, Bollinger, RSI, MACD, Volume, OHLC HUD, Trade Markers, Custom Panel, All Panels, Custom Theme, Light Theme, **ChartConfig pipeline** (incl. VWAP), 12-hour time, no grid, max zoom, RSI(7), line + markers, auto-range custom panel |
 | **Stress** (2) | 2,000 candles with overlays + RSI + HUD; **50,000 candles** with every panel and overlay |
 | **Live** (2) | a new candle every 2 s; a tick every 100 ms (capped at 10,000 candles) |
 | **Edge** (11) | no data, 1 candle, 5 candles, flat market (zero price range), prices ≈ 1e9, prices ≈ 1e-6, unsorted + duplicate candles, gaps, a **dirty feed** (NaN / Infinity / null candles, garbage volume), an invalid indicator period, **scrambled markers** (unordered, one off-screen) |
@@ -874,6 +882,9 @@ Every demo serves the same URL shape (`/#/scenarios/<id>`) and the same test ids
 | Renderer unit | `npm test` | every scenario mounts, survives hostile gestures, resizes, panel toggles and 100 live ticks in `ChartController`, React and Angular |
 | Browser e2e | `npm run test:e2e` | every scenario in Chromium on **React, Angular and vanilla JS**; real drag / wheel / hover; stress and live **performance budgets** |
 | Native e2e | `npm run test:native` | all scenarios on an **iOS simulator** via Maestro (generated from the catalogue), incl. the 50k stress scenario |
+| **Renderer oracle** | `npm run test:e2e` (project `oracle`) | every scenario is rendered by the **published `chart-web` 1.3.2** and by this workspace, then every canvas pixel and the HUD text are compared — only three documented fixes may differ |
+| **Native compat** | `npm run test:native:compat` | the same React Native app on a simulator with **`chart-native`**, the new **`chart-core` shim** and the **published `chart-core` 2.3.3**, pixel-compared |
+| Feature coverage | (part of `npm test`) | every `ChartProps` field must be set by a scenario or explicitly listed as covered elsewhere — adding a prop without a decision is a compile error |
 | Consumer smoke | `npm run test:pack` | packs every package and installs the tarballs into a clean project (ESM + Angular) |
 | Contracts | `npm run test:contracts` | public API locked per package; **backward compatibility against the published `chart-core` 2.3.3 / `chart-web` 1.3.2** (same numbers, same exports); docs checked; size budgets |
 
@@ -927,16 +938,30 @@ import { SLChart, calcEMA } from '@stacklatte/chart-core';
 import { SLChart, calcEMA } from '@stacklatte/chart-native';
 ```
 
+## Upgrading `chart-core` is safe: it keeps its legacy behaviour
+
+`@stacklatte/chart-core` 2.4 is deliberately **not** stricter than 2.3. The `ChartConfig` pipeline (`buildChartPipeline`, `validateChartConfig`) exported from `@stacklatte/chart-core` still accepts what 2.x accepted — an unknown `theme` or `interval`, a raw hex colour, an extra key — so a config that rendered before still renders. Only the genuinely broken cases changed (below). Pass `{ strict: true }` to opt in to strict validation, or import from `@stacklatte/chart-native` / `@stacklatte/chart-engine`, where strict is the default.
+
+```ts
+import { buildChartPipeline } from '@stacklatte/chart-core';
+import type { Candle, ChartConfig } from '@stacklatte/chart-core';
+
+export function compile(config: ChartConfig, candles: Candle[]) {
+  return buildChartPipeline(config, candles, { strict: true }); // opt in to strict validation
+}
+```
+
 ## What changed in behaviour
 
 These are deliberate fixes; everything else (numbers, props, themes, config compilation) is unchanged and verified identical.
 
 | Before | Now |
 |---|---|
-| `buildChartPipeline` accepted any `theme` / `interval` / colour string and fell back silently (e.g. `theme: 'neon'` rendered dark) | closed enums and unknown keys are rejected with an itemised error |
+| `buildChartPipeline` accepted any `theme` / `interval` / colour string and fell back silently (e.g. `theme: 'neon'` rendered dark) | **`chart-native` / `chart-engine` / `chart-web` / `chart-angular`:** closed enums and unknown keys are rejected with an itemised error. **`chart-core` keeps the lenient behaviour** unless you pass `{ strict: true }` |
 | one `NaN` / `Infinity` candle made the whole price range `NaN` and the chart blank | undrawable candles are dropped; a garbage `volume` is stripped |
-| an invalid indicator period (`0`, negative, `NaN`, `1.5`) threw a `TypeError` | indicators return no data (`[]` / `null`) |
+| an invalid indicator period threw a `TypeError` (`calcEMA` for any invalid period; `calcRSI` for negative, `1.5` or `NaN`; `calcSMA` / `calcBollingerBands` for `0`, negative or `1.5`), and `calcRSI(…, 0)` returned `NaN` values — in a chart this crashed the render | indicators return no data (`[]` / `null`) |
 | a container too small for its panels produced a negative plot size | sizes are clamped to at least 1 px |
+| the `vwap` overlay was accepted by `ChartConfig` but silently skipped ("not yet implemented") | it is implemented: cumulative volume-weighted typical price |
 | React Native path building used the deprecated Skia `SkPath` mutation API | uses `Skia.PathBuilder` (with a fallback for older Skia) |
 
 
@@ -953,6 +978,7 @@ These are deliberate fixes; everything else (numbers, props, themes, config comp
 | Candles are squeezed into the far left / time axis looks wrong | `timestamp` is in **seconds** | Multiply by 1000. |
 | The volume panel is empty | candles have no `volume` | Add `volume` to each candle. |
 | The MACD panel is missing | fewer than ~35 candles, so MACD(12,26,9) cannot be computed | Provide more candles; the panel is omitted until it can be drawn. |
+| The VWAP overlay is missing | the candles have no `volume` (VWAP weights by volume) | Add `volume` to each candle. |
 | An indicator line does not appear | `calcEMA` / `calcSMA` / `calcBollingerBands` returned `null` (fewer candles than the period) | Filter out `null`s before passing `indicators`. |
 | `shadedAreas` draws nothing | `fromId` / `toId` do not match any `IndicatorLine.id` in `indicators` | Use the ids of the lines you pass (e.g. `bb.upper.id`, `bb.lower.id`). |
 | `Invalid ChartConfig: [INVALID_ENUM] …` | a value outside the allowed enum (theme, interval, colour, …) or a raw hex colour | Use the values listed in the error; `ChartConfig` colours are palette names (`cyan`, `blue`, …). |
@@ -961,6 +987,7 @@ These are deliberate fixes; everything else (numbers, props, themes, config comp
 | React Native: gestures do nothing | the app is not wrapped in `GestureHandlerRootView` | See the [React Native guide](https://github.com/Asterix19/charts/blob/main/react-native.md). |
 | React Native: Skia / reanimated errors at startup | peer versions mismatch | Use `@shopify/react-native-skia` ≥ 2 and `react-native-gesture-handler` ≥ 2; rebuild the dev client after installing native modules. |
 | Angular: nothing draws during SSR | by design — the canvas is created in the browser after first render | Nothing to fix. |
+| `buildChartPipeline` throws `Invalid ChartConfig` after moving from `chart-core` to `chart-native` / `chart-engine` | strict validation is the default there; `chart-core` stays lenient | Fix the config (the error lists the allowed values), or pass `{ strict: false }` to keep the old behaviour. |
 | Old code uses `zoomLevel` or `ChartCanvas` | names from earlier versions | The component is `SLChart`; the visible-candle count is `visibleDataPoints`. See the [API reference](https://github.com/Asterix19/charts/blob/main/api-reference.md). |
 | The chart feels slow with live data | a new `indicators` / `theme` object on every render, or an unbounded candle array | See [performance](https://github.com/Asterix19/charts/blob/main/performance.md). |
 
@@ -997,7 +1024,7 @@ buildCandleGeometry(data: Candle[], width: number, height: number, priceMin: num
 Compute pixel geometry for every candle.
 
 ```ts
-buildChartPipeline(config: ChartConfig, data: Candle[]): CompiledChart
+buildChartPipeline(config: ChartConfig, data: Candle[], options?: ValidateOptions): CompiledChart
 ```
 Full pipeline: validate → normalize → compile.
 
@@ -1065,6 +1092,11 @@ Relative Strength Index with Wilder smoothing. Returns one point per candle afte
 calcSMA(candles: Candle[], period: number, id: string, color: string): IndicatorLine | null
 ```
 Simple moving average of `close` over `period` candles, as an overlay line. The first point is at candle `period - 1`. Returns `null` when there are fewer candles than `period` or `period` is not a positive integer. `id` is the key `ShadedArea` refers to; `color` is any CSS color.
+
+```ts
+calcVWAP(candles: Candle[], id: string, color: string): IndicatorLine | null
+```
+Volume-weighted average price, cumulative over the supplied candles: `Σ(typicalPrice × volume) / Σ(volume)` where `typicalPrice = (high + low + close) / 3`. There is one point per candle from the first candle that has volume > 0. Candles without a (finite, positive) `volume` are skipped until volume appears. Returns `null` when no candle has volume. For a session VWAP, pass only that session's candles. Never throws.
 
 ```ts
 clampTickX(x: number, width: number, margin?: number): number
@@ -1287,7 +1319,7 @@ softZoomOutCeiling(maxVisible: number): number
 The absolute ceiling `applyZoomOutResistance` asymptotically approaches but never reaches — use this (not `maxVisible` itself) as the outer `clampViewport`/`clamp` bound so the resisted range is never truncated back down to a hard wall by a later clamp.
 
 ```ts
-validateChartConfig(config: ChartConfig): ValidationResult
+validateChartConfig(config: ChartConfig, options?: ValidateOptions): ValidationResult
 ```
 Validate a ChartConfig document.
 
@@ -1434,7 +1466,7 @@ Space reserved around the plot area (right = price-axis gutter, bottom = time-ax
 | `chartType` | `ChartType` | no | `'candle'` (default) or `'line'` (close-price line). |
 | `scrollToLatestTrigger` | `number` | no | Increment this value to jump the viewport to the latest candle. |
 | `onCrosshairChange` | `(candle: Candle \| null) => void` | no | Called with the inspected candle while the crosshair is active, and with `null` when it is released. Requires `showOhlcHud`. |
-| `bufferRatio` | `number` | no | How many extra screen-widths of candles to keep rendered on each side of the visible window. Larger values mean smoother panning (fewer redraws) at the cost of more memory. Default: 1.5 |
+| `bufferRatio` | `number` | no |  |
 | `hour12` | `boolean` | no | Use 12-hour (AM/PM) time format on the X axis. Default: false (24-hour). |
 | `maxZoom` | `number` | no | Maximum number of candles the user can zoom out to see at once. Defaults to the full dataset length so the user can never zoom past all available data. Set a lower value to restrict the zoom range. |
 | `showGrid` | `boolean` | no | Show background grid lines on the chart. Default: true. Axis labels are always shown regardless of this setting. |
@@ -1611,6 +1643,12 @@ Fills the region between two overlay lines with a semi-transparent color. Both i
 | `color` | `PaletteColor` | yes | Named palette color (never a raw hex string). |
 | `label` | `string` | no | Defaults to "SMA {period}" when omitted. Applied by normalizeChartConfig. |
 
+#### `ValidateOptions`
+
+| property | type | required | description |
+|---|---|---|---|
+| `strict` | `boolean` | no | `true` (default): reject out-of-enum values, unknown keys and wrongly-typed scalars — what you want for LLM-generated configs. `false`: the lenient behaviour of `@stacklatte/chart-core` 2.x, which silently accepted those; only shapes that would crash (a missing array/object) and the semantic rules (ids, ranges) still fail. |
+
 #### `ValidationError`
 
 | property | type | required | description |
@@ -1687,7 +1725,7 @@ VWAP has no configurable parameters.
 - `export type SubPanelType = 'rsi' | 'macd' | 'volume';` — All valid sub-panel type discriminators.
 - `export type ThemePreset = 'dark' | 'light';` — Visual theme preset for the chart.
 - `export type TsPoint = { timestamp: number; value: number; };` — A value aligned to a candle timestamp — the building block of every indicator series.
-- `export type ValidationErrorCode = 'INVALID_VERSION' | 'DUPLICATE_OVERLAY_ID' | 'SHADED_AREA_UNKNOWN_REF' | 'SHADED_AREA_SELF_REF' | 'INVALID_OPACITY' | 'INVALID_VISIBLE_CANDLES' | 'INVALID_PERIOD' | 'INVALID_STD_DEV' | 'INVALID_MARKER_TIMESTAMP' | 'INVALID_MARKER_PRICE' | 'INVALID_MARKER_KIND' | 'INVALID_ENUM' | 'UNKNOWN_KEY' | 'INVALID_STRUCTURE';`
+- `export type ValidationErrorCode = 'INVALID_VERSION' | 'DUPLICATE_OVERLAY_ID' | 'SHADED_AREA_UNKNOWN_REF' | 'SHADED_AREA_SELF_REF' | 'INVALID_OPACITY' | 'INVALID_VISIBLE_CANDLES' | 'INVALID_PERIOD' | 'INVALID_STD_DEV' | 'INVALID_MARKER_TIMESTAMP' | 'INVALID_MARKER_PRICE' | 'INVALID_MARKER_KIND' | 'INVALID_ENUM' | 'UNKNOWN_KEY' | 'INVALID_STRUCTURE' | 'INVALID_TYPE';`
 - `export type ValidationResult = { valid: true; } | { valid: false; errors: ValidationError[]; };` — Discriminated result — check `valid` before using `errors`.
 
 ### Constants

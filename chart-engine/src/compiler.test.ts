@@ -1,4 +1,4 @@
-import { compileChartConfig } from './compiler';
+import { buildChartPipeline, compileChartConfig } from './compiler';
 import { validateChartConfig } from './validate';
 import type { ChartConfig } from './config';
 import type { Candle } from './types';
@@ -72,5 +72,26 @@ describe('compileChartConfig subPanels', () => {
     const compiled = compileChartConfig(baseConfig, candles);
     expect(compiled.showMacdPanel).toBe(false);
     expect(compiled.showVolumePanel).toBe(false);
+  });
+});
+
+describe('vwap overlay', () => {
+  const candles = Array.from({ length: 60 }, (_, i) => ({ timestamp: i * 60_000, open: 100, high: 102, low: 98, close: 100 + (i % 3), volume: 10 + i }));
+  const config = {
+    version: '1', theme: 'dark', priceDisplay: 'candle', interval: '1m',
+    overlays: [{ type: 'vwap', id: 'v', params: {}, color: 'pink', label: 'Session VWAP' }],
+    shadedAreas: [], subPanels: [], viewport: { visibleCandles: 60, followLive: true }, hud: { showOhlcHud: false },
+  } as const;
+
+  it('compiles to a real indicator line (it used to be skipped with a console warning)', () => {
+    const props = buildChartPipeline(config as never, candles);
+    expect(props.indicators).toHaveLength(1);
+    expect(props.indicators![0]).toMatchObject({ id: 'v', name: 'Session VWAP' });
+    expect(props.indicators![0].data).toHaveLength(60);
+  });
+
+  it('is simply absent (no warning, no throw) when the candles carry no volume', () => {
+    const noVolume = candles.map(({ volume: _v, ...rest }) => rest);
+    expect(buildChartPipeline(config as never, noVolume).indicators).toEqual([]);
   });
 });

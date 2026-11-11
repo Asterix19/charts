@@ -180,8 +180,41 @@ describe('ChartConfig pipeline gives the same props for every config the old ver
   });
 });
 
+describe('@stacklatte/chart-core keeps its legacy lenient ChartConfig behaviour', () => {
+  /** Configs the published 2.3.3 accepted and compiled — mistakes that "worked" because they fell back silently. */
+  const sloppy: Array<[string, Record<string, unknown>]> = [
+    ['unknown theme', { theme: 'neon' }],
+    ['unknown interval', { interval: '2h' }],
+    ['extra key', { sparkles: true }],
+    ['wrongly typed boolean', { viewport: { visibleCandles: 60, followLive: 'yes' } }],
+    ['raw hex colour', { overlays: [{ type: 'sma', id: 'a', params: { period: 9 }, color: '#ff0000' }] }],
+  ];
+  const data = SCENARIOS.find((x) => x.id === 'basic')!.data();
+
+  it.each(sloppy)('the shim accepts "%s" and compiles to the SAME props as 2.3.3', async (_name, patch) => {
+    if (!oldCore) return;
+    const shim = await import('@stacklatte/chart-core/core');
+    const cfg = { ...configs0(), ...patch } as never;
+    expect(old.validateChartConfig(cfg).valid, '2.3.3 accepted it').toBe(true);
+    expect(shim.validateChartConfig(cfg).valid, 'the shim must too').toBe(true);
+    expect(shim.buildChartPipeline(cfg, data)).toEqual(old.buildChartPipeline(cfg, data));
+  });
+
+  it.each(sloppy)('strict is opt-in on the shim, and the default everywhere else ("%s")', async (_name, patch) => {
+    const shim = await import('@stacklatte/chart-core/core');
+    const cfg = { ...configs0(), ...patch } as never;
+    expect(() => shim.buildChartPipeline(cfg, data, { strict: true })).toThrow(/Invalid ChartConfig/);
+    expect(() => eng.buildChartPipeline(cfg, data)).toThrow(/Invalid ChartConfig/);
+  });
+
+  it('the shim still enforces the semantic rules 2.3.3 enforced', async () => {
+    const shim = await import('@stacklatte/chart-core/core');
+    expect(shim.validateChartConfig({ ...configs0(), overlays: [{ type: 'sma', id: 'a', params: { period: 0 }, color: 'blue' }] } as never).valid).toBe(false);
+  });
+});
+
 describe('behaviour that changed ON PURPOSE since the published versions', () => {
-  it('invalid enum values are now rejected instead of silently rendering dark', () => {
+  it('invalid enum values are now rejected by the strict packages (chart-core stays lenient, see above)', () => {
     if (!oldCore) return;
     const bad = { ...configs0(), theme: 'neon' };
     expect(old.validateChartConfig(bad).valid, 'old accepted it').toBe(true);
@@ -194,6 +227,17 @@ describe('behaviour that changed ON PURPOSE since the published versions', () =>
     const bad = [...data, { ...data[0], timestamp: data[49].timestamp + 60_000, close: NaN }];
     expect(old.normalizeCandles(bad)).toHaveLength(51);
     expect(eng.normalizeCandles(bad)).toHaveLength(50);
+  });
+
+  it('the vwap overlay is now implemented (it used to be accepted but silently dropped)', () => {
+    if (!oldCore) return;
+    const data = SCENARIOS.find((x) => x.id === 'basic')!.data();
+    const cfg = { ...configs0(), overlays: [{ type: 'vwap', id: 'v', params: {}, color: 'pink' }] };
+    const oldProps = old.buildChartPipeline(cfg, data);
+    const newProps = eng.buildChartPipeline(cfg, data);
+    expect(oldProps.indicators ?? []).toHaveLength(0); // old: warned "not yet implemented" and skipped it
+    expect(newProps.indicators).toHaveLength(1);
+    expect(newProps.indicators[0].id).toBe('v');
   });
 
   it('an invalid indicator period returns "no data" instead of throwing', () => {

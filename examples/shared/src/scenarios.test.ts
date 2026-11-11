@@ -129,3 +129,56 @@ describe('perf + routing helpers', () => {
     });
   });
 });
+
+// ─── every ChartProps field must be tested somewhere, on purpose ──────────────
+
+import type { ChartProps } from '@stacklatte/chart-engine';
+
+type How = 'scenario' | 'always' | { elsewhere: string } | { deprecated: string };
+
+/**
+ * Exhaustive by construction: adding a field to ChartProps without listing it here is a COMPILE error, so a new
+ * feature cannot ship untested by accident. 'scenario' fields must be set by at least one catalogue scenario.
+ */
+const COVERAGE = {
+  data: 'always', width: 'always', height: 'always',
+  indicators: 'scenario', shadedAreas: 'scenario', markers: 'scenario', customPanels: 'scenario',
+  intervalMs: 'scenario', visibleDataPoints: 'scenario', theme: 'scenario', showOhlcHud: 'scenario',
+  showRsiPanel: 'scenario', rsiPeriod: 'scenario', showMacdPanel: 'scenario', showVolumePanel: 'scenario',
+  chartType: 'scenario', scrollToLatestTrigger: 'scenario', hour12: 'scenario', maxZoom: 'scenario', showGrid: 'scenario',
+  onCrosshairChange: { elsewhere: 'every demo wires it to data-crosshair; the e2e hover test asserts it' },
+  bufferRatio: { deprecated: 'accepted for backwards compatibility; no renderer reads it' },
+} satisfies Record<keyof ChartProps, How>;
+
+describe('ChartProps coverage', () => {
+  const setBy = (key: string) => SCENARIOS.filter((s) => (s.props(s.data()) as Record<string, unknown>)[key] !== undefined).map((s) => s.id);
+
+  it.each(Object.entries(COVERAGE).filter(([, how]) => how === 'scenario').map(([k]) => [k]))('%s is set by at least one scenario', (key) => {
+    expect(setBy(key), `no scenario exercises "${key}"`).not.toHaveLength(0);
+  });
+
+  it('covers every marker kind, both built-in themes plus a custom palette, both chart types and every panel', () => {
+    const props = SCENARIOS.map((s) => s.props(s.data()) as ChartProps);
+    const kinds = new Set(props.flatMap((p) => (p.markers ?? []).map((m) => m.kind)));
+    for (const k of ['entry-long', 'exit-long', 'entry-short', 'exit-short', 'stop-loss', 'take-profit']) expect(kinds.has(k as never), k).toBe(true);
+    const themes = new Set<string>(props.map((p) => (typeof p.theme === 'object' ? 'custom' : p.theme ?? 'default')));
+    for (const t of ['dark', 'light', 'custom']) expect(themes.has(t), t).toBe(true);
+    expect(new Set(props.map((p) => p.chartType ?? 'candle'))).toEqual(new Set(['candle', 'line']));
+    expect(props.some((p) => p.showRsiPanel && p.showMacdPanel && p.showVolumePanel && p.customPanels?.length)).toBe(true);
+  });
+
+  it('exercises both custom-panel y-range modes and a multi-series panel', () => {
+    const panels = SCENARIOS.flatMap((s) => (s.props(s.data()) as ChartProps).customPanels ?? []);
+    expect(panels.some((p) => p.yRange === 'auto')).toBe(true);
+    expect(panels.some((p) => typeof p.yRange === 'object')).toBe(true);
+    expect(panels.some((p) => p.series.length > 1)).toBe(true);
+  });
+
+  it('the ChartConfig scenario really uses the compiled pipeline, including VWAP', () => {
+    const s = SCENARIOS.find((x) => x.id === 'config-pipeline')!;
+    const p = s.props(s.data()) as ChartProps;
+    expect((p.indicators ?? []).map((i) => i.id)).toEqual(expect.arrayContaining(['ema-9', 'sma-30', 'vwap', 'bb-u', 'bb-l', 'bb-b']));
+    expect(p.shadedAreas).toHaveLength(1);
+    expect(p.markers).toHaveLength(3);
+  });
+});

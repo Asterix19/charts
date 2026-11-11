@@ -313,3 +313,85 @@ describe('ChartController — marker tooltip', () => {
   });
 });
 
+describe('ChartController — display options', () => {
+  const texts = () => contexts.flatMap((c) => c.fillText.mock.calls.map((x) => String(x[0])));
+  const count = (fn: keyof MockContext2D) => contexts.reduce((n, c) => n + (c[fn] as unknown as { mock: { calls: unknown[] } }).mock.calls.length, 0);
+
+  it('hour12 switches the time axis to AM/PM labels (and 24-hour is the default)', async () => {
+    const twelve = mount({ data: makeCandles(60), hour12: true });
+    await frame();
+    expect(texts().some((t) => /\b(AM|PM)\b/i.test(t)), 'hour12=true shows AM/PM').toBe(true);
+    twelve.destroy(); controller = undefined; host.innerHTML = '';
+
+    contexts.length = 0;
+    mount({ data: makeCandles(60) });
+    await frame();
+    expect(texts().some((t) => /\b(AM|PM)\b/i.test(t)), 'default has no AM/PM').toBe(false);
+  });
+
+  it('showGrid={false} draws fewer dashed grid lines than the default but keeps the axis labels', async () => {
+    mount({ data: makeCandles(60) });
+    await frame();
+    const withGrid = count('setLineDash');
+    const labelsWith = texts().length;
+    controller!.destroy(); controller = undefined; host.innerHTML = ''; contexts.length = 0;
+
+    mount({ data: makeCandles(60), showGrid: false });
+    await frame();
+    expect(count('setLineDash')).toBeLessThan(withGrid);
+    expect(texts().length, 'axis labels are always shown').toBe(labelsWith);
+  });
+
+  it('maxZoom caps how many candles can be on screen, however far the user zooms out', async () => {
+    mount({ data: makeCandles(300), visibleDataPoints: 300, maxZoom: 40 });
+    await frame();
+    const canvas = host.querySelector('canvas')!;
+    for (let i = 0; i < 10; i++) canvas.dispatchEvent(new WheelEvent('wheel', { deltaY: 800, clientX: 200, bubbles: true, cancelable: true }));
+    await frame();
+    const capped = contexts.at(-1)!.fillRect.mock.calls.length;
+    controller!.destroy(); controller = undefined; host.innerHTML = ''; contexts.length = 0;
+
+    mount({ data: makeCandles(300), visibleDataPoints: 300 });
+    await frame();
+    const free = contexts.at(-1)!.fillRect.mock.calls.length;
+    expect(capped).toBeLessThan(free / 2);
+    expect(capped).toBeLessThanOrEqual(60); // 40 bodies + slack for the axis/HUD rectangles
+  });
+
+  it('a valid non-default rsiPeriod changes the RSI panel; an invalid one leaves it empty rather than crashing', async () => {
+    const lineTos = () => contexts.flatMap((c) => c.bezierCurveTo.mock.calls.map((x) => x.join(','))).join('|');
+    mount({ data: makeCandles(120), showRsiPanel: true, rsiPeriod: 14 });
+    await frame();
+    const p14 = lineTos();
+    controller!.destroy(); controller = undefined; host.innerHTML = ''; contexts.length = 0;
+
+    mount({ data: makeCandles(120), showRsiPanel: true, rsiPeriod: 7 });
+    await frame();
+    expect(lineTos()).not.toBe(p14);
+    controller!.destroy(); controller = undefined; host.innerHTML = ''; contexts.length = 0;
+
+    expect(() => mount({ data: makeCandles(120), showRsiPanel: true, rsiPeriod: 0 })).not.toThrow();
+  });
+
+  it('scrollToLatestTrigger returns a panned-away chart to the newest candle', async () => {
+    const onCrosshairChange = vi.fn();
+    const c = mount({ data: makeCandles(300), visibleDataPoints: 40, showOhlcHud: true, onCrosshairChange });
+    await frame();
+    const canvas = host.querySelector('canvas')!;
+    const newest = () => {
+      canvas.dispatchEvent(new PointerEvent('pointermove', { clientX: 330, pointerId: 1, pointerType: 'mouse', buttons: 0, bubbles: true }));
+      return frame().then(() => onCrosshairChange.mock.calls.at(-1)![0].timestamp as number);
+    };
+    const atEnd = await newest();
+    canvas.dispatchEvent(new PointerEvent('pointerdown', { clientX: 100, pointerId: 2, bubbles: true }));
+    canvas.dispatchEvent(new PointerEvent('pointermove', { clientX: 350, pointerId: 2, bubbles: true }));
+    canvas.dispatchEvent(new PointerEvent('pointerup', { clientX: 350, pointerId: 2, bubbles: true }));
+    await frame();
+    expect(await newest()).toBeLessThan(atEnd); // panned back in time
+
+    c.update({ data: makeCandles(300), width: 400, height: 300, visibleDataPoints: 40, showOhlcHud: true, onCrosshairChange, scrollToLatestTrigger: 1 });
+    await frame();
+    expect(await newest()).toBe(atEnd);
+  });
+});
+

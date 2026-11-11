@@ -16,7 +16,7 @@
 - **Same props everywhere.** A snippet for React works in React Native, Angular and vanilla JS with trivial changes.
 - **Hard to break.** Dirty feeds (NaN, Infinity, duplicates, unsorted, null entries) never blank the chart; invalid indicator periods return no data instead of throwing.
 - **Built for LLMs.** A validated, closed-enum `ChartConfig` plus a JSON Schema, so a model's output either compiles or fails with an itemised error it can fix. See [`llms.txt`](./llms.txt) and [Generate charts with an LLM](./docs/chartconfig-llm.md).
-- **Tested like people depend on it** (they do): one 28-scenario catalogue (feature, edge, stress, live) runs on every platform, with performance budgets and a backward-compatibility oracle against the published versions. See [Testing](./docs/testing.md).
+- **Tested like people depend on it** (they do): one 35-scenario catalogue (feature, edge, stress, live) runs on every platform, with performance budgets and a backward-compatibility oracle against the published versions. See [Testing](./docs/testing.md).
 
 ## Pick your package
 
@@ -115,10 +115,11 @@ npm run demo:native     # Expo (iOS / Android)
 
 ```sh
 npm test                 # unit tests across all packages
-npm run test:e2e         # Chromium: all scenarios × React / Angular / vanilla, with frame-time budgets
+npm run test:e2e         # Chromium: all scenarios × React / Angular / vanilla, frame-time budgets, and a pixel oracle vs published chart-web 1.3.2
 npm run test:pack        # pack every package, install the tarballs into a clean project
 npm run test:contracts   # API locks, compatibility with published versions, docs, bundle sizes
 npm run test:native      # iOS simulator via Maestro (see e2e-native/README.md)
+npm run test:native:compat  # same app vs the published chart-core 2.3.3, pixel-compared (~20 min)
 ```
 
 ## Documentation

@@ -120,6 +120,30 @@ export function calcEMA(
   return { id, name: `EMA(${period})`, color, data: out };
 }
 
+// ─── VWAP ─────────────────────────────────────────────────────────────────
+
+/**
+ * Volume-weighted average price, cumulative over the supplied candles:
+ * `Σ(typicalPrice × volume) / Σ(volume)` where `typicalPrice = (high + low + close) / 3`. There is one point per
+ * candle from the first candle that has volume > 0. Candles without a (finite, positive) `volume` are skipped
+ * until volume appears. Returns `null` when no candle has volume. For a session VWAP, pass only that session's
+ * candles. Never throws.
+ */
+export function calcVWAP(candles: Candle[], id: string, color: string): IndicatorLine | null {
+  let cumulativePV = 0;
+  let cumulativeVolume = 0;
+  const out: TsPoint[] = [];
+  for (const c of candles) {
+    const v = c.volume;
+    if (typeof v === 'number' && Number.isFinite(v) && v > 0) {
+      cumulativePV += ((c.high + c.low + c.close) / 3) * v;
+      cumulativeVolume += v;
+    }
+    if (cumulativeVolume > 0) out.push({ timestamp: c.timestamp, value: cumulativePV / cumulativeVolume });
+  }
+  return out.length ? { id, name: 'VWAP', color, data: out } : null;
+}
+
 // ─── MACD ─────────────────────────────────────────────────────────────────
 
 /**

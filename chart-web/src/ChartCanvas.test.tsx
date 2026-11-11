@@ -457,3 +457,54 @@ describe('canvasMock harness', () => {
     expect(b.fillRect).not.toHaveBeenCalled();
   });
 });
+
+describe('SLChart (web) — display options', () => {
+  const texts = () => contexts.flatMap((c) => c.fillText.mock.calls.map((x) => String(x[0])));
+  const dashed = () => contexts.reduce((n, c) => n + c.setLineDash.mock.calls.length, 0);
+  const curve = () => contexts.flatMap((c) => c.bezierCurveTo.mock.calls.map((x) => x.join(','))).join('|');
+
+  it('hour12 switches the time axis to AM/PM labels; 24-hour is the default', () => {
+    const candles = makeCandles(60);
+    const a = render(<SLChart data={candles} width={400} height={300} hour12 />);
+    expect(texts().some((t) => /\b(AM|PM)\b/i.test(t))).toBe(true);
+    a.unmount();
+    contexts.length = 0;
+    render(<SLChart data={candles} width={400} height={300} />);
+    expect(texts().some((t) => /\b(AM|PM)\b/i.test(t))).toBe(false);
+  });
+
+  it('showGrid={false} removes dashed grid lines but keeps axis labels', () => {
+    const candles = makeCandles(60);
+    const a = render(<SLChart data={candles} width={400} height={300} />);
+    const withGrid = dashed();
+    const labels = texts().length;
+    a.unmount();
+    contexts.length = 0;
+    render(<SLChart data={candles} width={400} height={300} showGrid={false} />);
+    expect(dashed()).toBeLessThan(withGrid);
+    expect(texts().length).toBe(labels);
+  });
+
+  it('maxZoom caps the candles on screen', () => {
+    const candles = makeCandles(300);
+    const a = render(<SLChart data={candles} width={400} height={300} visibleDataPoints={300} maxZoom={40} />);
+    const capped = contexts.at(-1)!.fillRect.mock.calls.length;
+    a.unmount();
+    contexts.length = 0;
+    render(<SLChart data={candles} width={400} height={300} visibleDataPoints={300} />);
+    expect(capped).toBeLessThan(contexts.at(-1)!.fillRect.mock.calls.length / 2);
+  });
+
+  it('rsiPeriod changes the RSI curve; an invalid period does not crash', () => {
+    const candles = makeCandles(120);
+    const a = render(<SLChart data={candles} width={400} height={300} showRsiPanel rsiPeriod={14} />);
+    const p14 = curve();
+    a.unmount();
+    contexts.length = 0;
+    const b = render(<SLChart data={candles} width={400} height={300} showRsiPanel rsiPeriod={7} />);
+    expect(curve()).not.toBe(p14);
+    b.unmount();
+    expect(() => render(<SLChart data={candles} width={400} height={300} showRsiPanel rsiPeriod={0} />)).not.toThrow();
+  });
+});
+

@@ -249,3 +249,35 @@ describe('validateChartConfig — closed enums and unknown keys', () => {
     expect(validateChartConfig(full)).toEqual({ valid: true });
   });
 });
+
+// ─── strict (default) vs lenient (legacy chart-core 2.x) ─────────────────────
+
+describe('validateChartConfig — strict option', () => {
+  const lenient = (patch: Record<string, unknown>) => validateChartConfig({ ...baseConfig(), ...patch } as unknown as ChartConfig, { strict: false });
+  const strict = (patch: Record<string, unknown>) => validateChartConfig({ ...baseConfig(), ...patch } as unknown as ChartConfig);
+
+  it.each([
+    ['out-of-enum theme', { theme: 'neon' }],
+    ['out-of-enum interval', { interval: '2h' }],
+    ['unknown top-level key', { sparkles: true }],
+    ['wrongly typed scalar', { viewport: { visibleCandles: 60, followLive: 'yes' } }],
+    ['raw hex colour', { overlays: [{ type: 'sma', id: 'a', params: { period: 9 }, color: '#ff0000' }] }],
+  ])('lenient mode still accepts %s (what chart-core 2.x accepted); strict mode rejects it', (_name, patch) => {
+    expect(lenient(patch)).toEqual({ valid: true });
+    expect(strict(patch).valid).toBe(false);
+  });
+
+  it('lenient mode still enforces the semantic rules', () => {
+    expect(lenient({ overlays: [{ type: 'sma', id: 'a', params: { period: 0 }, color: 'blue' }] }).valid).toBe(false);
+    expect(lenient({ viewport: { visibleCandles: 5, followLive: true } }).valid).toBe(false);
+    expect(lenient({ version: '2' }).valid).toBe(false);
+  });
+
+  it('lenient mode still refuses shapes that would crash the compiler', () => {
+    for (const patch of [{ overlays: undefined }, { viewport: null }, { subPanels: {} }]) expect(lenient(patch as never).valid, JSON.stringify(patch)).toBe(false);
+  });
+
+  it('strict is the default', () => {
+    expect(validateChartConfig({ ...baseConfig(), theme: 'neon' } as unknown as ChartConfig).valid).toBe(false);
+  });
+});
