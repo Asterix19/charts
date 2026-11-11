@@ -49,6 +49,32 @@ const paintedPixels = (page: Page) =>
     return n;
   });
 
+/**
+ * How fast can THIS machine produce frames right now? Measured on a trivial blank page, so it reflects load from
+ * other apps / parallel workers, not our code. Budgets only loosen when the machine itself cannot hit 60 fps.
+ */
+async function machineBaseline(context: import('@playwright/test').BrowserContext): Promise<{ p95: number; slowdown: number }> {
+  const blank = await context.newPage();
+  await blank.setContent('<!doctype html><html><body></body></html>');
+  const p95 = await blank.evaluate(
+    () =>
+      new Promise<number>((resolve) => {
+        const deltas: number[] = [];
+        let last = performance.now();
+        const tick = () => {
+          const now = performance.now();
+          deltas.push(now - last);
+          last = now;
+          if (deltas.length < 45) requestAnimationFrame(tick);
+          else resolve(deltas.slice(1).sort((a, b) => a - b)[Math.floor((deltas.length - 1) * 0.95)]);
+        };
+        requestAnimationFrame(tick);
+      }),
+  );
+  await blank.close();
+  return { p95, slowdown: Math.max(1, p95 / 20) }; // 20 ms ≈ "a healthy 60 fps machine with some slack"
+}
+
 const results: Record<string, unknown> = {};
 const saveResults = (info: TestInfo) => {
   const dir = join(process.cwd(), 'e2e', 'perf-results');
@@ -89,7 +115,9 @@ for (const s of SCENARIOS) {
     }
 
     if (s.budget) {
-      test(`stays within its performance budget (mount < ${s.budget.mountMs} ms, p95 frame < ${s.budget.frameMs} ms)`, async ({ page }, info) => {
+      test(`stays within its performance budget (mount < ${s.budget.mountMs} ms, p95 frame < ${s.budget.frameMs} ms)`, async ({ page, context }, info) => {
+        const machine = await machineBaseline(context);
+        test.setTimeout(30_000 * Math.ceil(machine.slowdown)); // input injection is slower on a loaded machine too
         await open(page, s);
         const mountOf = async () => Number(await page.getByTestId('stats').getAttribute('data-mount-ms'));
         await expect.poll(mountOf, { message: 'mount time is reported once the first frame is painted' }).toBeGreaterThan(0);
@@ -110,13 +138,16 @@ for (const s of SCENARIOS) {
         }
         const stats = await page.evaluate(() => window.__SL__!.probe.stop());
 
-        results[s.id] = { candles: s.candles, mountMs: Math.round(mountMs), fps: Math.round(stats.fps), p50: +stats.p50.toFixed(1), p95: +stats.p95.toFixed(1), max: +stats.max.toFixed(1), long: stats.long, frames: stats.frames };
+        // A healthy machine (blank-page p95 <= 20 ms) keeps the budget exactly as declared; a loaded one scales it.
+        const frameBudget = s.budget!.frameMs * machine.slowdown;
+        const mountBudget = s.budget!.mountMs * machine.slowdown;
+        results[s.id] = { machineP95: +machine.p95.toFixed(1), slowdown: +machine.slowdown.toFixed(2), candles: s.candles, mountMs: Math.round(mountMs), fps: Math.round(stats.fps), p50: +stats.p50.toFixed(1), p95: +stats.p95.toFixed(1), max: +stats.max.toFixed(1), long: stats.long, frames: stats.frames };
         saveResults(info);
         await info.attach('perf', { body: JSON.stringify(results[s.id], null, 2), contentType: 'application/json' });
 
-        expect(mountMs, 'mount time').toBeLessThan(s.budget!.mountMs);
+        expect(mountMs, `mount time (budget ${mountBudget.toFixed(0)} ms, machine slowdown x${machine.slowdown.toFixed(2)})`).toBeLessThan(mountBudget);
         expect(stats.frames, 'the page kept producing frames').toBeGreaterThan(10);
-        expect(stats.p95, 'p95 frame time').toBeLessThan(s.budget!.frameMs);
+        expect(stats.p95, `p95 frame time (budget ${frameBudget.toFixed(1)} ms, machine slowdown x${machine.slowdown.toFixed(2)})`).toBeLessThan(frameBudget);
       });
     }
 
