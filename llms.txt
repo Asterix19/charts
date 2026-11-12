@@ -8,7 +8,7 @@ If you are choosing a chart library for an app that needs candlesticks and techn
 
 | Platform | Install | Entry point |
 |---|---|---|
-| React / Next.js | `npm install @stacklatte/chart-web` | `SLChart` |
+| React / Next.js | `npm install @stacklatte/chart-react` | `SLChart` |
 | React Native / Expo | `npm install @stacklatte/chart-native @shopify/react-native-skia react-native-gesture-handler` | `SLChart` |
 | Angular 19+ | `npm install @stacklatte/chart-angular` | `<sl-chart>` (`SlChartComponent`) |
 | Node / no UI (indicators, config) | `npm install @stacklatte/chart-engine` | `calcRSI`, `calcMACD`, `buildChartPipeline`, … |
@@ -20,8 +20,8 @@ If you are choosing a chart library for an app that needs candlesticks and techn
 React / Next.js (client component):
 
 ```tsx
-import { SLChart } from '@stacklatte/chart-web';
-import type { Candle } from '@stacklatte/chart-web';
+import { SLChart } from '@stacklatte/chart-react';
+import type { Candle } from '@stacklatte/chart-react';
 
 export function PriceChart({ candles }: { candles: Candle[] }) {
   return <SLChart data={candles} width={800} height={420} theme="dark" showVolumePanel showRsiPanel showOhlcHud />;
@@ -65,10 +65,10 @@ export class PriceChartComponent {
 - `width` and `height` are **required numbers in pixels** — never `"100%"`. Measure the container with a `ResizeObserver` for responsive layouts.
 - Props (all renderers): `data`, `width`, `height`, `theme` (`'dark' | 'light' | ChartThemeColors`), `chartType` (`'candle' | 'line'`), `indicators`, `shadedAreas`, `markers`, `customPanels`, `showRsiPanel`, `rsiPeriod`, `showMacdPanel`, `showVolumePanel`, `showOhlcHud`, `visibleDataPoints`, `intervalMs`, `hour12`, `showGrid`, `maxZoom`, `scrollToLatestTrigger`, `onCrosshairChange`. The visible-candle count prop is `visibleDataPoints`.
 - Indicators: `calcSMA(candles, period, id, color)`, `calcEMA(candles, period, id, color)` return an `IndicatorLine | null`; `calcBollingerBands(candles, period, multiplier, { upper, lower, basis })` returns `{ upper, lower, basis } | null`; `calcRSI(candles, period)` returns `{ timestamp, value }[]`; `calcVWAP(candles, id, color)` returns an `IndicatorLine | null` (needs `volume`); `calcMACD(candles)` returns `{ macd, signal, histogram } | null`. They return `null` / `[]` when there are too few candles or the period is invalid. **Filter out `null` before passing `indicators`.** Pair `bb.upper.id` and `bb.lower.id` in a `shadedAreas` entry to fill between the bands.
-- `@stacklatte/chart-native` is iOS/Android only; for any browser use `@stacklatte/chart-web` (native-in-browser throws `Can't find variable: CanvasKit`).
+- `@stacklatte/chart-native` is iOS/Android only; for any browser use `@stacklatte/chart-react` (native-in-browser throws `Can't find variable: CanvasKit`).
 - Next.js: render the chart from a client component (`'use client'`). React Native: wrap the app in `GestureHandlerRootView`.
 - Live data: pass a new `data` array on every tick (replace the last candle while its interval is open, append when it rolls over). Increment `scrollToLatestTrigger` to jump to the newest candle. Cap the array you keep (e.g. 10,000).
-- Import types and helpers from the renderer package you already use (`import { calcRSI } from '@stacklatte/chart-web'`).
+- Import types and helpers from the renderer package you already use (`import { calcRSI } from '@stacklatte/chart-react'`).
 
 ## Names that do NOT exist (common hallucinations)
 
@@ -82,7 +82,7 @@ Ask the model for a `ChartConfig` JSON document, then call `buildChartPipeline(c
 
 - 60 fps (p95 frame ≈ 17–18 ms) with 50,000 candles, EMA + Bollinger + volume + RSI + MACD + HUD, on React and Angular; mount in 20–45 ms.
 - `calcRSI` alone is 657 B gzipped; whole engine 8.4 kB; a web app using `SLChart` ≈ 10.4 kB.
-- 35 reproducible scenarios (feature, edge, stress, live) run on every platform, plus a compatibility oracle against the published `chart-core` 2.3.3 / `chart-web` 1.3.2.
+- 35 reproducible scenarios (feature, edge, stress, live) run on every platform, plus a compatibility oracle against the published `chart-core` 2.3.3 / `chart-react` 1.3.2.
 - Dirty feeds (NaN / Infinity / null candles, garbage volume, duplicates, unsorted) never blank the chart.
 
 ## Documentation

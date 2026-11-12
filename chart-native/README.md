@@ -6,7 +6,7 @@ High-performance React Native trading charts — GPU-accelerated via [React Nati
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE.md)
 
 
-> **iOS and Android only.** In a browser use [`@stacklatte/chart-web`](../chart-web). Importing this package on web throws `Can't find variable: CanvasKit` (Skia's web build needs its WASM loaded first) — see the [React Native guide](../docs/react-native.md#not-for-the-browser).
+> **iOS and Android only.** In a browser use [`@stacklatte/chart-react`](../chart-react). Importing this package on web throws `Can't find variable: CanvasKit` (Skia's web build needs its WASM loaded first) — see the [React Native guide](../docs/react-native.md#not-for-the-browser).
 
 ## Guides, demos and tests
 
@@ -23,9 +23,9 @@ High-performance React Native trading charts — GPU-accelerated via [React Nati
 - **Real indicator math.** RSI uses Wilder smoothing, MACD is seeded and aligned correctly (12/26/9), Bollinger Bands use an O(n) sliding window — not approximations. The engine is covered by 370+ unit and fuzz tests (including 1,000,000-candle inputs), independent of rendering.
 - **GPU-rendered, not SVG.** Built on Skia via `react-native-skia` — built to stay smooth with a live feed ticking underneath; the 50,000-candle stress scenario is part of the iOS end-to-end suite.
 - **LLM-safe declarative config.** `buildChartPipeline()` takes a versioned `ChartConfig` document — every color and interval is a closed enum, never a raw string an LLM can typo — and returns validated, ready-to-render props, or throws a precise, itemized error. A generated JSON Schema ships as `@stacklatte/chart-engine/ChartConfig.schema.json` for structured output / tool-calling. See [`llms.txt`](./llms.txt) for the quick path.
-- **Also available for the web.** [`@stacklatte/chart-web`](../chart-web) shares the same [`@stacklatte/chart-engine`](../chart-engine), same props, rendered with Canvas 2D — no React Native required.
+- **Also available for the web.** [`@stacklatte/chart-react`](../chart-react) shares the same [`@stacklatte/chart-engine`](../chart-engine), same props, rendered with Canvas 2D — no React Native required.
 
-| | chart-native / chart-web | General-purpose chart libs (Recharts, Victory) | Web-only trading chart libs |
+| | chart-native / chart-react | General-purpose chart libs (Recharts, Victory) | Web-only trading chart libs |
 |---|---|---|---|
 | Candlesticks + OHLC | ✅ built in | 🛠 build it yourself | ✅ |
 | RSI / MACD / Bollinger / Volume | ✅ built in | ❌ | varies by plugin |

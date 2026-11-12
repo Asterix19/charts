@@ -1,7 +1,7 @@
 {
   "name": "@stacklatte/chart-web",
   "version": "1.4.0",
-  "description": "React / Next.js trading chart (SLChart): candlesticks, RSI/MACD/Bollinger/volume, trade markers, pan/zoom, crosshair, live streaming. HTML5 Canvas 2D, no WASM; 60 fps at 50,000 candles; ~10 kB gzipped. Ships an LLM-safe ChartConfig + JSON Schema.",
+  "description": "[Renamed] React / Next.js trading chart. This package is now a thin re-export of @stacklatte/chart-react \u2014 install that one directly for new code. Existing installs keep working unchanged.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -22,11 +22,8 @@
   ],
   "scripts": {
     "build": "tsup && tsc -p tsconfig.json --emitDeclarationOnly --declarationMap",
-    "dev": "tsup --watch",
     "clean": "rm -rf dist",
-    "prepublishOnly": "npm run lint && npm test && npm run build",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "prepublishOnly": "npm run lint && npm run build",
     "lint": "tsc --noEmit"
   },
   "keywords": [
@@ -85,19 +82,14 @@
     "react-dom": ">=19.0.0"
   },
   "dependencies": {
-    "@stacklatte/chart-engine": "^1.0.0"
+    "@stacklatte/chart-react": "^1.0.0"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^7.0.1",
-    "@testing-library/react": "^16.3.2",
     "@types/react": "~19.2.18",
     "@types/react-dom": "~19.2.4",
-    "jsdom": "^30.0.1",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "tsup": "^8.5.1",
-    "typescript": "^7.0.2",
-    "vitest": "^4.1.10",
-    "@stacklatte/chart-examples": "*"
+    "typescript": "^7.0.2"
   }
 }

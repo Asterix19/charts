@@ -42,7 +42,8 @@ export const PACKAGES: Record<string, { dts: string[] }> = {
   'chart-engine': { dts: ['chart-engine/dist/index.d.ts'] },
   'chart-engine-canvas': { dts: ['chart-engine/dist/canvas/index.d.ts'] }, // @stacklatte/chart-engine/canvas
   'chart-native': { dts: ['chart-native/dist/index.d.ts'] },
-  'chart-web': { dts: ['chart-web/dist/index.d.ts'] },
+  'chart-react': { dts: ['chart-react/dist/index.d.ts'] },
+  'chart-web': { dts: ['chart-web/dist/index.d.ts'] }, // legacy name, re-exports chart-react
   'chart-core': { dts: ['chart-core/dist/index.d.ts', 'chart-core/dist/core.d.ts'] },
   'chart-angular': { dts: ['chart-angular/dist/types/stacklatte-chart-angular.d.ts'] },
 };

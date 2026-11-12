@@ -10,6 +10,6 @@ npx expo run:ios --no-bundler  # (once) build the development client for a simul
 npm run demo:native            # from the repo root: starts Metro in dev-client mode
 ```
 
-This demo is **iOS / Android only** — it needs a development build, not Expo Go and not a browser (Skia's web build would throw `Can't find variable: CanvasKit`). For the browser use the React demo: `npm run demo:web`.
+This demo is **iOS / Android only** — it needs a development build, not Expo Go and not a browser (Skia's web build would throw `Can't find variable: CanvasKit`). For the browser use the React demo: `npm run demo:react`.
 
 The Scenarios tab is driven end-to-end by Maestro — see [`e2e-native/README.md`](../../e2e-native/README.md) and [docs/testing.md](../../docs/testing.md).

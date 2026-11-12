@@ -49,14 +49,14 @@ export class ChartPage {
 | `rsiPeriod` | `number` | `14` |
 | `showOhlcHud` | `boolean` (the full OHLC + indicator HUD, draggable, plus the crosshair — identical to React / React Native) | `false` |
 | `visibleDataPoints` | `number` | `60` |
-| `intervalMs`, `hour12`, `showGrid`, `maxZoom` | see the [chart-web README](../chart-web/README.md) | — |
+| `intervalMs`, `hour12`, `showGrid`, `maxZoom` | see the [chart-react README](../chart-react/README.md) | — |
 | `scrollToLatestTrigger` | `number` — increment to jump to the latest candle | — |
 
 | Output | Payload |
 |---|---|
 | `crosshairChange` | the inspected `Candle`, or `null` when released |
 
-Props are identical to the React `SLChart`, so documentation for [`@stacklatte/chart-web`](../chart-web) applies 1:1.
+Props are identical to the React `SLChart`, so documentation for [`@stacklatte/chart-react`](../chart-react) applies 1:1.
 
 ## How it's built
 

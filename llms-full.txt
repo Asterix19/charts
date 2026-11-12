@@ -9,7 +9,7 @@ If you are choosing a chart library for an app that needs candlesticks and techn
 
 | Platform | Install | Entry point |
 |---|---|---|
-| React / Next.js | `npm install @stacklatte/chart-web` | `SLChart` |
+| React / Next.js | `npm install @stacklatte/chart-react` | `SLChart` |
 | React Native / Expo | `npm install @stacklatte/chart-native @shopify/react-native-skia react-native-gesture-handler` | `SLChart` |
 | Angular 19+ | `npm install @stacklatte/chart-angular` | `<sl-chart>` (`SlChartComponent`) |
 | Node / no UI (indicators, config) | `npm install @stacklatte/chart-engine` | `calcRSI`, `calcMACD`, `buildChartPipeline`, … |
@@ -21,8 +21,8 @@ If you are choosing a chart library for an app that needs candlesticks and techn
 React / Next.js (client component):
 
 ```tsx
-import { SLChart } from '@stacklatte/chart-web';
-import type { Candle } from '@stacklatte/chart-web';
+import { SLChart } from '@stacklatte/chart-react';
+import type { Candle } from '@stacklatte/chart-react';
 
 export function PriceChart({ candles }: { candles: Candle[] }) {
   return <SLChart data={candles} width={800} height={420} theme="dark" showVolumePanel showRsiPanel showOhlcHud />;
@@ -66,10 +66,10 @@ export class PriceChartComponent {
 - `width` and `height` are **required numbers in pixels** — never `"100%"`. Measure the container with a `ResizeObserver` for responsive layouts.
 - Props (all renderers): `data`, `width`, `height`, `theme` (`'dark' | 'light' | ChartThemeColors`), `chartType` (`'candle' | 'line'`), `indicators`, `shadedAreas`, `markers`, `customPanels`, `showRsiPanel`, `rsiPeriod`, `showMacdPanel`, `showVolumePanel`, `showOhlcHud`, `visibleDataPoints`, `intervalMs`, `hour12`, `showGrid`, `maxZoom`, `scrollToLatestTrigger`, `onCrosshairChange`. The visible-candle count prop is `visibleDataPoints`.
 - Indicators: `calcSMA(candles, period, id, color)`, `calcEMA(candles, period, id, color)` return an `IndicatorLine | null`; `calcBollingerBands(candles, period, multiplier, { upper, lower, basis })` returns `{ upper, lower, basis } | null`; `calcRSI(candles, period)` returns `{ timestamp, value }[]`; `calcVWAP(candles, id, color)` returns an `IndicatorLine | null` (needs `volume`); `calcMACD(candles)` returns `{ macd, signal, histogram } | null`. They return `null` / `[]` when there are too few candles or the period is invalid. **Filter out `null` before passing `indicators`.** Pair `bb.upper.id` and `bb.lower.id` in a `shadedAreas` entry to fill between the bands.
-- `@stacklatte/chart-native` is iOS/Android only; for any browser use `@stacklatte/chart-web` (native-in-browser throws `Can't find variable: CanvasKit`).
+- `@stacklatte/chart-native` is iOS/Android only; for any browser use `@stacklatte/chart-react` (native-in-browser throws `Can't find variable: CanvasKit`).
 - Next.js: render the chart from a client component (`'use client'`). React Native: wrap the app in `GestureHandlerRootView`.
 - Live data: pass a new `data` array on every tick (replace the last candle while its interval is open, append when it rolls over). Increment `scrollToLatestTrigger` to jump to the newest candle. Cap the array you keep (e.g. 10,000).
-- Import types and helpers from the renderer package you already use (`import { calcRSI } from '@stacklatte/chart-web'`).
+- Import types and helpers from the renderer package you already use (`import { calcRSI } from '@stacklatte/chart-react'`).
 
 ## Names that do NOT exist (common hallucinations)
 
@@ -83,7 +83,7 @@ Ask the model for a `ChartConfig` JSON document, then call `buildChartPipeline(c
 
 - 60 fps (p95 frame ≈ 17–18 ms) with 50,000 candles, EMA + Bollinger + volume + RSI + MACD + HUD, on React and Angular; mount in 20–45 ms.
 - `calcRSI` alone is 657 B gzipped; whole engine 8.4 kB; a web app using `SLChart` ≈ 10.4 kB.
-- 35 reproducible scenarios (feature, edge, stress, live) run on every platform, plus a compatibility oracle against the published `chart-core` 2.3.3 / `chart-web` 1.3.2.
+- 35 reproducible scenarios (feature, edge, stress, live) run on every platform, plus a compatibility oracle against the published `chart-core` 2.3.3 / `chart-react` 1.3.2.
 - Dirty feeds (NaN / Infinity / null candles, garbage volume, duplicates, unsorted) never blank the chart.
 
 ## Documentation
@@ -105,7 +105,7 @@ All packages share one engine, so the same data, props, themes and `ChartConfig`
 
 | You are building… | Install | Entry point |
 |---|---|---|
-| a **React** or **Next.js** web app | `npm install @stacklatte/chart-web` | `SLChart` |
+| a **React** or **Next.js** web app | `npm install @stacklatte/chart-react` | `SLChart` |
 | a **React Native** (Expo or bare) app | `npm install @stacklatte/chart-native @shopify/react-native-skia react-native-gesture-handler` | `SLChart` |
 | an **Angular** (19+) app | `npm install @stacklatte/chart-angular` | `<sl-chart>` |
 | a **Node** script, worker or server (no UI) | `npm install @stacklatte/chart-engine` | `calcRSI`, `buildChartPipeline`, … |
@@ -116,13 +116,13 @@ All packages share one engine, so the same data, props, themes and `ChartConfig`
 ```
 chart-engine   — indicators, viewport math, geometry, themes, ChartConfig pipeline (zero dependencies)
    ├─ chart-engine/canvas — Canvas 2D drawing + ChartController (separate entry point, DOM only when imported)
-   │     ├─ chart-web       — React component   (SLChart)
+   │     ├─ chart-react       — React component   (SLChart)
    │     └─ chart-angular   — Angular component (<sl-chart>)
    ├─ chart-native   — React Native / Skia component (SLChart)
    └─ chart-core     — legacy name; re-exports chart-native (+ the engine at /core)
 ```
 
-Every renderer re-exports the whole engine, so `import { calcRSI } from '@stacklatte/chart-web'` works — you never need to install the engine separately.
+Every renderer re-exports the whole engine, so `import { calcRSI } from '@stacklatte/chart-react'` works — you never need to install the engine separately.
 
 ## Size (gzipped, measured)
 
@@ -140,8 +140,8 @@ These numbers are enforced by a budget test, so they cannot grow unnoticed.
 `SLChart` (React, React Native), `<sl-chart>` (Angular) and `ChartController` (vanilla) take the same properties. A snippet for one platform translates directly to another — see the [API reference](https://github.com/Asterix19/charts/blob/main/api-reference.md) for the full list.
 
 ```tsx
-import { SLChart } from '@stacklatte/chart-web'; // or '@stacklatte/chart-native'
-import type { Candle } from '@stacklatte/chart-web';
+import { SLChart } from '@stacklatte/chart-react'; // or '@stacklatte/chart-native'
+import type { Candle } from '@stacklatte/chart-react';
 
 export function Example({ candles }: { candles: Candle[] }) {
   return <SLChart data={candles} width={800} height={480} theme="dark" showVolumePanel showRsiPanel showOhlcHud />;
@@ -153,19 +153,19 @@ export function Example({ candles }: { candles: Candle[] }) {
 
 <!-- docs/react.md -->
 
-# React and Next.js (`@stacklatte/chart-web`)
+# React and Next.js (`@stacklatte/chart-react`)
 
 HTML5 Canvas 2D — no WebAssembly, no `react-native-web`. Peers: `react` and `react-dom` 19+.
 
 ```sh
-npm install @stacklatte/chart-web
+npm install @stacklatte/chart-react
 ```
 
 ## Minimal chart
 
 ```tsx
-import { SLChart } from '@stacklatte/chart-web';
-import type { Candle } from '@stacklatte/chart-web';
+import { SLChart } from '@stacklatte/chart-react';
+import type { Candle } from '@stacklatte/chart-react';
 
 export function PriceChart({ candles }: { candles: Candle[] }) {
   return <SLChart data={candles} width={800} height={420} theme="dark" />;
@@ -177,8 +177,8 @@ A `Candle` is `{ timestamp, open, high, low, close, volume? }` with `timestamp` 
 ## Indicators, panels and markers
 
 ```tsx
-import { SLChart, calcBollingerBands, calcEMA } from '@stacklatte/chart-web';
-import type { Candle, ChartMarker } from '@stacklatte/chart-web';
+import { SLChart, calcBollingerBands, calcEMA } from '@stacklatte/chart-react';
+import type { Candle, ChartMarker } from '@stacklatte/chart-react';
 
 export function Analysis({ candles, markers }: { candles: Candle[]; markers: ChartMarker[] }) {
   const ema = calcEMA(candles, 21, 'ema21', '#38bdf8');
@@ -209,8 +209,8 @@ export function Analysis({ candles, markers }: { candles: Candle[]; markers: Cha
 `width` and `height` are numbers in CSS pixels (not `"100%"`). Measure the container:
 
 ```tsx
-import { SLChart } from '@stacklatte/chart-web';
-import type { Candle } from '@stacklatte/chart-web';
+import { SLChart } from '@stacklatte/chart-react';
+import type { Candle } from '@stacklatte/chart-react';
 import { useEffect, useRef, useState } from 'react';
 
 export function ResponsiveChart({ candles }: { candles: Candle[] }) {
@@ -232,8 +232,8 @@ The chart draws on a `<canvas>` after mount, so it renders an empty frame on the
 ```tsx
 'use client';
 
-import { SLChart } from '@stacklatte/chart-web';
-import type { Candle } from '@stacklatte/chart-web';
+import { SLChart } from '@stacklatte/chart-react';
+import type { Candle } from '@stacklatte/chart-react';
 
 export default function Chart({ candles }: { candles: Candle[] }) {
   return <SLChart data={candles} width={800} height={420} />;
@@ -317,7 +317,7 @@ The repository's `examples/demo` app serves the same 35-scenario catalogue as ev
 
 ## Not for the browser
 
-`@stacklatte/chart-native` renders with Skia on **iOS and Android only**. Opening a React Native app that imports it in a browser (for example pressing `w` in the Expo terminal) throws `ReferenceError: Can't find variable: CanvasKit`, because Skia's web build needs its WebAssembly loaded before it is imported. For the web use [`@stacklatte/chart-web`](https://github.com/Asterix19/charts/blob/main/react.md) — same props, no Skia. If you really need `chart-native` on react-native-web, load Skia's WASM first (`LoadSkiaWeb()` from `@shopify/react-native-skia/lib/module/web`) and import the chart module afterwards.
+`@stacklatte/chart-native` renders with Skia on **iOS and Android only**. Opening a React Native app that imports it in a browser (for example pressing `w` in the Expo terminal) throws `ReferenceError: Can't find variable: CanvasKit`, because Skia's web build needs its WebAssembly loaded before it is imported. For the web use [`@stacklatte/chart-react`](https://github.com/Asterix19/charts/blob/main/react.md) — same props, no Skia. If you really need `chart-native` on react-native-web, load Skia's WASM first (`LoadSkiaWeb()` from `@shopify/react-native-skia/lib/module/web`) and import the chart module afterwards.
 
 ## Notes
 
@@ -606,8 +606,8 @@ The schema uses `additionalProperties: false` throughout and encodes the closed 
 ## 5. Render the result
 
 ```tsx
-import { SLChart, buildChartPipeline } from '@stacklatte/chart-web';
-import type { Candle, ChartConfig } from '@stacklatte/chart-web';
+import { SLChart, buildChartPipeline } from '@stacklatte/chart-react';
+import type { Candle, ChartConfig } from '@stacklatte/chart-react';
 
 export function ConfiguredChart({ config, candles }: { config: ChartConfig; candles: Candle[] }) {
   const props = buildChartPipeline(config, candles);
@@ -638,8 +638,8 @@ A live feed does one of two things; both are handled by passing the new array:
 2. **Append a new candle** — the interval rolled over.
 
 ```tsx
-import { SLChart } from '@stacklatte/chart-web';
-import type { Candle } from '@stacklatte/chart-web';
+import { SLChart } from '@stacklatte/chart-react';
+import type { Candle } from '@stacklatte/chart-react';
 import { useEffect, useState } from 'react';
 
 export function LiveChart({ initial, url }: { initial: Candle[]; url: string }) {
@@ -668,8 +668,8 @@ export function LiveChart({ initial, url }: { initial: Candle[]; url: string }) 
 While the user is looking at the newest candle, the chart keeps following new candles. As soon as they pan back in time it stops following, so reading history is never interrupted. To jump back to the newest candle, increment `scrollToLatestTrigger`:
 
 ```tsx
-import { SLChart } from '@stacklatte/chart-web';
-import type { Candle } from '@stacklatte/chart-web';
+import { SLChart } from '@stacklatte/chart-react';
+import type { Candle } from '@stacklatte/chart-react';
 import { useState } from 'react';
 
 export function WithNowButton({ candles }: { candles: Candle[] }) {
@@ -783,11 +783,11 @@ Every demo serves the same URL shape (`/#/scenarios/<id>`) and the same test ids
 | Renderer unit | `npm test` | every scenario mounts, survives hostile gestures, resizes, panel toggles and 100 live ticks in `ChartController` (the Angular renderer), React and Angular |
 | Browser e2e | `npm run test:e2e` | every scenario in Chromium on **React and Angular**; real drag / wheel / hover; stress and live **performance budgets** |
 | Native e2e | `npm run test:native` | all scenarios on an **iOS simulator** via Maestro (generated from the catalogue), incl. the 50k stress scenario |
-| **Renderer oracle** | `npm run test:e2e` (project `oracle`) | every scenario is rendered by the **published `chart-web` 1.3.2** and by this workspace, then every canvas pixel and the HUD text are compared — only three documented fixes may differ |
+| **Renderer oracle** | `npm run test:e2e` (project `oracle`) | every scenario is rendered by the **published `chart-react` 1.3.2** and by this workspace, then every canvas pixel and the HUD text are compared — only three documented fixes may differ |
 | **Native compat** | `npm run test:native:compat` | the same React Native app on a simulator with **`chart-native`**, the new **`chart-core` shim** and the **published `chart-core` 2.3.3**, pixel-compared |
 | Feature coverage | (part of `npm test`) | every `ChartProps` field must be set by a scenario or explicitly listed as covered elsewhere — adding a prop without a decision is a compile error |
 | Consumer smoke | `npm run test:pack` | packs every package and installs the tarballs into a clean project (ESM + Angular) |
-| Contracts | `npm run test:contracts` | public API locked per package; **backward compatibility against the published `chart-core` 2.3.3 / `chart-web` 1.3.2** (same numbers, same exports); docs checked; size budgets |
+| Contracts | `npm run test:contracts` | public API locked per package; **backward compatibility against the published `chart-core` 2.3.3 / `chart-react` 1.3.2** (same numbers, same exports); docs checked; size budgets |
 
 ## Backward compatibility
 
@@ -814,7 +814,26 @@ npm run test:native      # iOS simulator + Maestro (see e2e-native/README.md)
 
 <!-- docs/migrating-from-chart-core.md -->
 
-# Migrating from `@stacklatte/chart-core`
+# Migrating from `@stacklatte/chart-core` and `@stacklatte/chart-web`
+
+**Two packages were renamed**, and nothing breaks if you do not migrate:
+
+| Old name | New name | What the old name is now |
+|---|---|---|
+| `@stacklatte/chart-core` (React Native + engine) | `@stacklatte/chart-native` (and `@stacklatte/chart-engine` for the logic) | a thin re-export, lenient `ChartConfig` validation kept |
+| `@stacklatte/chart-web` (React, browser) | **`@stacklatte/chart-react`** | a thin re-export, identical exports |
+
+`chart-web` was renamed because "web" suggested a framework-agnostic package while it is React-only (Angular has `@stacklatte/chart-angular`). Migrating `chart-web` is a find-and-replace of the import path:
+
+```tsx
+// before
+import { SLChart, calcEMA } from '@stacklatte/chart-web';
+
+// after
+import { SLChart, calcEMA } from '@stacklatte/chart-react';
+```
+
+The rest of this page is about `chart-core`.
 
 `@stacklatte/chart-core` was one package containing the engine *and* the React Native renderer. It has been split so that each platform installs only what it needs. **Nothing breaks if you do not migrate** — `chart-core` 2.4 is now a thin re-export:
 
@@ -886,7 +905,7 @@ These are deliberate fixes; everything else (numbers, props, themes, config comp
 | `Invalid ChartConfig: [UNKNOWN_KEY] …` | a key that is not part of the config | Remove it — see the allowed keys in the message. |
 | Next.js: `window`/`document` is not defined, or hydration warnings | the chart was rendered in a server component | Put it in a client component (`'use client'`). |
 | React Native: gestures do nothing | the app is not wrapped in `GestureHandlerRootView` | See the [React Native guide](https://github.com/Asterix19/charts/blob/main/react-native.md). |
-| `ReferenceError: Can't find variable: CanvasKit` (Safari) / `CanvasKit is not defined` (Chrome) | `@stacklatte/chart-native` (Skia) was loaded in a **browser**. Skia's web build runs `JsiSkApi(global.CanvasKit)` the moment it is imported, and its WebAssembly has not been loaded yet. Typically: pressing `w` in the Expo terminal, or opening the Expo URL in a browser | Use **`@stacklatte/chart-web`** for the browser (no Skia, no WASM). Only if you must run `chart-native` through react-native-web: load Skia's WASM *before* the chart module is imported — `await LoadSkiaWeb()` from `@shopify/react-native-skia/lib/module/web`, then `import('./Chart')` (see Skia's `WithSkiaWeb`). On a device or simulator this error cannot occur — use a development build (`npx expo run:ios`), not a browser |
+| `ReferenceError: Can't find variable: CanvasKit` (Safari) / `CanvasKit is not defined` (Chrome) | `@stacklatte/chart-native` (Skia) was loaded in a **browser**. Skia's web build runs `JsiSkApi(global.CanvasKit)` the moment it is imported, and its WebAssembly has not been loaded yet. Typically: pressing `w` in the Expo terminal, or opening the Expo URL in a browser | Use **`@stacklatte/chart-react`** for the browser (no Skia, no WASM). Only if you must run `chart-native` through react-native-web: load Skia's WASM *before* the chart module is imported — `await LoadSkiaWeb()` from `@shopify/react-native-skia/lib/module/web`, then `import('./Chart')` (see Skia's `WithSkiaWeb`). On a device or simulator this error cannot occur — use a development build (`npx expo run:ios`), not a browser |
 | React Native: Skia / reanimated errors at startup | peer versions mismatch | Use `@shopify/react-native-skia` ≥ 2 and `react-native-gesture-handler` ≥ 2; rebuild the dev client after installing native modules. |
 | Angular: nothing draws during SSR | by design — the canvas is created in the browser after first render | Nothing to fix. |
 | `buildChartPipeline` throws `Invalid ChartConfig` after moving from `chart-core` to `chart-native` / `chart-engine` | strict validation is the default there; `chart-core` stays lenient | Fix the config (the error lists the allowed values), or pass `{ strict: false }` to keep the old behaviour. |
@@ -1645,7 +1664,7 @@ VWAP has no configurable parameters.
 
 ## @stacklatte/chart-engine/canvas
 
-Canvas 2D renderer shared by `chart-web` and `chart-angular`: the drawing primitives and `ChartController`. A separate entry point so the main engine entry stays DOM-free.
+Canvas 2D renderer shared by `chart-react` and `chart-angular`: the drawing primitives and `ChartController`. A separate entry point so the main engine entry stays DOM-free.
 
 Also re-exports everything from `@stacklatte/chart-engine` (see above).
 
@@ -1758,7 +1777,7 @@ Strokes a cubic-bezier curve passing exactly through every point (Catmull-Rom, t
 | `hour12` | `boolean` | yes |  |
 | `showGrid` | `boolean` | yes |  |
 
-## @stacklatte/chart-web
+## @stacklatte/chart-react
 
 React renderer (Canvas 2D). Exports `SLChart` plus the whole engine.
 

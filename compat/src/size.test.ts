@@ -11,7 +11,7 @@ import { abs } from './exports';
  */
 const BUDGETS: Array<[string, string, number, number]> = [
   // [name, file, measured gz at time of writing, budget gz]
-  ['@stacklatte/chart-web', 'chart-web/dist/index.mjs', 5_860, 8_000],
+  ['@stacklatte/chart-react', 'chart-react/dist/index.mjs', 5_860, 8_000],
   ['@stacklatte/chart-native', 'chart-native/dist/index.mjs', 7_990, 10_500],
   ['@stacklatte/chart-angular', 'chart-angular/dist/fesm2022/stacklatte-chart-angular.mjs', 1_480, 3_000],
 ];
@@ -61,7 +61,7 @@ describe('tree shaking', () => {
   });
 
   it('a web app using SLChart ships under 22 kB gzipped including engine + canvas primitives', async () => {
-    const size = await bundle(`import { SLChart } from '@stacklatte/chart-web'; console.log(SLChart);`);
+    const size = await bundle(`import { SLChart } from '@stacklatte/chart-react'; console.log(SLChart);`);
     expect(size, `SLChart bundle: ${size} B gz`).toBeLessThan(22_000);
   });
 });

@@ -5,9 +5,9 @@ import { expect, test, type Page } from '@playwright/test';
 import { SCENARIOS } from '@stacklatte/chart-examples';
 
 /**
- * Renderer regression oracle for people on @stacklatte/chart-web 1.x.
+ * Renderer regression oracle for people on the published @stacklatte/chart-web 1.x (now renamed @stacklatte/chart-react).
  *
- * Renders every scenario with the PUBLISHED chart-web 1.3.2 and with this workspace's chart-web, at the same size, and
+ * Renders every scenario with the PUBLISHED chart-web 1.3.2 and with this workspace's chart-react, at the same size, and
  * compares what is actually drawn (every canvas pixel + the HUD / tooltip DOM). Anything that differs must be listed
  * in INTENTIONAL below with the reason — an unexplained difference is a regression.
  */
@@ -45,8 +45,8 @@ const esbuild = require('esbuild') as typeof import('esbuild');
 async function bundle(name: 'old' | 'new') {
   const alias: Record<string, string> =
     name === 'old'
-      ? { '@stacklatte/chart-web': oldWeb, '@stacklatte/chart-core/core': oldCore }
-      : { '@stacklatte/chart-web': join(root, 'chart-web', 'dist', 'index.mjs') };
+      ? { '@stacklatte/chart-react': oldWeb, '@stacklatte/chart-core/core': oldCore } // the entry imports chart-react; point it at the published chart-web
+      : { '@stacklatte/chart-react': join(root, 'chart-react', 'dist', 'index.mjs') };
   await esbuild.build({
     entryPoints: [join(root, 'e2e', 'oracle', 'entry.tsx')],
     outfile: join(out, `${name}.js`),

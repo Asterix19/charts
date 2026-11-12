@@ -9,7 +9,7 @@ import { join } from 'node:path';
 
 // chart-angular publishes from ng-packagr's dist/ folder, not the package root.
 const PACKAGES = [
-  ['chart-engine'], ['chart-native'], ['chart-web'], ['chart-core'], ['chart-angular', 'chart-angular/dist'],
+  ['chart-engine'], ['chart-native'], ['chart-react'], ['chart-web'], ['chart-core'], ['chart-angular', 'chart-angular/dist'],
 ];
 const root = new URL('..', import.meta.url).pathname;
 const work = mkdtempSync(join(tmpdir(), 'stacklatte-smoke-'));
@@ -32,7 +32,8 @@ import React from 'react';
 import { renderToString } from 'react-dom/server';
 import * as engine from '@stacklatte/chart-engine';
 import * as coreShim from '@stacklatte/chart-core/core';
-import * as web from '@stacklatte/chart-web';
+import * as web from '@stacklatte/chart-react';
+import * as legacyWeb from '@stacklatte/chart-web';
 import * as canvas from '@stacklatte/chart-engine/canvas';
 const require = createRequire(import.meta.url);
 
@@ -47,10 +48,12 @@ assert.equal(typeof engine.buildChartPipeline(config, candles), 'object', 'valid
 for (const bad of [{ ...config, theme: 'neon' }, { ...config, interval: '2h' }, { ...config, sparkles: 1 }]) {
   assert.throws(() => engine.buildChartPipeline(bad, candles), /Invalid ChartConfig/, 'invalid config must throw');
 }
-assert.equal(typeof web.SLChart, 'function', 'chart-web exports SLChart');
+assert.equal(typeof web.SLChart, 'function', 'chart-react exports SLChart');
+assert.deepEqual(Object.keys(legacyWeb).sort(), Object.keys(web).sort(), 'the legacy chart-web shim exposes exactly what chart-react does');
+assert.equal(legacyWeb.SLChart, web.SLChart, 'chart-web re-exports the same SLChart');
 assert.equal(typeof canvas.drawCandles, 'function', 'chart-engine/canvas exports its drawing primitives');
 // The chart paints on a <canvas> in the browser; on the server it renders only its sized container (no DOM APIs touched).
-assert.match(renderToString(React.createElement(web.SLChart, { data: candles, width: 400, height: 300 })), /<div[^>]*width:400px/, 'chart-web SSR renders its container without throwing');
+assert.match(renderToString(React.createElement(web.SLChart, { data: candles, width: 400, height: 300 })), /<div[^>]*width:400px/, 'chart-react SSR renders its container without throwing');
 assert.ok('definitions' in require('@stacklatte/chart-engine/ChartConfig.schema.json'), 'JSON Schema is resolvable');
 assert.ok(require.resolve('@stacklatte/chart-native').includes('chart-native'), 'chart-native resolves');
 assert.ok(require.resolve('@stacklatte/chart-core').includes('chart-core'), 'chart-core shim resolves');

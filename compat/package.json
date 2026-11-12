@@ -11,11 +11,12 @@
   "devDependencies": {
     "@stacklatte/chart-engine": "*",
     "@stacklatte/chart-native": "*",
-    "@stacklatte/chart-web": "*",
+    "@stacklatte/chart-react": "*",
     "@stacklatte/chart-core": "*",
     "@stacklatte/chart-angular": "*",
     "typescript": "~6.0.3",
     "vitest": "^4.1.10",
-    "@stacklatte/chart-examples": "*"
+    "@stacklatte/chart-examples": "*",
+    "@stacklatte/chart-web": "*"
   }
 }

@@ -2,7 +2,7 @@
 
 > React Native / Expo (iOS, Android) trading chart: `SLChart`, GPU-rendered with Skia. Candlesticks, SMA/EMA/Bollinger overlays, RSI/MACD/volume/custom panels, trade markers, pinch zoom, pan, crosshair, live updates. Same props as the web and Angular renderers. The 50,000-candle scenario is part of the iOS end-to-end suite.
 
-> iOS and Android only (Skia). For a browser use `@stacklatte/chart-web`; importing this package on web throws `Can't find variable: CanvasKit`.
+> iOS and Android only (Skia). For a browser use `@stacklatte/chart-react`; importing this package on web throws `Can't find variable: CanvasKit`.
 
 ## Install
 

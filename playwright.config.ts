@@ -1,10 +1,10 @@
 import { defineConfig, devices } from '@playwright/test';
 
-// E2E runs against the real demo apps (Vite) in real Chromium — React (chart-web), Angular
+// E2E runs against the real demo apps (Vite) in real Chromium — React (chart-react), Angular
 // (chart-angular) — exercising the *built* packages exactly as a
 // consumer would. Every demo serves the same scenario catalogue at /#/scenarios/<id>.
 const DEMOS = [
-  { name: 'react-web', workspace: 'web-demo', port: 5199, legacySpec: /web-chart\.spec\.ts/ },
+  { name: 'react-web', workspace: 'react-demo', port: 5199, legacySpec: /web-chart\.spec\.ts/ },
   { name: 'angular', workspace: 'angular-demo', port: 5200, legacySpec: /angular-chart\.spec\.ts/ },
 ] as const;
 
@@ -16,7 +16,7 @@ export default defineConfig({
   reporter: [['list']],
   use: { trace: 'retain-on-failure' },
   projects: [
-    // Renderer regression oracle vs the published chart-web (no demo server needed).
+    // Renderer regression oracle vs the published chart-react (no demo server needed).
     { name: 'oracle', testMatch: /oracle-web\.spec\.ts/, use: { ...devices['Desktop Chrome'] } },
     ...DEMOS.flatMap((d) => [
     ...(d.legacySpec ? [{ name: d.name, testMatch: d.legacySpec, use: { ...devices['Desktop Chrome'], baseURL: `http://localhost:${d.port}` } }] : []),

@@ -14,7 +14,7 @@ Nothing changes for you at runtime. For new code, install the package you actual
 npm install @stacklatte/chart-native @shopify/react-native-skia react-native-gesture-handler
 
 # Web (Canvas 2D)
-npm install @stacklatte/chart-web
+npm install @stacklatte/chart-react
 
 # Just the math, config pipeline and JSON Schema (no renderer, no peers)
 npm install @stacklatte/chart-engine

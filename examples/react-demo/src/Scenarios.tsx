@@ -1,4 +1,4 @@
-import { SLChart } from '@stacklatte/chart-web';
+import { SLChart } from '@stacklatte/chart-react';
 import {
   SCENARIOS,
   getScenario,
@@ -11,7 +11,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import './Scenarios.css';
 
-/** One scenario from the shared catalogue, rendered with the React renderer (@stacklatte/chart-web). */
+/** One scenario from the shared catalogue, rendered with the React renderer (@stacklatte/chart-react). */
 export default function Scenarios() {
   const [id, setId] = useState(() => scenarioIdFromHash(location.hash) ?? SCENARIOS[0].id);
   useEffect(() => {

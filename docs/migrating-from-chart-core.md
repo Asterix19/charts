@@ -1,4 +1,23 @@
-# Migrating from `@stacklatte/chart-core`
+# Migrating from `@stacklatte/chart-core` and `@stacklatte/chart-web`
+
+**Two packages were renamed**, and nothing breaks if you do not migrate:
+
+| Old name | New name | What the old name is now |
+|---|---|---|
+| `@stacklatte/chart-core` (React Native + engine) | `@stacklatte/chart-native` (and `@stacklatte/chart-engine` for the logic) | a thin re-export, lenient `ChartConfig` validation kept |
+| `@stacklatte/chart-web` (React, browser) | **`@stacklatte/chart-react`** | a thin re-export, identical exports |
+
+`chart-web` was renamed because "web" suggested a framework-agnostic package while it is React-only (Angular has `@stacklatte/chart-angular`). Migrating `chart-web` is a find-and-replace of the import path:
+
+```tsx
+// before
+import { SLChart, calcEMA } from '@stacklatte/chart-web';
+
+// after
+import { SLChart, calcEMA } from '@stacklatte/chart-react';
+```
+
+The rest of this page is about `chart-core`.
 
 `@stacklatte/chart-core` was one package containing the engine *and* the React Native renderer. It has been split so that each platform installs only what it needs. **Nothing breaks if you do not migrate** — `chart-core` 2.4 is now a thin re-export:
 

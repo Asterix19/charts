@@ -33,9 +33,9 @@ describe.each(Object.entries(PACKAGES))('%s public API', (name, { dts }) => {
 describe('cross-package consistency', () => {
   const names = (pkg: string, file = PACKAGES[pkg].dts[0]) => new Set(listExports(abs(file)).map((e) => e.name));
 
-  it('chart-native, chart-web and chart-angular re-export the whole engine', () => {
+  it('chart-native, chart-react and chart-angular re-export the whole engine', () => {
     const engine = names('chart-engine');
-    for (const pkg of ['chart-native', 'chart-web', 'chart-angular']) {
+    for (const pkg of ['chart-native', 'chart-react', 'chart-angular']) {
       const have = names(pkg);
       const missing = [...engine].filter((n) => !have.has(n));
       expect(missing, `${pkg} is missing engine exports`).toEqual([]);
@@ -51,9 +51,15 @@ describe('cross-package consistency', () => {
     expect([...engine].filter((n) => !coreSub.has(n))).toEqual([]);
   });
 
+  it('the legacy names (chart-core, chart-web) expose everything their replacements do', () => {
+    const react = names('chart-react');
+    const web = names('chart-web');
+    expect([...react].filter((n) => !web.has(n)), 'chart-web is missing chart-react exports').toEqual([]);
+  });
+
   it('every renderer exposes SLChart or its framework equivalent; the engine /canvas entry carries the shared Canvas 2D renderer', () => {
     expect(names('chart-native').has('SLChart')).toBe(true);
-    expect(names('chart-web').has('SLChart')).toBe(true);
+    expect(names('chart-react').has('SLChart')).toBe(true);
     expect(names('chart-angular').has('SlChartComponent')).toBe(true);
     expect(names('chart-engine-canvas').has('ChartController')).toBe(true);
   });

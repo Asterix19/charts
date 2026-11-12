@@ -1,7 +1,7 @@
 {
   "name": "@stacklatte/chart-engine",
   "version": "1.0.0",
-  "description": "Zero-dependency trading chart engine: Wilder RSI, MACD, SMA/EMA, Bollinger Bands, VWAP, viewport math, candle geometry and a validated closed-enum ChartConfig + JSON Schema for LLM structured output. The main entry is pure logic (no DOM); `/canvas` adds the Canvas 2D renderer used by chart-web and chart-angular. ESM + CJS.",
+  "description": "Zero-dependency trading chart engine: Wilder RSI, MACD, SMA/EMA, Bollinger Bands, VWAP, viewport math, candle geometry and a validated closed-enum ChartConfig + JSON Schema for LLM structured output. The main entry is pure logic (no DOM); `/canvas` adds the Canvas 2D renderer used by chart-react and chart-angular. ESM + CJS.",
   "sideEffects": false,
   "author": "Stacklatte",
   "license": "MIT",

@@ -3,14 +3,14 @@ import {
   calcSMA,
   calcEMA,
   calcBollingerBands,
-} from '@stacklatte/chart-web';
+} from '@stacklatte/chart-react';
 import type {
   Candle,
   ChartType,
   ChartTheme,
   IndicatorLine,
   ShadedArea,
-} from '@stacklatte/chart-web';
+} from '@stacklatte/chart-react';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import './App.css';

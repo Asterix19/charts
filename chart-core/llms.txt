@@ -1,6 +1,6 @@
 # @stacklatte/chart-core (legacy name)
 
-> Deprecated name, fully supported. It now re-exports `@stacklatte/chart-native` (the React Native / Skia renderer) and, at `@stacklatte/chart-core/core`, `@stacklatte/chart-engine`. New code should install the package it actually needs: React Native → `@stacklatte/chart-native`, web → `@stacklatte/chart-web`, Angular → `@stacklatte/chart-angular`, no UI → `@stacklatte/chart-engine`.
+> Deprecated name, fully supported. It now re-exports `@stacklatte/chart-native` (the React Native / Skia renderer) and, at `@stacklatte/chart-core/core`, `@stacklatte/chart-engine`. New code should install the package it actually needs: React Native → `@stacklatte/chart-native`, web → `@stacklatte/chart-react`, Angular → `@stacklatte/chart-angular`, no UI → `@stacklatte/chart-engine`.
 
 Existing imports keep working unchanged:
 

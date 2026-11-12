@@ -1,5 +1,5 @@
-// Bundled twice by oracle-web.spec.ts: once against the PUBLISHED chart-web 1.3.2, once against this workspace.
-import { SLChart } from '@stacklatte/chart-web';
+// Bundled twice by oracle-web.spec.ts: once against the PUBLISHED chart-web 1.3.2 (aliased in), once against this workspace's chart-react.
+import { SLChart } from '@stacklatte/chart-react';
 import React from 'react';
 import { flushSync } from 'react-dom';
 import { createRoot } from 'react-dom/client';

@@ -2,7 +2,7 @@
  * Canvas 2D equivalent of chart-native's Skia pathUtils.buildSmoothPath.
  *
  * Same Catmull-Rom → cubic-bezier conversion (tension fixed at 1/6) so a
- * chart-web line looks identical to its chart-native counterpart — just
+ * chart-react line looks identical to its chart-native counterpart — just
  * emitted as ctx.bezierCurveTo() calls instead of an SkPath.
  */
 

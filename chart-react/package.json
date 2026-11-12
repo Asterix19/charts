@@ -1,0 +1,103 @@
+{
+  "name": "@stacklatte/chart-react",
+  "version": "1.0.0",
+  "description": "React / Next.js trading chart (SLChart): candlesticks, RSI/MACD/Bollinger/volume, trade markers, pan/zoom, crosshair, live streaming. HTML5 Canvas 2D, no WASM; 60 fps at 50,000 candles; ~10 kB gzipped. Ships an LLM-safe ChartConfig + JSON Schema.",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "default": "./dist/index.mjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE.md",
+    "llms.txt"
+  ],
+  "scripts": {
+    "build": "tsup && tsc -p tsconfig.json --emitDeclarationOnly --declarationMap",
+    "dev": "tsup --watch",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run lint && npm test && npm run build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "tsc --noEmit"
+  },
+  "keywords": [
+    "chart",
+    "charts",
+    "trading",
+    "trading-view",
+    "finance",
+    "candlestick",
+    "candlestick-chart",
+    "crypto",
+    "stock",
+    "indicators",
+    "technical-analysis",
+    "canvas",
+    "canvas2d",
+    "react",
+    "react-chart",
+    "rsi",
+    "macd",
+    "bollinger-bands",
+    "volume",
+    "trade-markers",
+    "backtest",
+    "chartconfig",
+    "json-schema",
+    "llm",
+    "ai-agent",
+    "structured-output",
+    "open-source",
+    "typescript",
+    "llms-friendly",
+    "ohlc",
+    "financial-chart",
+    "technical-indicators"
+  ],
+  "author": "Stacklatte",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Asterix19/charts",
+    "directory": "chart-react"
+  },
+  "homepage": "https://stacklatte.com",
+  "bugs": {
+    "url": "https://github.com/Asterix19/charts/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "peerDependencies": {
+    "react": ">=19.0.0",
+    "react-dom": ">=19.0.0"
+  },
+  "dependencies": {
+    "@stacklatte/chart-engine": "^1.0.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/react": "~19.2.18",
+    "@types/react-dom": "~19.2.4",
+    "jsdom": "^30.0.1",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "tsup": "^8.5.1",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10",
+    "@stacklatte/chart-examples": "*"
+  }
+}

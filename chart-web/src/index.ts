@@ -1,6 +1,3 @@
-// ── Core logic (platform-agnostic, shared with @stacklatte/chart-engine) ─────
-export * from '@stacklatte/chart-engine';
-
-// ── Canvas 2D renderer ───────────────────────────────────────────────────────
-export { default as SLChart } from './ChartCanvas';
-export { default as OhlcHud } from './components/OhlcHud';
+// @stacklatte/chart-web was renamed to @stacklatte/chart-react. This package is kept so existing installs keep working:
+// it re-exports everything unchanged. New code should depend on @stacklatte/chart-react directly.
+export * from '@stacklatte/chart-react';

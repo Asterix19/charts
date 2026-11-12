@@ -117,8 +117,8 @@ The schema uses `additionalProperties: false` throughout and encodes the closed 
 ## 5. Render the result
 
 ```tsx
-import { SLChart, buildChartPipeline } from '@stacklatte/chart-web';
-import type { Candle, ChartConfig } from '@stacklatte/chart-web';
+import { SLChart, buildChartPipeline } from '@stacklatte/chart-react';
+import type { Candle, ChartConfig } from '@stacklatte/chart-react';
 
 export function ConfiguredChart({ config, candles }: { config: ChartConfig; candles: Candle[] }) {
   const props = buildChartPipeline(config, candles);

@@ -1,5 +1,5 @@
 /**
- * SLChart (web) — the React component for @stacklatte/chart-web.
+ * SLChart (web) — the React component for @stacklatte/chart-react.
  *
  * A thin wrapper: all drawing, gestures, the crosshair, the OHLC / indicator HUD and the marker tooltip live in
  * `ChartController` (`@stacklatte/chart-engine/canvas`), the same renderer the Angular component uses, so both web

@@ -12,7 +12,7 @@ The framework-agnostic core behind Stacklatte's trading charts. **Zero runtime d
 | I'm building… | Install |
 |---|---|
 | React Native app | [`@stacklatte/chart-native`](../chart-native) |
-| Web app (React) | [`@stacklatte/chart-web`](../chart-web) |
+| Web app (React) | [`@stacklatte/chart-react`](../chart-react) |
 | Angular app | [`@stacklatte/chart-angular`](../chart-angular) |
 | A headless service, worker or backtest (no UI) | `@stacklatte/chart-engine` |
 

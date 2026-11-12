@@ -66,11 +66,20 @@ describe('every previously-published export still exists', () => {
     expect(missing).toEqual([]);
   }));
 
-  it(`${OLD_WEB.name}@${OLD_WEB.version}`, () => {
+  it(`${OLD_WEB.name}@${OLD_WEB.version} → the new chart-web shim AND chart-react both keep every export`, () => {
     if (!oldWeb) return console.warn('skipped: published packages unavailable (offline?)');
-    const have = names(abs(PACKAGES['chart-web'].dts[0]));
-    const missing = [...names(join(oldWeb, 'dist/index.d.ts'))].filter((n) => !have.has(n));
-    expect(missing, 'exports removed since chart-web 1.3.2').toEqual([]);
+    const old = [...names(join(oldWeb, 'dist/index.d.ts'))];
+    for (const pkg of ['chart-web', 'chart-react']) {
+      const have = names(abs(PACKAGES[pkg].dts[0]));
+      expect(old.filter((n) => !have.has(n)), `exports removed from ${pkg} since chart-web 1.3.2`).toEqual([]);
+    }
+  });
+
+  it('the chart-web shim is the same module as chart-react at runtime (same exports, same functions)', async () => {
+    const shim = (await import('@stacklatte/chart-web')) as Record<string, unknown>;
+    const real = (await import('@stacklatte/chart-react')) as Record<string, unknown>;
+    expect(Object.keys(shim).sort()).toEqual(Object.keys(real).sort());
+    for (const key of Object.keys(real)) expect(shim[key], key).toBe(real[key]);
   });
 
   it('all 72 runtime exports of the old core.js exist in the new engine', online(() => {

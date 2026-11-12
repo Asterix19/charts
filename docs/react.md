@@ -1,16 +1,16 @@
-# React and Next.js (`@stacklatte/chart-web`)
+# React and Next.js (`@stacklatte/chart-react`)
 
 HTML5 Canvas 2D — no WebAssembly, no `react-native-web`. Peers: `react` and `react-dom` 19+.
 
 ```sh
-npm install @stacklatte/chart-web
+npm install @stacklatte/chart-react
 ```
 
 ## Minimal chart
 
 ```tsx
-import { SLChart } from '@stacklatte/chart-web';
-import type { Candle } from '@stacklatte/chart-web';
+import { SLChart } from '@stacklatte/chart-react';
+import type { Candle } from '@stacklatte/chart-react';
 
 export function PriceChart({ candles }: { candles: Candle[] }) {
   return <SLChart data={candles} width={800} height={420} theme="dark" />;
@@ -22,8 +22,8 @@ A `Candle` is `{ timestamp, open, high, low, close, volume? }` with `timestamp` 
 ## Indicators, panels and markers
 
 ```tsx
-import { SLChart, calcBollingerBands, calcEMA } from '@stacklatte/chart-web';
-import type { Candle, ChartMarker } from '@stacklatte/chart-web';
+import { SLChart, calcBollingerBands, calcEMA } from '@stacklatte/chart-react';
+import type { Candle, ChartMarker } from '@stacklatte/chart-react';
 
 export function Analysis({ candles, markers }: { candles: Candle[]; markers: ChartMarker[] }) {
   const ema = calcEMA(candles, 21, 'ema21', '#38bdf8');
@@ -54,8 +54,8 @@ export function Analysis({ candles, markers }: { candles: Candle[]; markers: Cha
 `width` and `height` are numbers in CSS pixels (not `"100%"`). Measure the container:
 
 ```tsx
-import { SLChart } from '@stacklatte/chart-web';
-import type { Candle } from '@stacklatte/chart-web';
+import { SLChart } from '@stacklatte/chart-react';
+import type { Candle } from '@stacklatte/chart-react';
 import { useEffect, useRef, useState } from 'react';
 
 export function ResponsiveChart({ candles }: { candles: Candle[] }) {
@@ -77,8 +77,8 @@ The chart draws on a `<canvas>` after mount, so it renders an empty frame on the
 ```tsx
 'use client';
 
-import { SLChart } from '@stacklatte/chart-web';
-import type { Candle } from '@stacklatte/chart-web';
+import { SLChart } from '@stacklatte/chart-react';
+import type { Candle } from '@stacklatte/chart-react';
 
 export default function Chart({ candles }: { candles: Candle[] }) {
   return <SLChart data={candles} width={800} height={420} />;

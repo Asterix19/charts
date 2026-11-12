@@ -10,8 +10,8 @@ A live feed does one of two things; both are handled by passing the new array:
 2. **Append a new candle** — the interval rolled over.
 
 ```tsx
-import { SLChart } from '@stacklatte/chart-web';
-import type { Candle } from '@stacklatte/chart-web';
+import { SLChart } from '@stacklatte/chart-react';
+import type { Candle } from '@stacklatte/chart-react';
 import { useEffect, useState } from 'react';
 
 export function LiveChart({ initial, url }: { initial: Candle[]; url: string }) {
@@ -40,8 +40,8 @@ export function LiveChart({ initial, url }: { initial: Candle[]; url: string }) 
 While the user is looking at the newest candle, the chart keeps following new candles. As soon as they pan back in time it stops following, so reading history is never interrupted. To jump back to the newest candle, increment `scrollToLatestTrigger`:
 
 ```tsx
-import { SLChart } from '@stacklatte/chart-web';
-import type { Candle } from '@stacklatte/chart-web';
+import { SLChart } from '@stacklatte/chart-react';
+import type { Candle } from '@stacklatte/chart-react';
 import { useState } from 'react';
 
 export function WithNowButton({ candles }: { candles: Candle[] }) {

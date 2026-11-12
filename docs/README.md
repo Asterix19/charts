@@ -7,7 +7,7 @@ Trading charts (candlesticks, RSI, MACD, Bollinger Bands, volume, trade markers,
 | Guide | What it covers |
 |---|---|
 | [Choosing a package](./choosing-a-package.md) | Which `@stacklatte/*` package for which platform, with measured bundle sizes |
-| [React / Next.js](./react.md) | `@stacklatte/chart-web` |
+| [React / Next.js](./react.md) | `@stacklatte/chart-react` |
 | [React Native](./react-native.md) | `@stacklatte/chart-native` (Skia) |
 | [Angular](./angular.md) | `@stacklatte/chart-angular` (`<sl-chart>`) |
 | [Headless / Node](./node-engine.md) | `@stacklatte/chart-engine` — indicators and viewport math without any UI |

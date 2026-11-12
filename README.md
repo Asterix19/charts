@@ -4,7 +4,7 @@
 
 **Trading charts for React, React Native, Angular, plain JavaScript and Node** — candlesticks, SMA/EMA/Bollinger overlays, RSI / MACD / volume panels, trade markers, pan and pinch-zoom, crosshair, live streaming. One shared, zero-dependency engine; five renderers. MIT.
 
-[![npm](https://img.shields.io/npm/v/@stacklatte/chart-web?label=chart-web)](https://www.npmjs.com/package/@stacklatte/chart-web)
+[![npm](https://img.shields.io/npm/v/@stacklatte/chart-react?label=chart-react)](https://www.npmjs.com/package/@stacklatte/chart-react)
 [![npm](https://img.shields.io/npm/v/@stacklatte/chart-native?label=chart-native)](https://www.npmjs.com/package/@stacklatte/chart-native)
 [![npm](https://img.shields.io/npm/v/@stacklatte/chart-engine?label=chart-engine)](https://www.npmjs.com/package/@stacklatte/chart-engine)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
@@ -22,7 +22,7 @@
 
 | Platform | Install | Guide |
 |---|---|---|
-| React / Next.js | `npm install @stacklatte/chart-web` | [docs/react.md](./docs/react.md) |
+| React / Next.js | `npm install @stacklatte/chart-react` | [docs/react.md](./docs/react.md) |
 | React Native | `npm install @stacklatte/chart-native @shopify/react-native-skia react-native-gesture-handler` | [docs/react-native.md](./docs/react-native.md) |
 | Angular 19+ | `npm install @stacklatte/chart-angular` | [docs/angular.md](./docs/angular.md) |
 | Node / headless | `npm install @stacklatte/chart-engine` | [docs/node-engine.md](./docs/node-engine.md) |
@@ -33,8 +33,8 @@
 React:
 
 ```tsx
-import { SLChart } from '@stacklatte/chart-web';
-import type { Candle } from '@stacklatte/chart-web';
+import { SLChart } from '@stacklatte/chart-react';
+import type { Candle } from '@stacklatte/chart-react';
 
 export function PriceChart({ candles }: { candles: Candle[] }) {
   return <SLChart data={candles} width={800} height={420} theme="dark" showVolumePanel showRsiPanel showOhlcHud />;
@@ -78,13 +78,13 @@ A `Candle` is `{ timestamp, open, high, low, close, volume? }` with `timestamp` 
 
 ```
 chart-engine/    @stacklatte/chart-engine   — indicators, viewport math, geometry, ChartConfig (no dependencies); /canvas = the shared Canvas 2D renderer
-chart-web/       @stacklatte/chart-web      — React renderer
+chart-react/       @stacklatte/chart-react      — React renderer
 chart-native/    @stacklatte/chart-native   — React Native / Skia renderer
 chart-angular/   @stacklatte/chart-angular  — Angular <sl-chart>
 chart-core/      @stacklatte/chart-core     — legacy name; re-exports chart-native (+ engine at /core)
 examples/
   shared/        the scenario catalogue every demo and test uses
-  web-demo/      React demo           (npm run demo:web)
+  react-demo/      React demo           (npm run demo:react)
   angular-demo/  Angular demo         (npm run demo:angular)
   demo/          Expo / React Native demo (npm run demo:native)
   engine-demo/   headless Node demo   (npm run demo -w engine-demo)
@@ -102,7 +102,7 @@ cd charts
 npm install
 npm run build
 
-npm run demo:web        # React demo        → open /#/scenarios/stress-extreme for the 50,000-candle case
+npm run demo:react        # React demo        → open /#/scenarios/stress-extreme for the 50,000-candle case
 npm run demo:angular    # Angular demo
 npm run demo:native     # Expo (iOS / Android)
 ```
@@ -111,7 +111,7 @@ npm run demo:native     # Expo (iOS / Android)
 
 ```sh
 npm test                 # unit tests across all packages
-npm run test:e2e         # Chromium: all scenarios × React / Angular, frame-time budgets, and a pixel oracle vs published chart-web 1.3.2
+npm run test:e2e         # Chromium: all scenarios × React / Angular, frame-time budgets, and a pixel oracle vs published chart-react 1.3.2
 npm run test:pack        # pack every package, install the tarballs into a clean project
 npm run test:contracts   # API locks, compatibility with published versions, docs, bundle sizes
 npm run test:native      # iOS simulator via Maestro (see e2e-native/README.md)

@@ -3,7 +3,7 @@
  * CrosshairLayer (native Skia canvas draws its own dashed lines; on
  * react-native-web it falls back to a DOM overlay because DashPathEffect
  * isn't supported there). Plain <canvas> supports ctx.setLineDash natively,
- * so chart-web always draws the crosshair directly on-canvas.
+ * so chart-react always draws the crosshair directly on-canvas.
  */
 
 import { strokeDashedLine } from './path';

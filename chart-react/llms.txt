@@ -1,0 +1,38 @@
+# @stacklatte/chart-react
+
+> React (19+) / Next.js trading chart: `SLChart`. HTML5 Canvas 2D — no WebAssembly, no react-native-web. Candlesticks, SMA/EMA/Bollinger overlays, RSI/MACD/volume/custom panels, trade markers, drag/wheel/pinch zoom, crosshair, live updates. 60 fps with 50,000 candles; about 10 kB gzipped. Same props as the React Native and Angular renderers.
+
+## Install
+
+```sh
+npm install @stacklatte/chart-react
+```
+
+Peers: `react`, `react-dom` 19+. Use from a client component in Next.js (`'use client'`).
+
+## Minimal example
+
+```tsx
+import { SLChart } from '@stacklatte/chart-react';
+import type { Candle } from '@stacklatte/chart-react';
+
+export function PriceChart({ candles }: { candles: Candle[] }) {
+  return <SLChart data={candles} width={800} height={420} theme="dark" showVolumePanel showRsiPanel showOhlcHud />;
+}
+```
+
+## Rules for correct code
+
+- A `Candle` is `{ timestamp, open, high, low, close, volume? }`; `timestamp` is Unix **milliseconds**. The array may be unsorted or dirty — it is sorted, deduped and cleaned for you.
+- `width` and `height` are **required numbers in pixels** (never `"100%"`).
+- `calcSMA` / `calcEMA` / `calcBollingerBands` / `calcMACD` return `null` (and `calcRSI` returns `[]`) when there are too few candles or the period is invalid — filter `null` before passing `indicators`.
+- Props: `data`, `width`, `height`, `theme` (`'dark' | 'light' | ChartThemeColors`), `chartType`, `indicators`, `shadedAreas`, `markers`, `customPanels`, `showRsiPanel`, `rsiPeriod`, `showMacdPanel`, `showVolumePanel`, `showOhlcHud`, `visibleDataPoints`, `intervalMs`, `hour12`, `showGrid`, `maxZoom`, `scrollToLatestTrigger`, `onCrosshairChange`. (The visible-candle count is `visibleDataPoints`.)
+- Live data: pass a new `data` array per tick; increment `scrollToLatestTrigger` to jump to the newest candle.
+- Declarative path for LLM output: `buildChartPipeline(config, candles)` with a closed-enum `ChartConfig`; JSON Schema at `@stacklatte/chart-engine/ChartConfig.schema.json`.
+
+## More
+
+- All guides in one file: https://github.com/Asterix19/charts/blob/main/llms-full.txt
+- API reference (generated from the shipped types): https://github.com/Asterix19/charts/blob/main/docs/api-reference.md
+- Choosing between the packages: https://github.com/Asterix19/charts/blob/main/docs/choosing-a-package.md
+- Repository (MIT): https://github.com/Asterix19/charts — tutorials with live demos: https://stacklatte.com

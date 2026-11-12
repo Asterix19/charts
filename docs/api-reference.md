@@ -745,7 +745,7 @@ VWAP has no configurable parameters.
 
 ## @stacklatte/chart-engine/canvas
 
-Canvas 2D renderer shared by `chart-web` and `chart-angular`: the drawing primitives and `ChartController`. A separate entry point so the main engine entry stays DOM-free.
+Canvas 2D renderer shared by `chart-react` and `chart-angular`: the drawing primitives and `ChartController`. A separate entry point so the main engine entry stays DOM-free.
 
 Also re-exports everything from `@stacklatte/chart-engine` (see above).
 
@@ -858,7 +858,7 @@ Strokes a cubic-bezier curve passing exactly through every point (Catmull-Rom, t
 | `hour12` | `boolean` | yes |  |
 | `showGrid` | `boolean` | yes |  |
 
-## @stacklatte/chart-web
+## @stacklatte/chart-react
 
 React renderer (Canvas 2D). Exports `SLChart` plus the whole engine.
 

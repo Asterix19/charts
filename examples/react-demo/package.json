@@ -1,5 +1,5 @@
 {
-  "name": "web-demo",
+  "name": "react-demo",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@stacklatte/chart-web": "*",
+    "@stacklatte/chart-react": "*",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "@stacklatte/chart-examples": "*"
