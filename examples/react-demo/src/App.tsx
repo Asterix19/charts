@@ -1,132 +1,13 @@
+import { SLChart } from '@stacklatte/chart-react';
+import type { Candle, ChartType, ChartTheme } from '@stacklatte/chart-react';
 import {
-  SLChart,
-  calcSMA,
-  calcEMA,
-  calcBollingerBands,
-} from '@stacklatte/chart-react';
-import type {
-  Candle,
-  ChartType,
-  ChartTheme,
-  IndicatorLine,
-  ShadedArea,
-} from '@stacklatte/chart-react';
+  LIVE_OPTIONS, PLAYGROUND_INITIAL_COUNT, PLAYGROUND_INTERVAL_MS, PLAYGROUND_WARMUP, ZOOM_OPTIONS,
+  advanceLive, appendBulk, buildOverlays, liveLabel, playgroundCandles,
+} from '@stacklatte/chart-examples';
+import type { LiveMs } from '@stacklatte/chart-examples';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import './App.css';
-
-// ─── Constants ──────────────────────────────────────────────────────────────
-
-const INTERVAL_MS = 60_000;
-const DISPLAY_COUNT = 300;
-const WARMUP = 60;
-const INITIAL_COUNT = DISPLAY_COUNT + WARMUP;
-const MAX_ALL_DATA = WARMUP + 10_000;
-
-// ─── Data helpers ───────────────────────────────────────────────────────────
-
-function currentBucket(): number {
-  return Math.floor(Date.now() / INTERVAL_MS) * INTERVAL_MS;
-}
-
-function randomVolume(): number {
-  return Math.round(50 + Math.random() * 450);
-}
-
-function generateCandles(count: number): Candle[] {
-  const candles: Candle[] = [];
-  let price = 67_000;
-  const bucket = currentBucket();
-  const startTime = bucket - (count - 1) * INTERVAL_MS;
-  for (let i = 0; i < count; i++) {
-    const timestamp = startTime + i * INTERVAL_MS;
-    const change = price * 0.003 * (Math.random() - 0.48);
-    const open = price;
-    const close = Math.max(1, price + change);
-    const range = Math.abs(close - open);
-    const high = Math.max(open, close) + range * (0.2 + Math.random() * 0.8);
-    const low = Math.min(open, close) - range * (0.2 + Math.random() * 0.8);
-    candles.push({ timestamp, open, high, low, close, volume: randomVolume() });
-    price = close;
-  }
-  return candles;
-}
-
-function nextCandle(last: Candle, timestamp: number): Candle {
-  const price = last.close;
-  const change = price * 0.003 * (Math.random() - 0.48);
-  const open = price;
-  const close = Math.max(1, price + change);
-  const range = Math.abs(close - open);
-  return {
-    timestamp,
-    open,
-    close,
-    high: Math.max(open, close) + range * (0.2 + Math.random() * 0.8),
-    low: Math.min(open, close) - range * (0.2 + Math.random() * 0.8),
-    volume: randomVolume(),
-  };
-}
-
-function tickCandle(last: Candle): Candle {
-  const close = Math.max(1, last.close * (1 + 0.001 * (Math.random() - 0.48)));
-  return {
-    ...last,
-    close,
-    high: Math.max(last.high, close),
-    low: Math.min(last.low, close),
-    volume: (last.volume ?? 0) + Math.round(Math.random() * 8),
-  };
-}
-
-function generateBulk(last: Candle, count: number): Candle[] {
-  const out: Candle[] = [];
-  let prev = last;
-  for (let i = 0; i < count; i++) {
-    const ts = prev.timestamp + INTERVAL_MS;
-    prev = nextCandle(prev, ts);
-    out.push(prev);
-  }
-  return out;
-}
-
-// ─── Live speed ─────────────────────────────────────────────────────────────
-
-type LiveMs = 3000 | 1000 | 500 | 100 | null;
-
-// ─── Indicator builder ──────────────────────────────────────────────────────
-
-function buildOverlays(
-  candles: Candle[],
-  showSma: boolean,
-  showEma: boolean,
-  showBb: boolean,
-): { indicators: IndicatorLine[]; shadedAreas: ShadedArea[] } {
-  const indicators: IndicatorLine[] = [];
-  const shadedAreas: ShadedArea[] = [];
-
-  if (showSma) {
-    const s = calcSMA(candles, 20, 'sma20', '#F5A623');
-    if (s) indicators.push(s);
-  }
-  if (showEma) {
-    const e = calcEMA(candles, 50, 'ema50', '#50E3C2');
-    if (e) indicators.push(e);
-  }
-  if (showBb) {
-    const bb = calcBollingerBands(candles, 20, 2, {
-      upper: '#9B59B6',
-      basis: '#7F8C8D',
-      lower: '#9B59B6',
-    });
-    if (bb) {
-      indicators.push(bb.upper, bb.basis, bb.lower);
-      shadedAreas.push({ fromId: 'bb-upper', toId: 'bb-lower', color: '#9B59B6', opacity: 0.12 });
-    }
-  }
-
-  return { indicators, shadedAreas };
-}
 
 // ─── Resize-aware container hook ───────────────────────────────────────────
 
@@ -197,33 +78,20 @@ export default function App() {
   const [liveMs, setLiveMs] = useState<LiveMs>(3000);
   const [latestToken, setLatestToken] = useState(0);
 
-  const [allData, setAllData] = useState<Candle[]>(() => generateCandles(INITIAL_COUNT));
-  const data = useMemo(() => allData.slice(WARMUP), [allData]);
+  const [allData, setAllData] = useState<Candle[]>(() => playgroundCandles(PLAYGROUND_INITIAL_COUNT));
+  const data = useMemo(() => allData.slice(PLAYGROUND_WARMUP), [allData]);
 
   const [hoveredCandle, setHoveredCandle] = useState<Candle | null>(null);
 
   // Live feed
   useEffect(() => {
     if (liveMs === null) return;
-    const id = setInterval(() => {
-      setAllData(prev => {
-        const tail = prev[prev.length - 1];
-        const bucket = currentBucket();
-        if (tail.timestamp === bucket) {
-          return [...prev.slice(0, -1), tickCandle(tail)];
-        }
-        return [...prev.slice(1), nextCandle(tail, bucket)];
-      });
-    }, liveMs);
+    const id = setInterval(() => setAllData(advanceLive), liveMs);
     return () => clearInterval(id);
   }, [liveMs]);
 
   const addBulk = useCallback(() => {
-    setAllData(prev => {
-      const bulk = generateBulk(prev[prev.length - 1], 5000);
-      const next = [...prev, ...bulk];
-      return next.length > MAX_ALL_DATA ? next.slice(next.length - MAX_ALL_DATA) : next;
-    });
+    setAllData(appendBulk);
     setLatestToken(v => v + 1);
   }, []);
 
@@ -234,14 +102,14 @@ export default function App() {
 
   const liveColor = liveMs === null ? '#5A5F7A' : liveMs === 100 ? '#E53935' : '#26A65B';
 
-  const zoomPills = [20, 40, 60, 120, 240].map(z => (
+  const zoomPills = ZOOM_OPTIONS.map(z => (
     <Pill key={z} label={`${z}`} active={visibleDataPoints === z} onClick={() => setVisibleDataPoints(z)} />
   ));
 
-  const livePills = ([null, 3000, 1000, 500, 100] as LiveMs[]).map(v => (
+  const livePills = LIVE_OPTIONS.map(v => (
     <Pill
       key={String(v)}
-      label={v === null ? 'Off' : v === 3000 ? '3s' : v === 1000 ? '1s' : v === 500 ? '½s' : '⚡'}
+      label={liveLabel(v)}
       active={liveMs === v}
       onClick={() => setLiveMs(v)}
       activeColor={v === 100 ? '#E53935' : v === null ? '#5A5F7A' : '#26A65B'}
@@ -297,7 +165,7 @@ export default function App() {
             shadedAreas={shadedAreas}
             width={chartSize.width}
             height={chartSize.height}
-            intervalMs={INTERVAL_MS}
+            intervalMs={PLAYGROUND_INTERVAL_MS}
             visibleDataPoints={visibleDataPoints}
             theme={theme}
             chartType={chartType}

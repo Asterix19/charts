@@ -33,10 +33,11 @@ test.afterEach(async ({ page }) => {
   expect(errors.get(page)).toEqual([]);
 });
 
-test('<sl-chart> renders a painted canvas of the requested size', async ({ page }) => {
+test('<sl-chart> renders a painted canvas that fills the playground area', async ({ page }) => {
   const box = (await page.locator('sl-chart canvas').first().boundingBox())!;
-  expect(Math.round(box.width)).toBe(900);
-  expect(Math.round(box.height)).toBe(520);
+  const wrap = (await page.locator('.chartWrap').boundingBox())!;
+  expect(Math.round(box.width)).toBe(Math.round(wrap.width));
+  expect(Math.round(box.height)).toBeGreaterThan(300);
   expect(await painted(page)).toBeGreaterThan(1000);
 });
 
@@ -59,15 +60,15 @@ test('theme input repaints the chart', async ({ page }) => {
 
 test('hover drives the (crosshairChange) output and the built-in HUD, and releases on leave', async ({ page }) => {
   const box = (await page.locator('sl-chart canvas').first().boundingBox())!;
-  await expect(page.locator('#readout')).toHaveText('no selection');
+  await expect(page.locator('#readout')).toContainText('Hover the chart');
   await expect(page.locator('[data-sl-layer="ohlc-hud"]')).toContainText('LIVE');
 
   await page.mouse.move(box.x + 300, box.y + 200);
-  await expect(page.locator('#readout')).toContainText('close ');
+  await expect(page.locator('#readout')).toContainText(/ · O \d.* · C \d/);
   await expect(page.locator('[data-sl-layer="ohlc-hud"]')).toContainText(/\d{1,2}:\d{2}/);
 
   await page.mouse.move(box.x - 40, box.y - 40);
-  await expect(page.locator('#readout')).toHaveText('no selection');
+  await expect(page.locator('#readout')).toContainText('Hover the chart');
   await expect(page.locator('[data-sl-layer="ohlc-hud"]')).toContainText('LIVE');
 });
 
