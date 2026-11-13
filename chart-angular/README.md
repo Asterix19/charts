@@ -2,6 +2,8 @@
 
 A trading chart for Angular: one standalone `<sl-chart>` component with candlesticks, SMA/EMA/Bollinger overlays, RSI + MACD + volume panels, trade markers, pan / pinch / wheel zoom, crosshair inspection and live-streaming updates. Canvas 2D — no WebAssembly, no extra runtime.
 
+![sl-chart with RSI, MACD and Volume panels](https://raw.githubusercontent.com/Asterix19/charts/main/docs/images/angular-panels.png)
+
 - **Standalone, signal- and zoneless-friendly.** Import the component, bind inputs. Repaints run outside the Angular zone, so a ticking feed doesn't trigger change detection per frame.
 - **SSR-safe.** Renders nothing on the server and attaches in the browser after first render.
 - **Real indicator math.** Wilder-smoothed RSI, correctly seeded MACD (12/26/9), O(n) Bollinger Bands — the same tested engine that powers the React and React Native charts.

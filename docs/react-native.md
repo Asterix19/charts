@@ -2,6 +2,15 @@
 
 GPU-accelerated with [React Native Skia](https://shopify.github.io/react-native-skia/). iOS and Android, Expo or bare. Props are identical to the web `SLChart`.
 
+<!-- screenshots -->
+| Candles | Indicators | Light theme |
+|---|---|---|
+| ![chart-native candlestick chart on iOS](images/ios-basic.png) | ![chart-native with EMA overlays and the OHLC HUD on iOS](images/ios-indicators.png) | ![chart-native in the light theme on iOS](images/ios-light-theme.png) |
+
+<sub>Screenshots from the iOS simulator running the native demo (scenarios `basic`, `indicators`, `theme-light`).</sub>
+<!-- /screenshots -->
+
+
 ```sh
 npm install @stacklatte/chart-native @shopify/react-native-skia react-native-gesture-handler
 ```

@@ -157,6 +157,8 @@ export function Example({ candles }: { candles: Candle[] }) {
 
 HTML5 Canvas 2D — no WebAssembly, no `react-native-web`. Peers: `react` and `react-dom` 19+.
 
+
+
 ```sh
 npm install @stacklatte/chart-react
 ```
@@ -255,6 +257,8 @@ See also: [live data](https://github.com/Asterix19/charts/blob/main/live-data.md
 
 GPU-accelerated with [React Native Skia](https://shopify.github.io/react-native-skia/). iOS and Android, Expo or bare. Props are identical to the web `SLChart`.
 
+
+
 ```sh
 npm install @stacklatte/chart-native @shopify/react-native-skia react-native-gesture-handler
 ```
@@ -332,6 +336,8 @@ The repository's `examples/demo` app serves the same 35-scenario catalogue as ev
 # Angular (`@stacklatte/chart-angular`)
 
 A standalone `<sl-chart>` component for Angular 19+. Canvas 2D, server-side-rendering safe (it draws only in the browser), zoneless-friendly (repaints run outside the Angular zone, so a ticking feed does not trigger change detection per frame).
+
+
 
 ```sh
 npm install @stacklatte/chart-angular

@@ -70,7 +70,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Asterix19/charts",
+    "url": "git+https://github.com/Asterix19/charts.git",
     "directory": "chart-react"
   },
   "homepage": "https://stacklatte.com",

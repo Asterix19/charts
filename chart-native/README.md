@@ -5,6 +5,8 @@ High-performance React Native trading charts — GPU-accelerated via [React Nati
 [![npm](https://img.shields.io/npm/v/@stacklatte/chart-native)](https://www.npmjs.com/package/@stacklatte/chart-native)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE.md)
 
+![chart-native on iOS: candles](https://raw.githubusercontent.com/Asterix19/charts/main/docs/images/ios-basic.png) ![chart-native on iOS: EMA overlays and HUD](https://raw.githubusercontent.com/Asterix19/charts/main/docs/images/ios-indicators.png) ![chart-native on iOS: light theme](https://raw.githubusercontent.com/Asterix19/charts/main/docs/images/ios-light-theme.png)
+
 
 > **iOS and Android only.** In a browser use [`@stacklatte/chart-react`](../chart-react). Importing this package on web throws `Can't find variable: CanvasKit` (Skia's web build needs its WASM loaded first) — see the [React Native guide](../docs/react-native.md#not-for-the-browser).
 

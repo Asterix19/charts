@@ -2,6 +2,13 @@
 
 A standalone `<sl-chart>` component for Angular 19+. Canvas 2D, server-side-rendering safe (it draws only in the browser), zoneless-friendly (repaints run outside the Angular zone, so a ticking feed does not trigger change detection per frame).
 
+<!-- screenshots -->
+![The Angular sl-chart component with RSI, MACD and Volume panels](images/angular-panels.png)
+
+<sub>`<sl-chart>` with the Volume, RSI and MACD panels on. Screenshot of the Angular demo, scenario `all-panels`. More: <a href="images/angular-markers.png">trade markers</a>, <a href="images/angular-hud-crosshair.png">HUD + crosshair</a>, <a href="images/angular-bollinger.png">Bollinger Bands</a>.</sub>
+<!-- /screenshots -->
+
+
 ```sh
 npm install @stacklatte/chart-angular
 ```

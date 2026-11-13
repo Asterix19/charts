@@ -126,6 +126,17 @@ describe('documentation', () => {
       expect([...new Set(bad)]).toEqual([]);
     });
 
+    it('every screenshot it embeds exists in docs/images', () => {
+      const missing: string[] = [];
+      for (const m of text.matchAll(/!\[[^\]]*\]\(([^)\s]+)\)/g)) {
+        const src = m[1];
+        if (/^https:\/\/raw\.githubusercontent\.com\/Asterix19\/charts\/main\/docs\/images\//.test(src)) {
+          if (!existsSync(join(ROOT, 'docs', 'images', src.split('/').pop()!))) missing.push(src);
+        } else if (!/^https?:/.test(src) && !existsSync(join(dirname(file), src))) missing.push(src);
+      }
+      expect(missing).toEqual([]);
+    });
+
     it('has no broken relative links', () => {
       const broken: string[] = [];
       for (const m of text.matchAll(/\]\((\.{1,2}\/[^)#\s]+)(?:#[^)]*)?\)/g)) {

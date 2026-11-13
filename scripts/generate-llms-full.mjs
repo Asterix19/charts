@@ -21,7 +21,7 @@ const sections = [
   ...GUIDES.map((g) => `\n\n---\n\n<!-- ${g} -->\n\n${read(g)}`),
 ];
 // Relative links make no sense inside a single file; point them at the repository.
-const body = sections.join('\n').replace(/\]\(\.{1,2}\/([^)]+)\)/g, (_m, p) => `](https://github.com/Asterix19/charts/blob/main/${p.replace(/^docs\//, 'docs/')})`) + '\n';
+const body = sections.join('\n').replace(/^!\[[^\n]*\]\([^)\n]*\)[^\n]*\n?/gm, '').replace(/<!-- screenshots -->[\s\S]*?<!-- \/screenshots -->\n?/g, '').replace(/\]\(\.{1,2}\/([^)]+)\)/g, (_m, p) => `](https://github.com/Asterix19/charts/blob/main/${p.replace(/^docs\//, 'docs/')})`) + '\n';
 
 const target = resolve(root, 'llms-full.txt');
 if (process.argv.includes('--check')) {

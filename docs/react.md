@@ -2,6 +2,13 @@
 
 HTML5 Canvas 2D — no WebAssembly, no `react-native-web`. Peers: `react` and `react-dom` 19+.
 
+<!-- screenshots -->
+![React SLChart on the seeded demo data: candlesticks, two EMA overlays and the OHLC HUD with the crosshair on hover](images/react-hud-crosshair.png)
+
+<sub>`SLChart` with two EMA overlays, `showOhlcHud` (the crosshair + OHLC/indicator readout follows the pointer). Screenshot of the React demo, scenario `hud`. More: <a href="images/react-panels.png">RSI + MACD + Volume panels</a>, <a href="images/react-markers.png">trade markers</a>, <a href="images/react-light-theme.png">light theme</a>.</sub>
+<!-- /screenshots -->
+
+
 ```sh
 npm install @stacklatte/chart-react
 ```

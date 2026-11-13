@@ -5,6 +5,8 @@ High-performance web trading charts — rendered with plain HTML5 Canvas 2D. No 
 [![npm](https://img.shields.io/npm/v/@stacklatte/chart-react)](https://www.npmjs.com/package/@stacklatte/chart-react)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE.md)
 
+![SLChart with two EMA overlays and the OHLC HUD crosshair](https://raw.githubusercontent.com/Asterix19/charts/main/docs/images/react-hud-crosshair.png)
+
 This package renders the exact same chart engine as [`@stacklatte/chart-native`](../chart-native) (the React Native / Skia version) — same props, same indicators, same themes, same config pipeline. Every piece of pixel-geometry and indicator math is imported directly from [`@stacklatte/chart-engine`](../chart-engine). `SLChart` itself is a thin React wrapper (~40 lines) around the Canvas 2D renderer in `@stacklatte/chart-engine/canvas` — drawing, pointer / wheel / pinch gestures, the crosshair, the HUD and the marker tooltip all live there and are shared with [`@stacklatte/chart-angular`](../chart-angular), so the two web renderers draw identically. Only the Skia version ([`chart-native`](../chart-native)) has a separate rendering layer.
 
 
