@@ -478,6 +478,18 @@ const SLChart: React.FC<ChartProps> = ({
     [pinchGesture, panGesture],
   );
 
+  // Hooks must all run before the early return below: when the dataset shrinks, the viewport can be briefly empty, and
+  // a hook after that return would make React throw "Rendered fewer hooks than expected".
+  const customPanelValuesAtCrosshair = useMemo(() => {
+    if (!crosshairCandle) return [];
+    return preparedCustomPanels.flatMap(({ panel, series }) =>
+      series.flatMap(({ line, data }) => {
+        const value = findIndicatorValue(data, crosshairCandle.timestamp);
+        return value === null ? [] : [{ id: `${panel.id}-${line.id}`, label: line.name ?? line.id, color: line.color, value }];
+      }),
+    );
+  }, [preparedCustomPanels, crosshairCandle]);
+
   if (!visibleCandles.length) {
     return (
       <View
@@ -505,16 +517,6 @@ const SLChart: React.FC<ChartProps> = ({
     showRsiPanel && crosshairCandle
       ? findIndicatorValue(visibleRsi, crosshairCandle.timestamp)
       : null;
-
-  const customPanelValuesAtCrosshair = useMemo(() => {
-    if (!crosshairCandle) return [];
-    return preparedCustomPanels.flatMap(({ panel, series }) =>
-      series.flatMap(({ line, data }) => {
-        const value = findIndicatorValue(data, crosshairCandle.timestamp);
-        return value === null ? [] : [{ id: `${panel.id}-${line.id}`, label: line.name ?? line.id, color: line.color, value }];
-      }),
-    );
-  }, [preparedCustomPanels, crosshairCandle]);
 
   const contentTransform = [
     { translateX: padding.left + fractionalOffsetX },

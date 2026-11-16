@@ -214,7 +214,11 @@ export class ChartController {
   private detachGestures?: () => void;
 
   private attachGestures(): void {
+    // Coordinates are measured from the main canvas (every panel shares its x-axis and left edge), but the listeners sit on
+    // the root so dragging, zooming and hovering also work over the RSI / MACD / volume / custom sub-panels.
     const canvas = this.mainCanvas;
+    const target = this.root;
+    target.style.touchAction = 'none';
     const localX = (clientX: number) => clientX - canvas.getBoundingClientRect().left;
     const localY = (clientY: number) => clientY - canvas.getBoundingClientRect().top;
     // Hover (mouse) or touch-and-drag over a marker shows its tooltip — independent of showOhlcHud.
@@ -269,7 +273,7 @@ export class ChartController {
     };
 
     const onDown = (e: PointerEvent) => {
-      canvas.setPointerCapture?.(e.pointerId);
+      target.setPointerCapture?.(e.pointerId);
       this.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
       if (this.pointers.size >= 2) {
         this.dragging = false;
@@ -311,7 +315,7 @@ export class ChartController {
     };
 
     const onUp = (e: PointerEvent) => {
-      if (canvas.hasPointerCapture?.(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
+      if (target.hasPointerCapture?.(e.pointerId)) target.releasePointerCapture(e.pointerId);
       this.pointers.delete(e.pointerId);
       if (this.pinching) {
         const rest = [...this.pointers.values()];
@@ -347,19 +351,19 @@ export class ChartController {
       zoom(Math.exp(-e.deltaY * 0.001), localX(e.clientX));
     };
 
-    canvas.addEventListener('pointerdown', onDown);
-    canvas.addEventListener('pointermove', onMove);
-    canvas.addEventListener('pointerup', onUp);
-    canvas.addEventListener('pointercancel', onUp);
-    canvas.addEventListener('pointerleave', onLeave);
-    canvas.addEventListener('wheel', onWheel, { passive: false });
+    target.addEventListener('pointerdown', onDown);
+    target.addEventListener('pointermove', onMove);
+    target.addEventListener('pointerup', onUp);
+    target.addEventListener('pointercancel', onUp);
+    target.addEventListener('pointerleave', onLeave);
+    target.addEventListener('wheel', onWheel, { passive: false });
     this.detachGestures = () => {
-      canvas.removeEventListener('pointerdown', onDown);
-      canvas.removeEventListener('pointermove', onMove);
-      canvas.removeEventListener('pointerup', onUp);
-      canvas.removeEventListener('pointercancel', onUp);
-      canvas.removeEventListener('pointerleave', onLeave);
-      canvas.removeEventListener('wheel', onWheel);
+      target.removeEventListener('pointerdown', onDown);
+      target.removeEventListener('pointermove', onMove);
+      target.removeEventListener('pointerup', onUp);
+      target.removeEventListener('pointercancel', onUp);
+      target.removeEventListener('pointerleave', onLeave);
+      target.removeEventListener('wheel', onWheel);
     };
   }
 

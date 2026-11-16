@@ -249,7 +249,10 @@ describe('SLChart (web)', () => {
     expect(screen.getByText('Stopped out')).toBeInTheDocument();
     expect(screen.getByText(marker.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }))).toBeInTheDocument();
 
-    fireEvent.pointerLeave(canvas, { clientX, clientY, pointerId: 1, pointerType: 'mouse' });
+    // In a browser `pointerleave` does not bubble but fires on every element the pointer leaves, the chart root included
+    // (the gesture listeners sit on the root so the sub-panels respond too).
+    const root = container.firstElementChild!.firstElementChild!;
+    fireEvent.pointerLeave(root, { clientX, clientY, pointerId: 1, pointerType: 'mouse' });
     await nextFrame(); // pointer-driven repaints land on the next animation frame
 
     expect(screen.queryByText('Stopped out')).not.toBeInTheDocument();

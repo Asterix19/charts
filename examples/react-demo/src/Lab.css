@@ -1,0 +1,45 @@
+.lab { --accent: #2563eb; display: flex; flex-direction: column; height: 100%; background: #0d0e14; color: #d4d8e8; font: 13px system-ui, sans-serif; }
+.lab-body { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 380px; }
+@media (max-width: 900px) { .lab-body { grid-template-columns: 1fr; grid-template-rows: 55vh auto; overflow-y: auto; } }
+.lab-stage { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.lab-chart { flex: 1; min-height: 0; overflow: hidden; display: flex; align-items: flex-start; justify-content: flex-start; }
+.lab-status { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 6px 12px; background: #13141c; border-top: 1px solid #1e2130; color: #8a90ad; font-variant-numeric: tabular-nums; }
+.lab-count { color: #5a5f7a; }
+.lab-panel { overflow-y: auto; background: #13141c; border-left: 1px solid #1e2130; padding: 4px 14px 24px; }
+.lab-panel section { padding: 10px 0 6px; border-bottom: 1px solid #1e2130; }
+.lab-panel h2 { margin: 0 0 8px; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); filter: brightness(1.6); }
+.lab-row { display: grid; gap: 6px; padding: 6px 0; }
+.lab-label { display: flex; flex-direction: column; gap: 1px; }
+.lab-label span { font-weight: 600; color: #d4d8e8; }
+.lab-label small { color: #5a5f7a; font-size: 11px; line-height: 1.3; }
+.lab-seg { display: flex; flex-wrap: wrap; gap: 4px; }
+.lab-seg button, .lab-action { border: 1px solid #262a3d; background: #0d0e14; color: #8a90ad; padding: 4px 10px; border-radius: 6px; font: 600 12px system-ui, sans-serif; cursor: pointer; }
+.lab-seg button:hover, .lab-action:hover { background: #1e2130; color: #fff; }
+.lab-seg button[aria-pressed='true'] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.lab-action { margin: 4px 6px 4px 0; padding: 7px 12px; }
+.lab-switch { justify-self: start; width: 42px; height: 24px; border-radius: 999px; border: 0; background: #2a2f45; position: relative; cursor: pointer; transition: background .15s; }
+.lab-switch i { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: transform .15s; }
+.lab-switch[aria-checked='true'] { background: var(--accent); }
+.lab-switch[aria-checked='true'] i { transform: translateX(18px); }
+.lab-num { display: flex; align-items: center; gap: 10px; }
+.lab-num input { flex: 1; accent-color: var(--accent); }
+.lab-num output { min-width: 28px; text-align: right; font-variant-numeric: tabular-nums; }
+.lab-colors { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.lab-swatch { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #262a3d; cursor: pointer; padding: 0; }
+.lab-swatch[aria-pressed='true'] { border-color: #fff; }
+.lab-colors input[type='color'] { width: 28px; height: 24px; padding: 0; border: 0; background: none; }
+.lab-foot { color: #5a5f7a; font-size: 11px; margin: 12px 0 0; }
+.lab-panel :focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+/* App shell shared by the Lab and the scenario pages */
+.demo-root { display: flex; flex-direction: column; height: 100vh; background: #0d0e14; color: #d4d8e8; }
+.demo-content { flex: 1; min-height: 0; overflow: auto; }
+.demo-banner { --accent: #2563eb; display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; padding: 10px 16px; background: var(--accent); color: #fff; font: 13px system-ui, sans-serif; }
+.demo-banner h1 { margin: 0; font-size: 18px; letter-spacing: .01em; }
+.demo-banner h1 small { font-weight: 500; opacity: .85; font-size: 13px; }
+.demo-badge { background: rgb(0 0 0 / .28); padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.demo-meta { opacity: .9; font-size: 12px; }
+.demo-banner nav { margin-left: auto; display: flex; gap: 6px; }
+.demo-banner nav a { color: #fff; text-decoration: none; padding: 4px 10px; border-radius: 6px; font-weight: 600; background: rgb(255 255 255 / .12); }
+.demo-banner nav a[aria-current='page'] { background: rgb(0 0 0 / .3); }
+.demo-banner :focus-visible { outline: 2px solid #fff; outline-offset: 2px; }

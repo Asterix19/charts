@@ -32,7 +32,9 @@
     "test:contracts": "npm run build -w @stacklatte/chart-engine -w @stacklatte/chart-native -w @stacklatte/chart-react -w @stacklatte/chart-web -w @stacklatte/chart-core -w @stacklatte/chart-angular && npm test -w @stacklatte/chart-contracts",
     "docs:generate": "npm run build && node scripts/generate-api-docs.mjs && node scripts/generate-llms-full.mjs",
     "test:native:compat": "node e2e-native/compare-chart-core.mjs",
-    "docs:screenshots": "node scripts/capture-screenshots.mjs"
+    "docs:screenshots": "node scripts/capture-screenshots.mjs",
+    "qa": "tsx scripts/qa-record.mjs",
+    "demo:all": "tsx scripts/demo-all.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.65.0",

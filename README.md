@@ -114,6 +114,7 @@ cd charts
 npm install
 npm run build
 
+npm run demo:all          # EVERYTHING at once: React + Angular + the native Metro server, plus a hub page at http://localhost:5100
 npm run demo:react        # React demo        → open /#/scenarios/stress-extreme for the 50,000-candle case
 npm run demo:angular    # Angular demo
 npm run demo:native     # Expo (iOS / Android)

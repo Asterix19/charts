@@ -83,3 +83,7 @@ e2e/perf-results/
 
 # comparison-run output
 e2e-native/.compare/
+
+# Visual QA output (npm run qa)
+qa-output/
+e2e-native/lab-run/

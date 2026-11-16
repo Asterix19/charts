@@ -4,7 +4,8 @@ import type { Candle } from '@stacklatte/chart-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import { LogBox, ScrollView, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import PackageBanner from '@/components/PackageBanner';
 
 /**
  * One scenario from the shared catalogue (the same one the web, Angular and vanilla demos serve),
@@ -12,7 +13,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
  * testIDs follow the cross-platform contract: tab-<id>, title, description, chart-host, stats.
  */
 export default function ScenariosScreen() {
-  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { id: idParam, clean } = useLocalSearchParams<{ id?: string; clean?: string }>();
   const id = SCENARIOS.some((sc) => sc.id === idParam) ? (idParam as string) : SCENARIOS[0].id;
@@ -22,7 +22,8 @@ export default function ScenariosScreen() {
   }, [clean]);
 
   return (
-    <View style={[s.screen, { paddingTop: insets.top }]}>
+    <View style={s.screen}>
+      <PackageBanner />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.tabs} contentContainerStyle={s.tabsContent} testID="tabs">
         {SCENARIOS.map((sc) => (
           <TouchableOpacity

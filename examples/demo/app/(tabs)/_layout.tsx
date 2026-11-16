@@ -24,6 +24,14 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="lab"
+        options={{
+          title: 'Lab',
+          tabBarButtonTestID: 'tab-lab',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="chart.xyaxis.line" color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="scenarios"
         options={{
           title: 'Scenarios',

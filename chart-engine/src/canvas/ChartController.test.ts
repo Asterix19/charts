@@ -117,6 +117,53 @@ describe('ChartController', () => {
     expect(zoomedIn).toBeLessThan(before); // fewer, wider candles
   });
 
+  describe('sub-panels are not dead zones for gestures', () => {
+    const panels = { showVolumePanel: true, showRsiPanel: true, showMacdPanel: true };
+
+    it('a wheel over an RSI/MACD/volume panel zooms the chart (and does not scroll the page)', async () => {
+      mount(panels);
+      await frame();
+      const canvases = host.querySelectorAll('canvas');
+      expect(canvases.length).toBeGreaterThan(1);
+      for (const canvas of Array.from(canvases).slice(1)) {
+        const event = new WheelEvent('wheel', { deltaY: -400, clientX: 200, bubbles: true, cancelable: true });
+        canvas.dispatchEvent(event);
+        expect(event.defaultPrevented).toBe(true);
+      }
+    });
+
+    it('hovering a panel drives the crosshair (onCrosshairChange) for the candle under the pointer', async () => {
+      const onCrosshairChange = vi.fn();
+      mount({ ...panels, showOhlcHud: true, onCrosshairChange });
+      await frame();
+      const panel = host.querySelectorAll('canvas')[1];
+      panel.dispatchEvent(new PointerEvent('pointermove', { clientX: 200, clientY: 20, pointerId: 1, pointerType: 'mouse', buttons: 0, bubbles: true }));
+      await frame();
+      expect(onCrosshairChange).toHaveBeenCalledWith(expect.objectContaining({ timestamp: expect.any(Number) }));
+      panel.dispatchEvent(new PointerEvent('pointerleave', { pointerId: 1, pointerType: 'mouse', bubbles: true }));
+      await frame();
+      expect(onCrosshairChange).toHaveBeenLastCalledWith(null);
+    });
+
+    it('dragging over a panel pans the viewport', async () => {
+      const onCrosshairChange = vi.fn();
+      mount({ ...panels, data: makeCandles(300), visibleDataPoints: 40, showOhlcHud: true, onCrosshairChange });
+      await frame();
+      const panel = host.querySelectorAll('canvas')[1];
+      const ptr = (type: string, x: number) => panel.dispatchEvent(new PointerEvent(type, { clientX: x, clientY: 20, pointerId: 1, pointerType: 'mouse', buttons: 1, bubbles: true }));
+      ptr('pointerdown', 300);
+      await frame();
+      const first = onCrosshairChange.mock.calls.at(-1)![0].timestamp;
+      ptr('pointermove', 100);
+      await frame();
+      ptr('pointerup', 100);
+      await frame();
+      // After dragging left by 200 px the viewport shows later candles, so the locked candle under x=100 is a different one.
+      const second = onCrosshairChange.mock.calls.at(-1)![0].timestamp;
+      expect(second).not.toBe(first);
+    });
+  });
+
   it('wheel events are preventDefault-ed so the page does not scroll', async () => {
     mount();
     const event = new WheelEvent('wheel', { deltaY: 100, bubbles: true, cancelable: true });

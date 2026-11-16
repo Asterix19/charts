@@ -4,8 +4,8 @@ import { defineConfig, devices } from '@playwright/test';
 // (chart-angular) — exercising the *built* packages exactly as a
 // consumer would. Every demo serves the same scenario catalogue at /#/scenarios/<id>.
 const DEMOS = [
-  { name: 'react-web', workspace: 'react-demo', port: 5199, legacySpec: /web-chart\.spec\.ts/ },
-  { name: 'angular', workspace: 'angular-demo', port: 5200, legacySpec: /angular-chart\.spec\.ts/ },
+  { name: 'react-web', workspace: 'react-demo', port: 5199 },
+  { name: 'angular', workspace: 'angular-demo', port: 5200 },
 ] as const;
 
 export default defineConfig({
@@ -19,7 +19,8 @@ export default defineConfig({
     // Renderer regression oracle vs the published chart-react (no demo server needed).
     { name: 'oracle', testMatch: /oracle-web\.spec\.ts/, use: { ...devices['Desktop Chrome'] } },
     ...DEMOS.flatMap((d) => [
-    ...(d.legacySpec ? [{ name: d.name, testMatch: d.legacySpec, use: { ...devices['Desktop Chrome'], baseURL: `http://localhost:${d.port}` } }] : []),
+    // The Lab: every capability as a visible control, driven from the shared schema (identical test ids in every demo).
+    { name: `${d.name}-lab`, testMatch: /lab\.spec\.ts/, use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 }, baseURL: `http://localhost:${d.port}` } },
     { name: `${d.name}-scenarios`, testMatch: /scenarios\.spec\.ts/, use: { ...devices['Desktop Chrome'], baseURL: `http://localhost:${d.port}` } },
   ]),
   ],

@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import PackageBanner from '@/components/PackageBanner';
+
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const INTERVAL_MS   = 60_000;
@@ -269,7 +271,8 @@ export default function ChartDemoScreen() {
   );
 
   return (
-    <View style={[s.screen, { paddingTop: insets.top, paddingLeft: insets.left, paddingRight: insets.right }]}>
+    <View style={[s.screen, { paddingLeft: insets.left, paddingRight: insets.right }]}>
+      <PackageBanner />
 
       {isLandscape ? (
         /* ── Landscape: single compact scrollable row ─────────────────── */

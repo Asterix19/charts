@@ -2,7 +2,9 @@ import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import { isScenarioRoute } from '@stacklatte/chart-examples';
 
-import App from './App';
+import Banner from './Banner';
+import Lab from './Lab';
+import './Lab.css';
 import Scenarios from './Scenarios';
 import './index.css';
 
@@ -15,11 +17,10 @@ function Root() {
   }, []);
   return (
     <>
-      <div style={{ padding: '8px 16px', fontSize: 12, fontFamily: 'system-ui, sans-serif' }}>
-        <a href="#/" style={{ marginRight: 12, color: scenarios ? '#9ca3af' : '#60a5fa' }}>Playground</a>
-        <a href="#/scenarios/basic" data-testid="nav-scenarios" style={{ color: scenarios ? '#60a5fa' : '#9ca3af' }}>Scenarios</a>
+      <div className="demo-root">
+        <Banner route={scenarios ? 'scenarios' : 'lab'} />
+        <div className="demo-content">{scenarios ? <Scenarios /> : <Lab />}</div>
       </div>
-      {scenarios ? <Scenarios /> : <App />}
     </>
   );
 }
