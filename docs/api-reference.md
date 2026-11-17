@@ -335,6 +335,11 @@ validateChartConfig(config: ChartConfig, options?: ValidateOptions): ValidationR
 ```
 Validate a ChartConfig document.
 
+```ts
+withAlpha(color: string, alpha: number): string
+```
+`rgba()` of a CSS colour at the given alpha. Handles #rgb, #rrggbb, #rrggbbaa and rgb()/rgba(); anything else is returned as is.
+
 ### Interfaces
 
 #### `BollingerOverlay`
@@ -936,7 +941,7 @@ ShadedAreaLayer(props: Props): React.ReactNode | Promise<React.ReactNode>
 ```ts
 SLChart(props: ChartProps): React.ReactNode | Promise<React.ReactNode>
 ```
-GPU-accelerated trading chart for React Native (Skia). Candlestick or line price panel, optional SMA/EMA/Bollinger overlays, volume / RSI / MACD / custom sub-panels, trade markers, pinch zoom, pan, crosshair inspection and live-streaming updates. Props are identical to the web `SLChart`. Requires `@shopify/react-native-skia` and `react-native-gesture-handler` (wrap the app in `GestureHandlerRootView`).
+Public entry point. `sparkline` switches to the compact renderer; it is a separate component (not an early return) so the full chart's hooks always run in the same order.
 
 ```ts
 VolumeLayer(props: Props): React.ReactNode | Promise<React.ReactNode>
