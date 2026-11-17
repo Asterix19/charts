@@ -1,6 +1,6 @@
 {
   "name": "@stacklatte/chart-angular",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Angular 19+ trading chart: standalone <sl-chart> component with candlesticks, RSI/MACD/Bollinger/volume, markers, pan/zoom, crosshair, live data. Canvas 2D, SSR-safe, zoneless-friendly. Same inputs as the React and React Native charts.",
   "sideEffects": false,
   "scripts": {
@@ -68,7 +68,7 @@
     "@angular/common": ">=19.0.0"
   },
   "dependencies": {
-    "@stacklatte/chart-engine": "^1.0.0",
+    "@stacklatte/chart-engine": "^1.1.0",
     "tslib": "^2.8.1"
   },
   "devDependencies": {

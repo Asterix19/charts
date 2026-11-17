@@ -1,6 +1,6 @@
 {
   "name": "@stacklatte/chart-core",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "description": "[Deprecated name] React Native Skia trading chart. Now a thin re-export of @stacklatte/chart-native (renderer) and @stacklatte/chart-engine (/core). Prefer installing those directly.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -111,7 +111,7 @@
     "typescript": "^7.0.2"
   },
   "dependencies": {
-    "@stacklatte/chart-native": "^1.0.0",
-    "@stacklatte/chart-engine": "^1.0.0"
+    "@stacklatte/chart-native": "^1.1.0",
+    "@stacklatte/chart-engine": "^1.1.0"
   }
 }

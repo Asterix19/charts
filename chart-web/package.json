@@ -1,6 +1,6 @@
 {
   "name": "@stacklatte/chart-web",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "[Renamed] React / Next.js trading chart. This package is now a thin re-export of @stacklatte/chart-react \u2014 install that one directly for new code. Existing installs keep working unchanged.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -82,7 +82,7 @@
     "react-dom": ">=19.0.0"
   },
   "dependencies": {
-    "@stacklatte/chart-react": "^1.0.0"
+    "@stacklatte/chart-react": "^1.1.0"
   },
   "devDependencies": {
     "@types/react": "~19.2.18",
