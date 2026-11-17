@@ -41,6 +41,7 @@ import MarkerLayer from './MarkerLayer';
 import MarkerTooltip from './MarkerTooltip';
 import OhlcHud from './OhlcHud';
 import RsiLayer from './RsiLayer';
+import SLSparkline from './Sparkline';
 import ShadedAreaLayer from './ShadedAreaLayer';
 import VolumeLayer from './VolumeLayer';
 
@@ -61,7 +62,7 @@ const clamp = (value: number, min: number, max: number) =>
  * <SLChart data={candles} width={screenWidth} height={420} theme="dark" showRsiPanel showOhlcHud />
  * ```
  */
-const SLChart: React.FC<ChartProps> = ({
+const SLChartFull: React.FC<ChartProps> = ({
   data,
   indicators,
   shadedAreas,
@@ -277,7 +278,8 @@ const SLChart: React.FC<ChartProps> = ({
   const displayPriceRange = useMemo(() => {
     if (!visibleCandles.length) return { min: 0, max: 1 };
 
-    const candleValues = visibleCandles.flatMap((c) => [c.high, c.low]);
+    // A close-price area fits its range to the closes; candles (and the plain line, as always) to the highs and lows.
+    const candleValues = chartType === 'area' ? visibleCandles.map((c) => c.close) : visibleCandles.flatMap((c) => [c.high, c.low]);
 
     const indicatorValues = preparedIndicators.flatMap(({ data: lineData }) =>
       lineData
@@ -288,7 +290,7 @@ const SLChart: React.FC<ChartProps> = ({
     const values = [...candleValues, ...indicatorValues];
 
     return buildPaddedRange(Math.min(...values), Math.max(...values), 0.05);
-  }, [visibleCandles, preparedIndicators]);
+  }, [visibleCandles, preparedIndicators, chartType]);
 
   const indexByTimestamp = useMemo(() => buildTimestampIndex(visibleCandles), [visibleCandles]);
 
@@ -601,6 +603,7 @@ const SLChart: React.FC<ChartProps> = ({
                     priceMin={displayPriceRange.min}
                     priceMax={displayPriceRange.max}
                     color={colors.lineChart}
+                    fill={chartType === 'area'}
                   />
                 )}
 
@@ -671,7 +674,7 @@ const SLChart: React.FC<ChartProps> = ({
                         <DashPathEffect intervals={[4, 4]} />
                       </Line>
 
-                      {chartType === 'line' && (
+                      {(chartType === 'line' || chartType === 'area') && (
                         <Circle
                           cx={0}
                           cy={padding.top + crosshairY}
@@ -921,5 +924,11 @@ const SLChart: React.FC<ChartProps> = ({
     </GestureDetector>
   );
 };
+
+/**
+ * Public entry point. `sparkline` switches to the compact renderer; it is a separate component (not an early return) so the
+ * full chart's hooks always run in the same order.
+ */
+const SLChart: React.FC<ChartProps> = (props) => (props.sparkline ? <SLSparkline {...props} /> : <SLChartFull {...props} />);
 
 export default SLChart;

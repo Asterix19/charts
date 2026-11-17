@@ -17,7 +17,8 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, w
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PNG } from 'pngjs';
-import { DEMO_PACKAGES, LAB_CAPABILITIES, SCENARIOS } from '@stacklatte/chart-examples';
+import { LAB_CAPABILITIES } from '@stacklatte/chart-engine/lab';
+import { DEMO_PACKAGES, SCENARIOS } from '@stacklatte/chart-examples';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const out = join(root, 'qa-output');

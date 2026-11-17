@@ -1,7 +1,7 @@
 import { SLChart } from '@stacklatte/chart-native';
 import type { Candle } from '@stacklatte/chart-native';
-import { createLab, labApply, labChartProps, labSelected, labSize, visibleCapabilities } from '@stacklatte/chart-examples';
-import type { LabCapability, LabModel, LabState } from '@stacklatte/chart-examples';
+import { createLab, labApply, labChartProps, labSelected, labSize, visibleCapabilities } from '@stacklatte/chart-engine/lab';
+import type { LabCapability, LabModel, LabState } from '@stacklatte/chart-engine/lab';
 import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { Pressable, ScrollView, StyleSheet, Switch, Text, View, useWindowDimensions } from 'react-native';

@@ -566,5 +566,9 @@
   {
     "name": "VwapOverlay",
     "kind": "type"
+  },
+  {
+    "name": "withAlpha",
+    "kind": "value"
   }
 ]

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { normalizeCandles } from '@stacklatte/chart-engine';
-import type { ChartProps } from '@stacklatte/chart-engine';
+import { normalizeCandles } from '../utils';
+import type { ChartProps } from '../types';
 import { DEFAULT_LAB_STATE, LAB_CAPABILITIES, LAB_EXCLUDED_PROPS, createLab, labChartProps, labSize, makeDirty, visibleCapabilities } from './lab';
 import type { LabKey, LabState } from './lab';
 

@@ -92,3 +92,25 @@ export const buildTrianglePath = (cx: number, cy: number, size: number, pointing
     path.close();
   });
 };
+
+/**
+ * The same smooth curve as `buildSmoothPath`, closed down to the horizontal line `baseY`: the region a gradient fills for
+ * `chartType: 'area'` and `sparkline`.
+ */
+export const buildSmoothAreaPath = (pts: Point[], baseY: number): SkPath | null => {
+  if (pts.length < 2) return null;
+  const n = pts.length;
+  return buildPath((path) => {
+    path.moveTo(pts[0].x, pts[0].y);
+    for (let i = 0; i < n - 1; i++) {
+      const p0 = pts[i > 0 ? i - 1 : 0];
+      const p1 = pts[i];
+      const p2 = pts[i + 1];
+      const p3 = pts[i + 2 < n ? i + 2 : n - 1];
+      path.cubicTo(p1.x + (p2.x - p0.x) / 6, p1.y + (p2.y - p0.y) / 6, p2.x - (p3.x - p1.x) / 6, p2.y - (p3.y - p1.y) / 6, p2.x, p2.y);
+    }
+    path.lineTo(pts[n - 1].x, baseY);
+    path.lineTo(pts[0].x, baseY);
+    path.close();
+  });
+};

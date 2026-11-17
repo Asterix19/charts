@@ -17,7 +17,8 @@ import { readFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { DEMO_PACKAGES, LAB_CAPABILITIES, SCENARIOS } from '@stacklatte/chart-examples';
+import { LAB_CAPABILITIES } from '@stacklatte/chart-engine/lab';
+import { DEMO_PACKAGES, SCENARIOS } from '@stacklatte/chart-examples';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const flag = (n) => process.argv.includes(`--${n}`);

@@ -2,8 +2,8 @@
 import './testing/setup';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ChartController } from '@stacklatte/chart-engine/canvas';
-import { LAB_CAPABILITIES, createLab, labChartProps, labSize } from './lab';
-import type { LabKey } from './lab';
+import { LAB_CAPABILITIES, createLab, labChartProps, labSize } from '@stacklatte/chart-engine/lab';
+import type { LabKey } from '@stacklatte/chart-engine/lab';
 import { installCanvasMock } from './testing/canvasMock';
 
 const frame = () => new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));

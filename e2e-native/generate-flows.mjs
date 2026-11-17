@@ -4,7 +4,8 @@
 //   node/tsx e2e-native/generate-flows.mjs          write the file
 //   node/tsx e2e-native/generate-flows.mjs --check  exit 1 if the committed file is stale (used in CI)
 import { readFileSync, writeFileSync } from 'node:fs';
-import { DEFAULT_LAB_STATE, LAB_CAPABILITIES, SCENARIOS } from '@stacklatte/chart-examples';
+import { DEFAULT_LAB_STATE, LAB_CAPABILITIES } from '@stacklatte/chart-engine/lab';
+import { SCENARIOS } from '@stacklatte/chart-examples';
 
 const arg = (name) => process.argv.find((a) => a.startsWith(`--${name}=`))?.split('=')[1];
 const clean = process.argv.includes('--clean');

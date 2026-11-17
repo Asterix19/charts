@@ -63,6 +63,12 @@
       "default": "./dist/index.mjs"
     },
     "./ChartConfig.schema.json": "./dist/ChartConfig.schema.json",
+    "./lab": {
+      "types": "./dist/lab/index.d.ts",
+      "import": "./dist/lab.mjs",
+      "require": "./dist/lab.js",
+      "default": "./dist/lab.mjs"
+    },
     "./canvas": {
       "types": "./dist/canvas/index.d.ts",
       "import": "./dist/canvas.mjs",

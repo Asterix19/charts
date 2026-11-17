@@ -118,3 +118,19 @@ export function closesToCandles(closes: readonly number[], opts: { endTs?: numbe
   const clean = closes.filter((v) => Number.isFinite(v));
   return clean.map((close, i) => ({ timestamp: endTs - (clean.length - 1 - i) * intervalMs, open: close, high: close, low: close, close }));
 }
+
+/** `rgba()` of a CSS colour at the given alpha. Handles #rgb, #rrggbb, #rrggbbaa and rgb()/rgba(); anything else is returned as is. */
+export function withAlpha(color: string, alpha: number): string {
+  const hex = /^#([0-9a-f]{3,8})$/i.exec(color.trim());
+  if (hex) {
+    let h = hex[1];
+    if (h.length === 3 || h.length === 4) h = h.split('').map((c) => c + c).join('');
+    if (h.length === 6 || h.length === 8) {
+      const n = (i: number) => parseInt(h.slice(i, i + 2), 16);
+      return `rgba(${n(0)}, ${n(2)}, ${n(4)}, ${alpha})`;
+    }
+  }
+  const rgb = /^rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/i.exec(color.trim());
+  if (rgb) return `rgba(${rgb[1]}, ${rgb[2]}, ${rgb[3]}, ${alpha})`;
+  return color;
+}

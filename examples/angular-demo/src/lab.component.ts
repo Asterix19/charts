@@ -1,8 +1,9 @@
 import { afterNextRender, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild, ViewEncapsulation, computed, signal } from '@angular/core';
 import { SlChartComponent } from '@stacklatte/chart-angular';
 import type { Candle } from '@stacklatte/chart-angular';
-import { DEMO_PACKAGES, createLab, labApply, labChartProps, labSelected, labSize, visibleCapabilities } from '@stacklatte/chart-examples';
-import type { LabCapability, LabState } from '@stacklatte/chart-examples';
+import { createLab, labApply, labChartProps, labSelected, labSize, visibleCapabilities } from '@stacklatte/chart-engine/lab';
+import type { LabCapability, LabState } from '@stacklatte/chart-engine/lab';
+import { DEMO_PACKAGES } from '@stacklatte/chart-examples';
 
 /**
  * The Lab for <sl-chart>: every capability as a visible control, drawn from the shared schema. Same test ids and same

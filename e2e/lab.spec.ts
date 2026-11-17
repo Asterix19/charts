@@ -2,7 +2,8 @@
 // This spec is driven from that same schema, so a new control is covered the moment it is added, and a ChartProps field
 // without a control already fails the unit test in examples/shared.
 import { expect, test, type Page } from '@playwright/test';
-import { DEMO_PACKAGES, LAB_CAPABILITIES } from '../examples/shared/src/lab';
+import { LAB_CAPABILITIES } from '../chart-engine/src/lab';
+import { DEMO_PACKAGES } from '../examples/shared/src/demoPackages';
 
 const errors = new WeakMap<Page, string[]>();
 

@@ -1,9 +1,8 @@
 import { SLChart } from '@stacklatte/chart-react';
 import type { Candle } from '@stacklatte/chart-react';
-import {
-  DEMO_PACKAGES, LAB_GROUPS, createLab, labApply, labChartProps, labSelected, labSize, visibleCapabilities,
-} from '@stacklatte/chart-examples';
-import type { LabCapability, LabModel, LabState } from '@stacklatte/chart-examples';
+import { LAB_GROUPS, createLab, labApply, labChartProps, labSelected, labSize, visibleCapabilities } from '@stacklatte/chart-engine/lab';
+import type { LabCapability, LabModel, LabState } from '@stacklatte/chart-engine/lab';
+import { DEMO_PACKAGES } from '@stacklatte/chart-examples';
 import React, { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 
 import './Lab.css';

@@ -5,13 +5,8 @@
  * `LAB_CAPABILITIES` and feeds `labChartProps()` to its chart, so the demos cannot drift apart, and a coverage test
  * (lab.test.ts) fails when a `ChartProps` field has no control.
  */
-import {
-  calcBollingerBands,
-  calcEMA,
-  calcSMA,
-  calcVWAP,
-} from '@stacklatte/chart-engine';
-import type { Candle, ChartMarker, ChartProps, CustomPanel, IndicatorLine, MarkerKind, ShadedArea } from '@stacklatte/chart-engine';
+import { calcBollingerBands, calcEMA, calcSMA, calcVWAP } from '../indicators';
+import type { Candle, ChartMarker, ChartProps, CustomPanel, IndicatorLine, MarkerKind, ShadedArea } from '../types';
 import { MINUTE, createRng, generateCandles, nextCandle, tickLast } from './data';
 
 // ---------------------------------------------------------------------------- state
@@ -337,11 +332,3 @@ export function labApply(model: LabModel, id: string, raw: string | number | boo
   const value = typeof current === 'number' ? Number(raw) : typeof current === 'boolean' ? Boolean(raw) : raw;
   model.set(id as LabKey, value as never);
 }
-
-/** The package each demo showcases, and the accent colour that makes it unmistakable on screen. */
-export const DEMO_PACKAGES = {
-  react: { pkg: '@stacklatte/chart-react', platform: 'React · Next.js', renderer: 'HTML5 Canvas 2D', accent: '#2563eb' },
-  angular: { pkg: '@stacklatte/chart-angular', platform: 'Angular', renderer: 'HTML5 Canvas 2D', accent: '#dd0031' },
-  native: { pkg: '@stacklatte/chart-native', platform: 'React Native · iOS / Android', renderer: 'Skia (GPU)', accent: '#16a34a' },
-} as const;
-export type DemoPackageId = keyof typeof DEMO_PACKAGES;
