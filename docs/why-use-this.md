@@ -75,6 +75,10 @@ A summary by category, as of writing; check each project's documentation for the
 2. Click **Copy code** (React, Angular, React Native or TypeScript) or **Copy prompt for your AI**.
 3. Or install the package and paste the snippet at the top of this page.
 
+## Need help, support or a custom build?
+
+The library is free and MIT-licensed, and it stays that way. If your team needs something beyond it (integration help, a custom or white-labelled build, a private package with your own defaults and theme, or priority support), get in touch at consulting@stacklatte.com.
+
 ## FAQ
 
 ### Is Stacklatte Charts free?
@@ -104,6 +108,10 @@ Yes. Pass a new `data` array on every tick: replace the last candle while its in
 ### Can an AI assistant generate charts with it?
 
 Yes, safely. Describe the chart as a `ChartConfig` JSON document (closed enums, a JSON Schema at `@stacklatte/chart-engine/ChartConfig.schema.json`) and call `buildChartPipeline(config, candles)`. Invalid output throws an itemised error that can be fed back to the model. The [Chart Lab](https://stacklatte.com/lab) also produces a ready-made prompt that states the exact settings of a chart, includes the code and tells the model not to invent props.
+
+### Can I get help, support or a custom version?
+
+Yes, on request. The library itself is free (MIT). For integration help, a custom or white-labelled build, a private package with your own defaults and theme, or priority support, email consulting@stacklatte.com and describe what you need.
 
 ### How do I report a bug?
 

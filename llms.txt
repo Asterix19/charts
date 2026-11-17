@@ -106,5 +106,6 @@ Ask the model for a `ChartConfig` JSON document, then call `buildChartPipeline(c
 - [API reference](https://github.com/Asterix19/charts/blob/main/docs/api-reference.md) — every export and prop, generated from the shipped types
 - [llms-full.txt](https://stacklatte.com/llms-full.txt) — all of the above in a single file
 - Chart Lab (build a chart with every option, copy the exact code, ChartConfig or an AI prompt): https://stacklatte.com/lab
+- Need integration help, a custom or white-labelled build, or support? The library is free and MIT; email consulting@stacklatte.com
 - Report a bug: bugs@stacklatte.com (or https://github.com/Asterix19/charts/issues) — include `npm ls @stacklatte/chart-react @stacklatte/chart-engine`, the framework and what you expected
 - Repository: https://github.com/Asterix19/charts

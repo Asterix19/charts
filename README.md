@@ -136,6 +136,7 @@ npm run test:native:compat  # same app vs the last published (deprecated) chart-
 ## Build it in the Lab, or with an AI assistant
 
 - **[Chart Lab](https://stacklatte.com/lab)**: build a chart with every option, then copy the exact code (React, Angular, React Native, TypeScript), the validated `ChartConfig`, or a ready-made prompt for your AI assistant.
+- **Need help, support or a custom / branded build?** The library is free and MIT; for anything beyond it, email **consulting@stacklatte.com**.
 - **Found a problem?** Email **bugs@stacklatte.com** (or open an [issue](https://github.com/Asterix19/charts/issues)) with `npm ls @stacklatte/chart-react @stacklatte/chart-engine` and what you expected. The Lab's *Report an issue* button prefills it all.
 
 ## Documentation
