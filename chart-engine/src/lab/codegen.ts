@@ -1,7 +1,7 @@
 /**
  * Turns a Lab state (the chart a person built with the controls) into things they can paste:
  * ready-to-run code for React / Angular / React Native / plain TypeScript, the LLM-safe `ChartConfig` JSON, a precise
- * plain-English spec, and a complete prompt for an AI coding assistant. The website's Lab and the MCP server both use it.
+ * plain-English spec, and a complete prompt for an AI coding assistant. The website's Lab uses it.
  *
  * The generated code assumes the reader already has `candles: Candle[]` (oldest first, `timestamp` in Unix ms).
  */

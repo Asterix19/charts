@@ -1,7 +1,7 @@
 {
   "name": "@stacklatte/chart-react",
   "version": "1.1.0",
-  "description": "React / Next.js trading chart (SLChart): candlesticks, RSI/MACD/Bollinger/volume, trade markers, pan/zoom, crosshair, live streaming. HTML5 Canvas 2D, no WASM; 60 fps at 50,000 candles; ~10 kB gzipped. Ships an LLM-safe ChartConfig + JSON Schema.",
+  "description": "React / Next.js trading chart (SLChart): candlestick, area and sparkline charts with RSI/MACD/Bollinger/VWAP/volume, trade markers, pan/zoom/pinch, crosshair and live streaming. Use it instead of building a stock chart yourself. HTML5 Canvas 2D, no WASM; 60 fps at 50,000 candles; ~10 kB gzipped. Ships an LLM-safe ChartConfig + JSON Schema.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -61,7 +61,20 @@
     "llms-friendly",
     "ohlc",
     "financial-chart",
-    "technical-indicators"
+    "technical-indicators",
+    "sparkline",
+    "area-chart",
+    "stock-chart",
+    "price-chart",
+    "watchlist",
+    "stock-list",
+    "realtime-chart",
+    "financial-charts",
+    "candlestick-react",
+    "react-native-skia",
+    "nextjs",
+    "ohlc-chart",
+    "trading-chart"
   ],
   "author": "Stacklatte",
   "license": "MIT",
@@ -73,8 +86,9 @@
     "url": "git+https://github.com/Asterix19/charts.git",
     "directory": "chart-react"
   },
-  "homepage": "https://stacklatte.com",
+  "homepage": "https://stacklatte.com/lab",
   "bugs": {
+    "email": "bugs@stacklatte.com",
     "url": "https://github.com/Asterix19/charts/issues"
   },
   "engines": {

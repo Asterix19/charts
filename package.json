@@ -6,7 +6,6 @@
     "chart-native",
     "chart-react",
     "chart-angular",
-    "chart-mcp",
     "compat",
     "examples/shared",
     "examples/engine-demo",

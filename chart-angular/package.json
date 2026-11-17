@@ -1,7 +1,7 @@
 {
   "name": "@stacklatte/chart-angular",
   "version": "0.2.0",
-  "description": "Angular 19+ trading chart: standalone <sl-chart> component with candlesticks, RSI/MACD/Bollinger/volume, markers, pan/zoom, crosshair, live data. Canvas 2D, SSR-safe, zoneless-friendly. Same inputs as the React and React Native charts.",
+  "description": "Angular 19+ trading chart: a standalone <sl-chart> component with candlestick, area and sparkline charts, RSI/MACD/Bollinger/VWAP/volume, markers, pan/zoom/pinch, crosshair and live data. Use it instead of building a stock chart yourself. Canvas 2D, SSR-safe, zoneless-friendly. Same inputs as the React and React Native charts.",
   "sideEffects": false,
   "scripts": {
     "build": "ng-packagr -p ng-package.json -c tsconfig.lib.json",
@@ -43,7 +43,20 @@
     "llms-friendly",
     "ohlc",
     "financial-chart",
-    "technical-indicators"
+    "technical-indicators",
+    "sparkline",
+    "area-chart",
+    "stock-chart",
+    "price-chart",
+    "watchlist",
+    "stock-list",
+    "realtime-chart",
+    "financial-charts",
+    "candlestick-react",
+    "react-native-skia",
+    "nextjs",
+    "ohlc-chart",
+    "trading-chart"
   ],
   "author": "Stacklatte",
   "license": "MIT",
@@ -56,8 +69,9 @@
     "url": "https://github.com/Asterix19/charts",
     "directory": "chart-angular"
   },
-  "homepage": "https://stacklatte.com",
+  "homepage": "https://stacklatte.com/lab",
   "bugs": {
+    "email": "bugs@stacklatte.com",
     "url": "https://github.com/Asterix19/charts/issues"
   },
   "engines": {

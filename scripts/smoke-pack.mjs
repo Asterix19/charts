@@ -9,7 +9,7 @@ import { join } from 'node:path';
 
 // chart-angular publishes from ng-packagr's dist/ folder, not the package root.
 const PACKAGES = [
-  ['chart-engine'], ['chart-native'], ['chart-react'], ['chart-mcp'], ['chart-angular', 'chart-angular/dist'],
+  ['chart-engine'], ['chart-native'], ['chart-react'], ['chart-angular', 'chart-angular/dist'],
 ];
 const root = new URL('..', import.meta.url).pathname;
 const work = mkdtempSync(join(tmpdir(), 'stacklatte-smoke-'));
@@ -59,10 +59,6 @@ assert.equal(typeof canvas.drawCandles, 'function', 'chart-engine/canvas exports
 assert.match(renderToString(React.createElement(web.SLChart, { data: candles, width: 400, height: 300 })), /<div[^>]*width:400px/, 'chart-react SSR renders its container without throwing');
 assert.ok('definitions' in require('@stacklatte/chart-engine/ChartConfig.schema.json'), 'JSON Schema is resolvable');
 assert.ok(require.resolve('@stacklatte/chart-native').includes('chart-native'), 'chart-native resolves');
-// The MCP server package loads and exposes its factory (its dependencies were installed from the tarball's manifest).
-const mcp = await import('@stacklatte/chart-mcp');
-assert.equal(typeof mcp.createServer, 'function', 'chart-mcp exports createServer');
-assert.ok(import.meta.resolve('@stacklatte/chart-mcp').includes('chart-mcp'), 'chart-mcp resolves');
 // Angular: the ng-packagr output must load and expose the component plus the re-exported engine.
 await import('@angular/compiler'); // partial-compiled library code is linked at runtime in Node
 const ng = await import('@stacklatte/chart-angular');

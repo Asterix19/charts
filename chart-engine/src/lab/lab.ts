@@ -333,7 +333,7 @@ export function labApply(model: LabModel, id: string, raw: string | number | boo
   model.set(id as LabKey, value as never);
 }
 
-// ---------------------------------------------------------------------------- presets (shared by the website and the MCP server)
+// ---------------------------------------------------------------------------- presets (used by the website's Lab)
 
 const BLUE_THEME: Partial<LabState> = { theme: 'custom', cBackground: '#0b1220', cUp: '#38bdf8', cDown: '#f43f5e', cGrid: '#1e293b', cText: '#94a3b8', cCrosshair: '#94a3b8' };
 

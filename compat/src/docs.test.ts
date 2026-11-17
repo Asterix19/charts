@@ -36,7 +36,7 @@ const EXTRA_ROOTS = (process.env.DOCS_EXTRA_ROOTS ?? '').split(':').filter(Boole
 const files = [...walk(ROOT), ...EXTRA_ROOTS.flatMap((r) => (existsSync(r) ? walk(r) : []))].filter((f) => /(README\.md|llms.*\.txt|docs\/.*\.md|\.md)$/.test(f));
 
 // chart-core / chart-web are deprecated and no longer in this repo; the docs may still name them (the migration guide), but nothing may import them.
-const KNOWN_PACKAGES = ['chart-engine', 'chart-native', 'chart-react', 'chart-angular', 'chart-mcp', 'chart-core', 'chart-web'];
+const KNOWN_PACKAGES = ['chart-engine', 'chart-native', 'chart-react', 'chart-angular', 'chart-core', 'chart-web'];
 const entry: Record<string, string> = {
   '@stacklatte/chart-engine': 'chart-engine/dist/index.d.ts',
   '@stacklatte/chart-engine/canvas': 'chart-engine/dist/canvas/index.d.ts',

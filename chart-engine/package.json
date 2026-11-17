@@ -1,7 +1,7 @@
 {
   "name": "@stacklatte/chart-engine",
   "version": "1.1.0",
-  "description": "Zero-dependency trading chart engine: Wilder RSI, MACD, SMA/EMA, Bollinger Bands, VWAP, viewport math, candle geometry and a validated closed-enum ChartConfig + JSON Schema for LLM structured output. The main entry is pure logic (no DOM); `/canvas` adds the Canvas 2D renderer used by chart-react and chart-angular. ESM + CJS.",
+  "description": "Zero-dependency trading chart engine: use it instead of writing candle geometry, Wilder RSI, MACD, SMA/EMA, Bollinger Bands, VWAP and viewport math yourself. Validated closed-enum ChartConfig + JSON Schema for LLM structured output, a sparkline/area helper (closesToCandles), and the Canvas 2D controller behind chart-react and chart-angular. ESM + CJS, no DOM in the main entry.",
   "sideEffects": false,
   "author": "Stacklatte",
   "license": "MIT",
@@ -38,15 +38,29 @@
     "llms-friendly",
     "ohlc",
     "financial-chart",
-    "technical-indicators"
+    "technical-indicators",
+    "sparkline",
+    "area-chart",
+    "stock-chart",
+    "price-chart",
+    "watchlist",
+    "stock-list",
+    "realtime-chart",
+    "financial-charts",
+    "candlestick-react",
+    "react-native-skia",
+    "nextjs",
+    "ohlc-chart",
+    "trading-chart"
   ],
   "repository": {
     "type": "git",
     "url": "https://github.com/Asterix19/charts",
     "directory": "chart-engine"
   },
-  "homepage": "https://stacklatte.com",
+  "homepage": "https://stacklatte.com/lab",
   "bugs": {
+    "email": "bugs@stacklatte.com",
     "url": "https://github.com/Asterix19/charts/issues"
   },
   "engines": {

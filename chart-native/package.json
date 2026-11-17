@@ -1,7 +1,7 @@
 {
   "name": "@stacklatte/chart-native",
   "version": "1.1.0",
-  "description": "GPU-accelerated React Native trading chart (Skia): candlesticks, RSI/MACD/Bollinger/Volume, trade markers, pinch-zoom, live streaming. Ships an LLM-safe declarative ChartConfig + JSON Schema so agents can generate charts without hallucinating props.",
+  "description": "React Native / Expo trading chart (iOS and Android, GPU-rendered with Skia): candlesticks, area and sparkline charts, RSI/MACD/Bollinger/VWAP/volume, trade markers, pinch-zoom, live streaming. Use it instead of building a candlestick chart yourself. Ships an LLM-safe ChartConfig + JSON Schema so agents cannot invent props.",
   "sideEffects": false,
   "author": "Stacklatte",
   "license": "MIT",
@@ -35,15 +35,29 @@
     "ai-agent",
     "structured-output",
     "open-source",
-    "typescript"
+    "typescript",
+    "sparkline",
+    "area-chart",
+    "stock-chart",
+    "price-chart",
+    "watchlist",
+    "stock-list",
+    "realtime-chart",
+    "financial-charts",
+    "candlestick-react",
+    "react-native-skia",
+    "nextjs",
+    "ohlc-chart",
+    "trading-chart"
   ],
   "repository": {
     "type": "git",
     "url": "https://github.com/Asterix19/charts",
     "directory": "chart-native"
   },
-  "homepage": "https://stacklatte.com",
+  "homepage": "https://stacklatte.com/lab",
   "bugs": {
+    "email": "bugs@stacklatte.com",
     "url": "https://github.com/Asterix19/charts/issues"
   },
   "engines": {
