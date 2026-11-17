@@ -41,7 +41,7 @@ if (!flag('skip-build')) {
 // ---------------------------------------------------------------- processes
 const children = [];
 function run(label, colour, cmd, args, cwd = root) {
-  const child = spawn(cmd, args, { cwd, detached: true, stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, FORCE_COLOR: '1', BROWSER: 'none', CI: '' } });
+  const child = spawn(cmd, args, { cwd, detached: true, stdio: ['ignore', 'pipe', 'pipe'], env: (({ CI: _ci, ...rest }) => ({ ...rest, FORCE_COLOR: '1', BROWSER: 'none' }))(process.env) });
   children.push(child);
   const tag = `${colour}${label.padEnd(8)}\x1b[0m│ `;
   for (const stream of [child.stdout, child.stderr]) {
@@ -111,7 +111,8 @@ const page = () => `<!doctype html><meta charset="utf-8"><title>Stacklatte Chart
     ${native ? card(nativeDemo, `
       <ul><li><b>Lab tab</b>: the same ${controls} controls, as a scrollable panel under the chart</li>
       <li><b>Scenarios tab</b>: the same ${SCENARIOS.length} scenarios</li></ul>
-      <p>Metro is running on <code>:${nativeDemo.port}</code>. ${flag('ios') || flag('android') ? 'The app is being built and launched on the simulator/emulator.' : 'Press <code>i</code> in the terminal for the iOS simulator (or <code>a</code> for Android), or restart with <code>npm run demo:all -- --ios</code>.'}</p>
+      <p>Metro is running on <code>:${nativeDemo.port}</code>. ${flag('ios') || flag('android') ? 'The app is being built and launched on the simulator/emulator.' : 'With the dev client installed on a booted simulator, open the app against this Metro with:'}</p>
+      ${flag('ios') || flag('android') ? '' : `<p><code>xcrun simctl openurl booted "com.anonymous.demo://expo-development-client/?url=http%3A%2F%2Flocalhost%3A${nativeDemo.port}"</code></p><p>First time? Run <code>npm run demo:all -- --ios</code> once to build and install the app.</p>`}
       <a class="btn alt" href="http://localhost:${nativeDemo.port}/">Metro status</a>`) : ''}
   </div>
   <p class="note">Stop everything with Ctrl+C in the terminal. The web demos run the <i>built</i> packages (what npm users get). Re-run <code>npm run demo:all</code> after changing package code.</p>
