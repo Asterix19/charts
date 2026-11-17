@@ -35,7 +35,7 @@ function walk(dir: string, out: string[] = []): string[] {
 const EXTRA_ROOTS = (process.env.DOCS_EXTRA_ROOTS ?? '').split(':').filter(Boolean);
 const files = [...walk(ROOT), ...EXTRA_ROOTS.flatMap((r) => (existsSync(r) ? walk(r) : []))].filter((f) => /(README\.md|llms.*\.txt|docs\/.*\.md|\.md)$/.test(f));
 
-const KNOWN_PACKAGES = ['chart-engine', 'chart-native', 'chart-react', 'chart-angular', 'chart-core', 'chart-web'];
+const KNOWN_PACKAGES = ['chart-engine', 'chart-native', 'chart-react', 'chart-angular', 'chart-core', 'chart-web', 'chart-mcp'];
 const entry: Record<string, string> = {
   '@stacklatte/chart-engine': 'chart-engine/dist/index.d.ts',
   '@stacklatte/chart-engine/canvas': 'chart-engine/dist/canvas/index.d.ts',

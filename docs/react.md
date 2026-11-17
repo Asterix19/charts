@@ -97,3 +97,22 @@ export default function Chart({ candles }: { candles: Candle[] }) {
 Drag to pan, mouse wheel or two-finger pinch to zoom, hover (mouse) or touch to inspect a candle when `showOhlcHud` is on. `onCrosshairChange(candle | null)` reports the inspected candle. Increment `scrollToLatestTrigger` to jump back to the newest candle.
 
 See also: [live data](./live-data.md), [performance](./performance.md), [API reference](./api-reference.md).
+
+## Area charts and sparklines (lists of small charts)
+
+`chartType="area"` is the close-price line with a gradient fill underneath, in the theme's `lineChart` colour. `sparkline` is the compact mode for many small charts at once (stock lists, table cells): no axes, grid, price gutter, panels, crosshair or tooltip, the whole dataset is drawn, and the chart **does not capture touch, wheel or pointer events**, so a long list still scrolls. For static data, `closesToCandles(prices)` turns a plain array of closing prices into chart data.
+
+```tsx
+import { useMemo } from 'react';
+import { SLChart, closesToCandles, getThemeColors } from '@stacklatte/chart-react';
+
+// A cool blue area on a transparent background.
+const theme = { ...getThemeColors('dark'), background: 'transparent', lineChart: '#38bdf8' };
+
+export function StockSparkline({ closes }: { closes: number[] }) {
+  const candles = useMemo(() => closesToCandles(closes), [closes]);
+  return <SLChart data={candles} width={120} height={40} sparkline theme={theme} />;
+}
+```
+
+The same props work in Angular (`<sl-chart sparkline [theme]="theme" …>`) and React Native. See it with 24 stocks at [stacklatte.com/lab](https://stacklatte.com/lab) (the **Stock list** tab, which also has a copy button for the code and an AI prompt).

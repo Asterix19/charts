@@ -131,6 +131,12 @@ npm run test:native      # iOS simulator via Maestro (see e2e-native/README.md)
 npm run test:native:compat  # same app vs the published chart-core 2.3.3, pixel-compared (~20 min)
 ```
 
+## Build it with an AI assistant, or in the Lab
+
+- **[Chart Lab](https://stacklatte.com/lab)**: build a chart with every option, then copy the exact code (React, Angular, React Native, TypeScript), the validated `ChartConfig`, or a ready-made prompt for your AI assistant.
+- **[MCP server](./docs/mcp.md)**: `claude mcp add stacklatte-charts -- npx -y @stacklatte/chart-mcp` gives Claude Code, Cursor and other assistants the same generator.
+- **Found a problem?** Email **bugs@stacklatte.com** (or open an [issue](https://github.com/Asterix19/charts/issues)) with `npm ls @stacklatte/chart-react @stacklatte/chart-engine` and what you expected. The Lab's *Report an issue* button prefills it all.
+
 ## Documentation
 
 Start at [`docs/README.md`](./docs/README.md). For AI coding agents: [`llms.txt`](./llms.txt) (short) and [`llms-full.txt`](./llms-full.txt) (everything in one file). Tutorials with live demos are on [stacklatte.com](https://stacklatte.com).

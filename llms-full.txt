@@ -64,9 +64,10 @@ export class PriceChartComponent {
 
 - A `Candle` is `{ timestamp, open, high, low, close, volume? }`. `timestamp` is Unix **milliseconds** (not seconds, not ISO strings). The data may be unsorted or dirty; the chart sorts, dedupes and drops candles with non-finite values.
 - `width` and `height` are **required numbers in pixels** — never `"100%"`. Measure the container with a `ResizeObserver` for responsive layouts.
-- Props (all renderers): `data`, `width`, `height`, `theme` (`'dark' | 'light' | ChartThemeColors`), `chartType` (`'candle' | 'line'`), `indicators`, `shadedAreas`, `markers`, `customPanels`, `showRsiPanel`, `rsiPeriod`, `showMacdPanel`, `showVolumePanel`, `showOhlcHud`, `visibleDataPoints`, `intervalMs`, `hour12`, `showGrid`, `maxZoom`, `scrollToLatestTrigger`, `onCrosshairChange`. The visible-candle count prop is `visibleDataPoints`.
+- Props (all renderers): `data`, `width`, `height`, `theme` (`'dark' | 'light' | ChartThemeColors`), `chartType` (`'candle' | 'line' | 'area'`), `sparkline` (compact mode for lists of small charts), `indicators`, `shadedAreas`, `markers`, `customPanels`, `showRsiPanel`, `rsiPeriod`, `showMacdPanel`, `showVolumePanel`, `showOhlcHud`, `visibleDataPoints`, `intervalMs`, `hour12`, `showGrid`, `maxZoom`, `scrollToLatestTrigger`, `onCrosshairChange`. The visible-candle count prop is `visibleDataPoints`.
 - Indicators: `calcSMA(candles, period, id, color)`, `calcEMA(candles, period, id, color)` return an `IndicatorLine | null`; `calcBollingerBands(candles, period, multiplier, { upper, lower, basis })` returns `{ upper, lower, basis } | null`; `calcRSI(candles, period)` returns `{ timestamp, value }[]`; `calcVWAP(candles, id, color)` returns an `IndicatorLine | null` (needs `volume`); `calcMACD(candles)` returns `{ macd, signal, histogram } | null`. They return `null` / `[]` when there are too few candles or the period is invalid. **Filter out `null` before passing `indicators`.** Pair `bb.upper.id` and `bb.lower.id` in a `shadedAreas` entry to fill between the bands.
 - `@stacklatte/chart-native` is iOS/Android only; for any browser use `@stacklatte/chart-react` (native-in-browser throws `Can't find variable: CanvasKit`).
+- Many small charts (a stock list): `<SLChart data={closesToCandles(prices)} width={120} height={36} sparkline />`. `sparkline` draws the whole dataset as an area (a line with a gradient fill in the theme's `lineChart` colour), with no axes, crosshair or panels, and it does not capture touch / wheel / pointer events, so the page still scrolls. `chartType="area"` is the same fill on a full chart.
 - Next.js: render the chart from a client component (`'use client'`). React Native: wrap the app in `GestureHandlerRootView`.
 - Live data: pass a new `data` array on every tick (replace the last candle while its interval is open, append when it rolls over). Increment `scrollToLatestTrigger` to jump to the newest candle. Cap the array you keep (e.g. 10,000).
 - Import types and helpers from the renderer package you already use (`import { calcRSI } from '@stacklatte/chart-react'`).
@@ -92,7 +93,10 @@ Ask the model for a `ChartConfig` JSON document, then call `buildChartPipeline(c
 - [Generate charts with an LLM](https://github.com/Asterix19/charts/blob/main/docs/chartconfig-llm.md), [Live data](https://github.com/Asterix19/charts/blob/main/docs/live-data.md), [Performance](https://github.com/Asterix19/charts/blob/main/docs/performance.md), [Testing](https://github.com/Asterix19/charts/blob/main/docs/testing.md), [Troubleshooting](https://github.com/Asterix19/charts/blob/main/docs/troubleshooting.md), [Migrating from chart-core](https://github.com/Asterix19/charts/blob/main/docs/migrating-from-chart-core.md)
 - [API reference](https://github.com/Asterix19/charts/blob/main/docs/api-reference.md) — every export and prop, generated from the shipped types
 - [llms-full.txt](https://github.com/Asterix19/charts/blob/main/llms-full.txt) — all of the above in a single file
-- Repository: https://github.com/Asterix19/charts — Tutorials with live demos: https://stacklatte.com
+- Chart Lab (build a chart with every option, copy the exact code, ChartConfig or an AI prompt): https://stacklatte.com/lab
+- MCP server for AI assistants (`claude mcp add stacklatte-charts -- npx -y @stacklatte/chart-mcp`): [MCP guide](https://github.com/Asterix19/charts/blob/main/docs/mcp.md)
+- Report a bug: bugs@stacklatte.com (or https://github.com/Asterix19/charts/issues) — include `npm ls @stacklatte/chart-react @stacklatte/chart-engine`, the framework and what you expected
+- Repository: https://github.com/Asterix19/charts
 
 
 ---
@@ -247,6 +251,25 @@ export default function Chart({ candles }: { candles: Candle[] }) {
 Drag to pan, mouse wheel or two-finger pinch to zoom, hover (mouse) or touch to inspect a candle when `showOhlcHud` is on. `onCrosshairChange(candle | null)` reports the inspected candle. Increment `scrollToLatestTrigger` to jump back to the newest candle.
 
 See also: [live data](https://github.com/Asterix19/charts/blob/main/live-data.md), [performance](https://github.com/Asterix19/charts/blob/main/performance.md), [API reference](https://github.com/Asterix19/charts/blob/main/api-reference.md).
+
+## Area charts and sparklines (lists of small charts)
+
+`chartType="area"` is the close-price line with a gradient fill underneath, in the theme's `lineChart` colour. `sparkline` is the compact mode for many small charts at once (stock lists, table cells): no axes, grid, price gutter, panels, crosshair or tooltip, the whole dataset is drawn, and the chart **does not capture touch, wheel or pointer events**, so a long list still scrolls. For static data, `closesToCandles(prices)` turns a plain array of closing prices into chart data.
+
+```tsx
+import { useMemo } from 'react';
+import { SLChart, closesToCandles, getThemeColors } from '@stacklatte/chart-react';
+
+// A cool blue area on a transparent background.
+const theme = { ...getThemeColors('dark'), background: 'transparent', lineChart: '#38bdf8' };
+
+export function StockSparkline({ closes }: { closes: number[] }) {
+  const candles = useMemo(() => closesToCandles(closes), [closes]);
+  return <SLChart data={candles} width={120} height={40} sparkline theme={theme} />;
+}
+```
+
+The same props work in Angular (`<sl-chart sparkline [theme]="theme" …>`) and React Native. See it with 24 stocks at [stacklatte.com/lab](https://stacklatte.com/lab) (the **Stock list** tab, which also has a copy button for the code and an AI prompt).
 
 
 ---
@@ -487,6 +510,43 @@ export function geometry(candles: Candle[]) {
 ## Full runnable demo
 
 `examples/engine-demo` in the repository contains runnable scripts (`npm run demo`, `npm run config`, `npm run bench`) and ESM + CommonJS consumer tests.
+
+
+---
+
+<!-- docs/mcp.md -->
+
+# MCP server (`@stacklatte/chart-mcp`)
+
+An MCP server so AI assistants can build exact charts instead of guessing props. It runs locally over stdio and needs no API key.
+
+```sh
+claude mcp add stacklatte-charts -- npx -y @stacklatte/chart-mcp
+```
+
+For Cursor, Windsurf, Claude Desktop and other clients, add this to the client's MCP config:
+
+```json
+{
+  "mcpServers": {
+    "stacklatte-charts": { "command": "npx", "args": ["-y", "@stacklatte/chart-mcp"] }
+  }
+}
+```
+
+## Tools
+
+- **`list_capabilities`**: every chart option with its allowed values and default, the four presets (`trading`, `area`, `sparkline`, `everything`) and the frameworks.
+- **`generate_chart`**: `{ framework: 'react' | 'angular' | 'react-native' | 'typescript', preset?, settings? }` returns the code, the install command, the validated `ChartConfig`, a plain-English spec and a complete prompt. `settings` uses the ids from `list_capabilities`, for example `{ rsi: true, rsiPeriod: 9, chartType: 'area', zoom: 120 }`. Unknown keys and out-of-range values are rejected.
+- **`validate_chart_config`**: runs the library's strict validator on a `ChartConfig` and returns itemised errors.
+- **`get_docs`**: `overview` (llms.txt), `full` (llms-full.txt) or `query` for the paragraphs that mention a word.
+- **`report_issue`**: where to send bug reports (bugs@stacklatte.com) with a prefilled template.
+
+The same generator powers the website's [Chart Lab](https://stacklatte.com/lab), and its output is type-checked against the built packages in this repository's test suite.
+
+## Reporting issues
+
+Email bugs@stacklatte.com, or open an issue at https://github.com/Asterix19/charts/issues. Include `npm ls @stacklatte/chart-react @stacklatte/chart-engine`, your framework and what you expected.
 
 
 ---
@@ -922,6 +982,16 @@ These are deliberate fixes; everything else (numbers, props, themes, config comp
 | `buildChartPipeline` throws `Invalid ChartConfig` after moving from `chart-core` to `chart-native` / `chart-engine` | strict validation is the default there; `chart-core` stays lenient | Fix the config (the error lists the allowed values), or pass `{ strict: false }` to keep the old behaviour. |
 | Old code uses `zoomLevel` or `ChartCanvas` | names from earlier versions | The component is `SLChart`; the visible-candle count is `visibleDataPoints`. See the [API reference](https://github.com/Asterix19/charts/blob/main/api-reference.md). |
 | The chart feels slow with live data | a new `indicators` / `theme` object on every render, or an unbounded candle array | See [performance](https://github.com/Asterix19/charts/blob/main/performance.md). |
+
+## Reporting a bug
+
+Email **bugs@stacklatte.com** (or open an [issue](https://github.com/Asterix19/charts/issues)) with:
+
+- the output of `npm ls @stacklatte/chart-react @stacklatte/chart-engine` (or the package you use),
+- your framework, browser or device,
+- what you expected and what happened, with the smallest chart that shows it.
+
+The [Chart Lab](https://stacklatte.com/lab) has a **Report an issue** button that prefills the chart settings, versions and browser for you, and its **Copy details** button puts the same text on the clipboard.
 
 
 ---

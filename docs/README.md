@@ -16,7 +16,8 @@ Trading charts (candlesticks, RSI, MACD, Bollinger Bands, volume, trade markers,
 | [Performance](./performance.md) | Measured frame times at 2k–50k candles, and how to stay fast |
 | [Testing](./testing.md) | The scenario catalogue and how every platform is tested |
 | [Migrating from `chart-core`](./migrating-from-chart-core.md) | Moving off the legacy package name |
-| [Troubleshooting](./troubleshooting.md) | Common mistakes and their fixes |
+| [MCP server](./mcp.md) | Let Claude Code, Cursor and other AI assistants generate exact charts |
+| [Troubleshooting](./troubleshooting.md) | Common mistakes and their fixes, and how to report a bug |
 | [API reference](./api-reference.md) | Every export and every prop, generated from the shipped types |
 
 For AI coding agents: [`../llms.txt`](../llms.txt) is the short entry point and [`../llms-full.txt`](../llms-full.txt) contains all of this documentation in one file.

@@ -131,10 +131,10 @@ export const LAB_CAPABILITIES: LabCapability[] = [
     ['cBackground', 'Background'], ['cUp', 'Candle up'], ['cDown', 'Candle down'], ['cGrid', 'Grid'], ['cText', 'Labels'], ['cCrosshair', 'Crosshair'],
   ] as const).map(([id, label]): LabCapability => ({ id, group: 'Custom theme colours', label, control: { kind: 'color', presets: PALETTE }, props: ['theme'], needs: (s) => s.theme === 'custom' })),
   // Actions
-  { id: 'now', group: 'Actions', label: '↵ Jump to latest', hint: 'scrollToLatestTrigger', control: { kind: 'action', action: 'now' }, props: ['scrollToLatestTrigger'] },
-  { id: 'bulk', group: 'Actions', label: '+5K candles', hint: 'Stress: append 5,000 candles (capped at 60,000).', control: { kind: 'action', action: 'bulk' }, props: ['data'] },
-  { id: 'regen', group: 'Actions', label: 'New random data', control: { kind: 'action', action: 'regen' }, props: ['data'] },
-  { id: 'reset', group: 'Actions', label: 'Reset everything', control: { kind: 'action', action: 'reset' }, props: [] },
+  { id: 'now', group: 'Actions', label: 'Jump to latest', hint: 'Scrolls the chart back to the newest candle (scrollToLatestTrigger).', control: { kind: 'action', action: 'now' }, props: ['scrollToLatestTrigger'] },
+  { id: 'bulk', group: 'Actions', label: 'Stress test: +5,000 candles', hint: 'Adds 5,000 more candles to see how the chart copes with a big dataset (capped at 60,000).', control: { kind: 'action', action: 'bulk' }, props: ['data'] },
+  { id: 'regen', group: 'Actions', label: 'New random data', hint: 'Generates a fresh random price series.', control: { kind: 'action', action: 'regen' }, props: ['data'] },
+  { id: 'reset', group: 'Actions', label: 'Start over', hint: 'Puts every control back to its default.', control: { kind: 'action', action: 'reset' }, props: [] },
 ];
 
 export const LAB_GROUPS: LabGroup[] = ['Data', 'View', 'Overlays', 'Panels', 'Markers', 'Custom theme colours', 'Actions'];
@@ -332,3 +332,17 @@ export function labApply(model: LabModel, id: string, raw: string | number | boo
   const value = typeof current === 'number' ? Number(raw) : typeof current === 'boolean' ? Boolean(raw) : raw;
   model.set(id as LabKey, value as never);
 }
+
+// ---------------------------------------------------------------------------- presets (shared by the website and the MCP server)
+
+const BLUE_THEME: Partial<LabState> = { theme: 'custom', cBackground: '#0b1220', cUp: '#38bdf8', cDown: '#f43f5e', cGrid: '#1e293b', cText: '#94a3b8', cCrosshair: '#94a3b8' };
+
+export interface LabPreset { id: string; label: string; hint: string; set: Partial<LabState> }
+
+/** Starting points: each is applied on top of the defaults. */
+export const LAB_PRESETS: LabPreset[] = [
+  { id: 'trading', label: 'Trading chart', hint: 'Candles, SMA + EMA, RSI, volume, crosshair', set: { hud: true, sma: true, ema: true, rsi: true, volume: true } },
+  { id: 'area', label: 'Blue area chart', hint: 'Line with a gradient fill underneath', set: { chartType: 'area', zoom: 120, hud: true, ...BLUE_THEME } },
+  { id: 'sparkline', label: 'Sparkline', hint: 'Compact chart for lists of many small charts', set: { sparkline: true, chartType: 'area', ...BLUE_THEME } },
+  { id: 'everything', label: 'Everything on', hint: 'All overlays, panels and markers', set: { hud: true, sma: true, ema: true, bb: true, vwap: true, rsi: true, macd: true, volume: true, customPanel: true, markers: true } },
+];

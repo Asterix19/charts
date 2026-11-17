@@ -87,3 +87,7 @@ e2e-native/.compare/
 # Visual QA output (npm run qa)
 qa-output/
 e2e-native/lab-run/
+
+# chart-mcp embeds the docs at build time
+chart-mcp/src/docs.generated.ts
+chart-mcp/dist/

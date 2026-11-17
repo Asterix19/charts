@@ -20,3 +20,13 @@
 | `buildChartPipeline` throws `Invalid ChartConfig` after moving from `chart-core` to `chart-native` / `chart-engine` | strict validation is the default there; `chart-core` stays lenient | Fix the config (the error lists the allowed values), or pass `{ strict: false }` to keep the old behaviour. |
 | Old code uses `zoomLevel` or `ChartCanvas` | names from earlier versions | The component is `SLChart`; the visible-candle count is `visibleDataPoints`. See the [API reference](./api-reference.md). |
 | The chart feels slow with live data | a new `indicators` / `theme` object on every render, or an unbounded candle array | See [performance](./performance.md). |
+
+## Reporting a bug
+
+Email **bugs@stacklatte.com** (or open an [issue](https://github.com/Asterix19/charts/issues)) with:
+
+- the output of `npm ls @stacklatte/chart-react @stacklatte/chart-engine` (or the package you use),
+- your framework, browser or device,
+- what you expected and what happened, with the smallest chart that shows it.
+
+The [Chart Lab](https://stacklatte.com/lab) has a **Report an issue** button that prefills the chart settings, versions and browser for you, and its **Copy details** button puts the same text on the clipboard.
