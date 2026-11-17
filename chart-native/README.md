@@ -13,7 +13,7 @@ High-performance React Native trading charts — GPU-accelerated via [React Nati
 ## Guides, demos and tests
 
 - **Guide:** [React Native guide](../docs/react-native.md) · [all docs](../docs/README.md) · [API reference](../docs/api-reference.md) · [for LLMs: `llms.txt`](./llms.txt)
-- **Runnable demo:** `npm run demo:native` — serves 35 scenarios (feature, edge, stress, live) at `/#/scenarios/<id>` (Scenarios tab; deep link `demo://scenarios?id=stress-extreme`)
+- **Runnable demo:** `npm run demo:native` — serves 37 scenarios (feature, edge, stress, live) at `/#/scenarios/<id>` (Scenarios tab; deep link `demo://scenarios?id=stress-extreme`)
 - **Measured:** the 50,000-candle scenario mounts in ~130 ms on the iOS simulator; every scenario is driven end-to-end with Maestro.
 - **Tested like people depend on it:** the same scenario catalogue runs on every platform, with performance budgets and a compatibility oracle against the published packages — see [Testing](../docs/testing.md).
 

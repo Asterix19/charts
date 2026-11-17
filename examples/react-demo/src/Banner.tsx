@@ -1,4 +1,4 @@
-import { DEMO_PACKAGES } from '@stacklatte/chart-examples';
+import { DEMO_PACKAGES, SCENARIOS } from '@stacklatte/chart-examples';
 import React from 'react';
 
 const PKG = DEMO_PACKAGES.react;
@@ -12,7 +12,7 @@ export default function Banner({ route }: { route: 'lab' | 'scenarios' }) {
       <span className="demo-meta">{PKG.renderer} · engine v{__ENGINE_VERSION__}</span>
       <nav>
         <a href="#/" aria-current={route === 'lab' ? 'page' : undefined} data-testid="nav-lab">Lab: every capability</a>
-        <a href="#/scenarios/basic" aria-current={route === 'scenarios' ? 'page' : undefined} data-testid="nav-scenarios">35 scenarios</a>
+        <a href="#/scenarios/basic" aria-current={route === 'scenarios' ? 'page' : undefined} data-testid="nav-scenarios">{SCENARIOS.length} scenarios</a>
       </nav>
     </header>
   );

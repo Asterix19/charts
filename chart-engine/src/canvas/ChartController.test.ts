@@ -164,6 +164,68 @@ describe('ChartController', () => {
     });
   });
 
+  describe('area chart and sparkline', () => {
+    it("chartType 'area' fills a gradient under the smooth line and still strokes the line", async () => {
+      mount({ chartType: 'area', theme: 'dark' });
+      await frame();
+      const ctx = contexts.at(-1)!;
+      expect(ctx.createLinearGradient).toHaveBeenCalled();
+      expect(ctx.fill).toHaveBeenCalled();
+      expect(ctx.stroke).toHaveBeenCalled();
+      expect(ctx.fillText).toHaveBeenCalled(); // axis chrome is still drawn in non-sparkline mode
+    });
+
+    it("the plain 'line' type has no fill gradient", async () => {
+      mount({ chartType: 'line' });
+      await frame();
+      expect(contexts.at(-1)!.createLinearGradient).not.toHaveBeenCalled();
+    });
+
+    it('sparkline: one canvas, no axis labels or grid, no sub-panels, no HUD, defaults to an area', async () => {
+      mount({ sparkline: true, width: 120, height: 36, showRsiPanel: true, showMacdPanel: true, showVolumePanel: true, showOhlcHud: true, data: makeCandles(30) });
+      await frame();
+      expect(host.querySelectorAll('canvas')).toHaveLength(1);
+      const ctx = contexts.at(-1)!;
+      expect(ctx.fillText).not.toHaveBeenCalled();
+      expect(ctx.setLineDash).not.toHaveBeenCalled(); // no dashed grid
+      expect(ctx.createLinearGradient).toHaveBeenCalled(); // area by default
+      expect(host.querySelector('[data-sl-layer="ohlc-hud"]')).toBeNull();
+    });
+
+    it('sparkline does not capture wheel, pointer or touch input, so a list of them still scrolls', async () => {
+      mount({ sparkline: true, width: 120, height: 36, data: makeCandles(30) });
+      await frame();
+      const canvas = host.querySelector('canvas')!;
+      const wheel = new WheelEvent('wheel', { deltaY: 100, bubbles: true, cancelable: true });
+      canvas.dispatchEvent(wheel);
+      expect(wheel.defaultPrevented).toBe(false);
+      const root = canvas.parentElement!.parentElement as HTMLElement; // canvas -> main wrapper -> chart root
+      expect(root.style.pointerEvents).toBe('none');
+      expect(root.style.touchAction).not.toBe('none');
+    });
+
+    it('sparkline shows the whole dataset, for any length, even when it is longer than the default 60-candle window', async () => {
+      const onCrosshairChange = vi.fn();
+      mount({ sparkline: true, width: 120, height: 36, data: makeCandles(200), onCrosshairChange });
+      await frame();
+      // The gradient's top is the highest point: one fill and one stroke over 200 points means the whole series was drawn.
+      expect(contexts.at(-1)!.bezierCurveTo.mock.calls.length).toBeGreaterThanOrEqual(199 * 2);
+      expect(onCrosshairChange).not.toHaveBeenCalled();
+    });
+
+    it('toggling sparkline off makes the chart interactive again, and on removes the gestures', async () => {
+      const c = mount({ data: makeCandles(60) });
+      await frame();
+      const canvas = host.querySelector('canvas')!;
+      const wheelPrevented = () => { const e = new WheelEvent('wheel', { deltaY: 100, bubbles: true, cancelable: true }); canvas.dispatchEvent(e); return e.defaultPrevented; };
+      expect(wheelPrevented()).toBe(true);
+      c.update({ data: makeCandles(60), width: 400, height: 300, sparkline: true });
+      expect(wheelPrevented()).toBe(false);
+      c.update({ data: makeCandles(60), width: 400, height: 300 });
+      expect(wheelPrevented()).toBe(true);
+    });
+  });
+
   describe('trackpad pinch', () => {
     const candlesDrawn = () => contexts.at(-1)!.fillRect.mock.calls.length;
 

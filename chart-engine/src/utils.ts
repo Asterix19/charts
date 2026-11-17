@@ -106,3 +106,15 @@ export function normalizeCandles(candles: Candle[]): Candle[] {
   }
   return out;
 }
+
+/**
+ * Turn a plain list of prices (oldest first) into chart data, for static data such as a stock list's last 30 closes.
+ * Each point becomes a flat candle (open = high = low = close), `intervalMs` apart, ending at `endTs` (default: now).
+ * Non-finite values are skipped.
+ */
+export function closesToCandles(closes: readonly number[], opts: { endTs?: number; intervalMs?: number } = {}): Candle[] {
+  const intervalMs = opts.intervalMs ?? 86_400_000;
+  const endTs = opts.endTs ?? Date.now();
+  const clean = closes.filter((v) => Number.isFinite(v));
+  return clean.map((close, i) => ({ timestamp: endTs - (clean.length - 1 - i) * intervalMs, open: close, high: close, low: close, close }));
+}

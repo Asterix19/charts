@@ -220,3 +220,19 @@ describe('findIndicatorValue', () => {
     expect(findIndicatorValue([], 100)).toBeNull();
   });
 });
+
+import { closesToCandles } from './utils';
+describe('closesToCandles', () => {
+  it('turns prices into flat candles, oldest first, ending at endTs, skipping non-finite values', () => {
+    const out = closesToCandles([10, Number.NaN, 12, 11], { endTs: 1_000_000, intervalMs: 1000 });
+    expect(out.map((c) => c.close)).toEqual([10, 12, 11]);
+    expect(out.at(-1)!.timestamp).toBe(1_000_000);
+    expect(out[0].timestamp).toBe(1_000_000 - 2000);
+    expect(out.every((c) => c.open === c.close && c.high === c.close && c.low === c.close)).toBe(true);
+  });
+  it('defaults to daily candles ending now, and handles an empty list', () => {
+    expect(closesToCandles([])).toEqual([]);
+    const [a, b] = closesToCandles([1, 2]);
+    expect(b.timestamp - a.timestamp).toBe(86_400_000);
+  });
+});

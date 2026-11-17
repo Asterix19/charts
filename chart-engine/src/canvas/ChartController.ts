@@ -23,6 +23,7 @@ import {
   clampViewport,
   computeCustomPanelYRange,
   computeLayout,
+  computeSparklineLayout,
   filterByWindow,
   findMarkerAt,
   findIndicatorById,
@@ -44,7 +45,7 @@ import { drawAxis } from './draw/axis';
 import { drawCrosshairLines } from './draw/crosshair';
 import { drawCustomPanel } from './draw/customPanel';
 import { drawMacdPanel } from './draw/macdPanel';
-import { drawCandles, drawCrosshairDot, drawLineSeries, drawShadedArea } from './draw/mainPanel';
+import { drawAreaFill, drawCandles, drawCrosshairDot, drawLineSeries, drawShadedArea } from './draw/mainPanel';
 import { drawMarkers } from './draw/markers';
 import { drawRsiPanel } from './draw/rsiPanel';
 import { drawVolumePanel } from './draw/volumePanel';
@@ -114,9 +115,9 @@ export class ChartController {
     this.root.appendChild(mainWrap);
     host.appendChild(this.root);
 
-    this.attachGestures();
     this.sortedData = normalizeCandles(props.data);
     this.resetViewport();
+    this.syncGestures();
     this.prevVisibleDataPoints = props.visibleDataPoints;
     this.prevScrollTrigger = props.scrollToLatestTrigger;
     this.scheduleRender();
@@ -127,8 +128,15 @@ export class ChartController {
     const prev = this.props;
     this.props = next;
     if (next.data !== prev.data) this.sortedData = normalizeCandles(next.data);
+    this.syncGestures();
 
     const dataLen = this.sortedData.length;
+    if (next.sparkline && next.visibleDataPoints === undefined) {
+      // Compact charts always show the whole dataset (a list cell gets a new series, not a scrolled one).
+      this.viewport = { start: 0, end: dataLen };
+      this.scheduleRender();
+      return;
+    }
     if (next.visibleDataPoints !== this.prevVisibleDataPoints) {
       this.prevVisibleDataPoints = next.visibleDataPoints;
       this.resetViewport();
@@ -184,10 +192,13 @@ export class ChartController {
 
   private layout() {
     const p = this.props;
+    if (p.sparkline) return computeSparklineLayout(p.width, p.height);
     return computeLayout(p.width, p.height, !!p.showRsiPanel, !!p.showMacdPanel, !!p.showVolumePanel, p.customPanels?.length ?? 0);
   }
 
   private maxVisible(): number {
+    // A sparkline shows the whole dataset in a few dozen pixels: the "legible candle width" cap does not apply to a line.
+    if (this.props.sparkline) return Math.max(MIN_VISIBLE_CANDLES, this.sortedData.length);
     return this.props.maxZoom ?? maxLegibleVisibleCandles(this.layout().chartWidth, MIN_VISIBLE_CANDLES);
   }
 
@@ -198,6 +209,11 @@ export class ChartController {
 
   private resetViewport(): void {
     const len = this.sortedData.length;
+    if (this.props.sparkline && this.props.visibleDataPoints === undefined) {
+      this.isFollowingLive = true;
+      this.viewport = { start: 0, end: len };
+      return;
+    }
     const range = clamp(this.props.visibleDataPoints ?? 60, MIN_VISIBLE_CANDLES, Math.min(len || (this.props.visibleDataPoints ?? 60), this.maxVisible()));
     this.isFollowingLive = true;
     this.viewport = clampViewport({ start: len - range, end: len }, len, MIN_VISIBLE_CANDLES);
@@ -212,6 +228,26 @@ export class ChartController {
   // ── gestures ──────────────────────────────────────────────────────────────
 
   private detachGestures?: () => void;
+  private gesturesAttached = false;
+
+  /** Gestures (and pointer capture) exist only while the chart is interactive: a `sparkline` must not swallow scrolling. */
+  private syncGestures(): void {
+    const interactive = !this.props.sparkline;
+    this.root.style.pointerEvents = interactive ? '' : 'none';
+    if (interactive === this.gesturesAttached) return;
+    if (interactive) {
+      this.attachGestures();
+    } else {
+      this.detachGestures?.();
+      this.detachGestures = undefined;
+      this.pointers.clear();
+      this.dragging = false;
+      this.pinching = false;
+      this.hoverPos = null;
+      this.lockedTimestamp = null;
+    }
+    this.gesturesAttached = interactive;
+  }
 
   private attachGestures(): void {
     // Coordinates are measured from the main canvas (every panel shares its x-axis and left edge), but the listeners sit on
@@ -375,6 +411,7 @@ export class ChartController {
     target.addEventListener('gesturechange', onGestureChange, { passive: false });
     target.addEventListener('gestureend', onGestureEnd, { passive: false });
     this.detachGestures = () => {
+      target.style.touchAction = '';
       target.removeEventListener('pointerdown', onDown);
       target.removeEventListener('pointermove', onMove);
       target.removeEventListener('pointerup', onUp);
@@ -432,7 +469,8 @@ export class ChartController {
     const { width, height } = p;
     const theme = p.theme ?? 'dark';
     const colors = getThemeColors(theme);
-    const chartType = p.chartType ?? 'candle';
+    const sparkline = !!p.sparkline;
+    const chartType = p.chartType ?? (sparkline ? 'area' : 'candle');
     const hour12 = p.hour12 ?? false;
     const showGrid = p.showGrid ?? true;
     const rsiPeriod = p.rsiPeriod ?? 14;
@@ -502,7 +540,8 @@ export class ChartController {
     });
 
     const values = [
-      ...visible.flatMap((c) => [c.high, c.low]),
+      // A close-price area fits its range to the closes; candles (and the plain line, as always) to the highs and lows.
+      ...(chartType === 'area' ? visible.map((c) => c.close) : visible.flatMap((c) => [c.high, c.low])),
       ...prepared.flatMap(({ data }) => data.map((pt) => pt.value).filter((v) => typeof v === 'number' && Number.isFinite(v))),
     ];
     const price = buildPaddedRange(Math.min(...values), Math.max(...values), 0.05);
@@ -512,12 +551,12 @@ export class ChartController {
       ? buildMarkerPoints(markers, buildTimestampIndex(visible), visible.length, virtualWidth, mainChartHeight, price.min, price.max)
       : [];
     this.markerPoints = markerPoints;
-    const hovered = this.hoverPos
+    const hovered = this.hoverPos && !sparkline
       ? findMarkerAt(markerPoints, this.hoverPos.x - padding.left - fractionalOffsetX, this.hoverPos.y - padding.top)
       : null;
 
     // crosshair
-    const idx = this.lockedTimestamp === null ? -1 : visible.findIndex((c) => c.timestamp === this.lockedTimestamp);
+    const idx = this.lockedTimestamp === null || sparkline ? -1 : visible.findIndex((c) => c.timestamp === this.lockedTimestamp);
     const crossCandle = idx >= 0 ? visible[idx] : null;
     const crossX = crossCandle ? (idx + 0.5) * slotWidth + fractionalOffsetX : null;
     const crossY = crossCandle ? getY(crossCandle.close, price.min, price.max, mainChartHeight) : null;
@@ -529,10 +568,10 @@ export class ChartController {
     // ── panel DOM ──
     const keys: string[] = [];
     const heights: Record<string, number> = {};
-    if (p.showVolumePanel) { keys.push('volume'); heights.volume = L.volumePanelHeight; }
-    if (p.showRsiPanel) { keys.push('rsi'); heights.rsi = L.rsiPanelHeight; }
-    if (p.showMacdPanel && macd) { keys.push('macd'); heights.macd = L.macdPanelHeight; }
-    for (const { panel } of customPanels) { keys.push(`custom:${panel.id}`); heights[`custom:${panel.id}`] = L.customPanelHeight; }
+    if (!sparkline && p.showVolumePanel) { keys.push('volume'); heights.volume = L.volumePanelHeight; }
+    if (!sparkline && p.showRsiPanel) { keys.push('rsi'); heights.rsi = L.rsiPanelHeight; }
+    if (!sparkline && p.showMacdPanel && macd) { keys.push('macd'); heights.macd = L.macdPanelHeight; }
+    for (const { panel } of sparkline ? [] : customPanels) { keys.push(`custom:${panel.id}`); heights[`custom:${panel.id}`] = L.customPanelHeight; }
     this.syncPanels(keys, heights, panelGap, width);
     this.mainCanvas.style.width = `${width}px`;
     this.mainCanvas.style.height = `${mainCanvasHeight}px`;
@@ -540,7 +579,7 @@ export class ChartController {
     // ── main panel ──
     const ctx = getScaledContext(this.mainCanvas, width, mainCanvasHeight);
     if (ctx) {
-      drawAxis(ctx, {
+      if (!sparkline) drawAxis(ctx, {
         sortedData, viewportStart: vp.start, viewportEnd: vp.end, intervalMs, width, height: mainCanvasHeight,
         priceMin: price.min, priceMax: price.max, padding, colors, hour12, showGrid,
       });
@@ -554,7 +593,9 @@ export class ChartController {
       if (chartType === 'candle') {
         drawCandles(ctx, buildCandleGeometry(visible, virtualWidth, mainChartHeight, price.min, price.max, colors.candleUp, colors.candleDown));
       } else {
-        drawLineSeries(ctx, buildLinePoints(visible, virtualWidth, mainChartHeight, price.min, price.max), colors.lineChart);
+        const linePoints = buildLinePoints(visible, virtualWidth, mainChartHeight, price.min, price.max);
+        if (chartType === 'area') drawAreaFill(ctx, linePoints, mainChartHeight, colors.lineChart);
+        drawLineSeries(ctx, linePoints, colors.lineChart, sparkline ? 1.5 : 2);
       }
       const index = buildTimestampIndex(visible);
       for (const { line, data } of prepared) {
@@ -624,10 +665,10 @@ export class ChartController {
       c.restore();
     };
 
-    if (p.showVolumePanel) {
+    if (!sparkline && p.showVolumePanel) {
       frame('volume', L.volumePanelHeight, (c) => drawVolumePanel(c, { candleData: visible, width: virtualWidth, height: L.volumePanelHeight, colors }));
     }
-    if (p.showRsiPanel) {
+    if (!sparkline && p.showRsiPanel) {
       const rsiAt = crossCandle ? findIndicatorValue(rsi, crossCandle.timestamp) : null;
       frame(
         'rsi', L.rsiPanelHeight,
@@ -635,13 +676,13 @@ export class ChartController {
         (c) => { if (rsiAt != null) drawCrosshairDot(c, { x: 0, y: getY(rsiAt, 0, 100, L.rsiPanelHeight) }, colors.rsiLine, 2); },
       );
     }
-    if (p.showMacdPanel && macd) {
+    if (!sparkline && p.showMacdPanel && macd) {
       frame('macd', L.macdPanelHeight, (c) => drawMacdPanel(c, {
         macd: macd.macd, signal: macd.signal, histogram: macd.histogram,
         candleData: visible, width: virtualWidth, height: L.macdPanelHeight, colors,
       }));
     }
-    for (const { panel, series, yMin, yMax } of customPanels) {
+    for (const { panel, series, yMin, yMax } of sparkline ? [] : customPanels) {
       frame(
         `custom:${panel.id}`, L.customPanelHeight,
         (c) => drawCustomPanel(c, {
@@ -661,7 +702,7 @@ export class ChartController {
     this.renderTooltip(hovered, colors, { width, height, padLeft: padding.left, padTop: padding.top, offsetX: fractionalOffsetX });
 
     // OHLC + indicator HUD: the inspected candle, or the latest visible one while nothing is inspected.
-    if (p.showOhlcHud) {
+    if (p.showOhlcHud && !sparkline) {
       const customPanelValues: HudCustomValue[] = [];
       if (crossCandle) {
         for (const { panel, series } of customPanels) {

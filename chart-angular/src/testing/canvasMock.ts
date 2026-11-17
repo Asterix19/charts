@@ -20,6 +20,7 @@ export interface MockContext2D {
   fillText: ReturnType<typeof vi.fn>;
   setLineDash: ReturnType<typeof vi.fn>;
   measureText: ReturnType<typeof vi.fn>;
+  createLinearGradient: ReturnType<typeof vi.fn>;
   strokeStyle: string;
   fillStyle: string;
   lineWidth: number;
@@ -52,6 +53,7 @@ export function createMockContext(): MockContext2D {
     fillText: vi.fn(),
     setLineDash: vi.fn(),
     measureText: vi.fn(() => ({ width: 0 })),
+    createLinearGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
     strokeStyle: '',
     fillStyle: '',
     lineWidth: 1,

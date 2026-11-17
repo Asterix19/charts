@@ -112,7 +112,7 @@ export function validateChartConfig(config: ChartConfig, options: ValidateOption
 // loudly instead of silently falling back (e.g. an unknown theme rendering dark).
 
 const THEMES_ALLOWED = ['dark', 'light'] as const;
-const PRICE_DISPLAYS = ['candle', 'line'] as const;
+const PRICE_DISPLAYS = ['candle', 'line', 'area'] as const;
 const OVERLAY_TYPES = ['sma', 'ema', 'bollinger_bands', 'vwap'] as const;
 const SUB_PANEL_TYPES = ['rsi', 'macd', 'volume'] as const;
 const INTERVALS = Object.keys(INTERVAL_MS);

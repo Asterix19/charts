@@ -27,12 +27,13 @@ export interface LabState {
   empty: boolean;
   live: 'off' | '3000' | '1000' | '500' | '100';
   // view
-  chartType: 'candle' | 'line';
+  chartType: 'candle' | 'line' | 'area';
   theme: 'dark' | 'light' | 'custom';
   zoom: number;
   maxZoom: 'auto' | '50' | '200';
   interval: 'auto' | '60000' | '300000';
   hour12: boolean;
+  sparkline: boolean;
   grid: boolean;
   hud: boolean;
   size: 'fill' | 'compact' | 'tiny';
@@ -59,7 +60,7 @@ export type LabActionId = 'now' | 'bulk' | 'regen' | 'reset';
 
 export const DEFAULT_LAB_STATE: LabState = {
   count: 500, seed: 42, withVolume: true, dirty: false, empty: false, live: 'off',
-  chartType: 'candle', theme: 'dark', zoom: 60, maxZoom: 'auto', interval: 'auto', hour12: false, grid: true, hud: true, size: 'fill',
+  chartType: 'candle', theme: 'dark', zoom: 60, maxZoom: 'auto', interval: 'auto', hour12: false, sparkline: false, grid: true, hud: true, size: 'fill',
   sma: false, smaPeriod: 20, ema: false, emaPeriod: 50, bb: false, bbPeriod: 20, bbMult: 2, vwap: false,
   rsi: false, rsiPeriod: 14, macd: false, volume: false, customPanel: false,
   markers: false,
@@ -103,7 +104,7 @@ export const LAB_CAPABILITIES: LabCapability[] = [
   { id: 'dirty', group: 'Data', label: 'Dirty feed', hint: 'Injects NaN, duplicates and out-of-order candles. The chart must not blank or crash.', control: { kind: 'bool' }, props: ['data'] },
   { id: 'empty', group: 'Data', label: 'No data', hint: 'data = [] shows the “No data” placeholder.', control: { kind: 'bool' }, props: ['data'] },
   // View
-  { id: 'chartType', group: 'View', label: 'Chart type', control: { kind: 'enum', options: opts(['candle', 'Candles'], ['line', 'Line']) }, props: ['chartType'] },
+  { id: 'chartType', group: 'View', label: 'Chart type', control: { kind: 'enum', options: opts(['candle', 'Candles'], ['line', 'Line'], ['area', 'Area']) }, props: ['chartType'] },
   { id: 'theme', group: 'View', label: 'Theme', hint: 'Custom uses the colours below.', control: { kind: 'enum', options: opts(['dark', 'Dark'], ['light', 'Light'], ['custom', 'Custom']) }, props: ['theme'] },
   { id: 'zoom', group: 'View', label: 'Visible candles', hint: 'visibleDataPoints', control: { kind: 'enum', options: [10, 20, 40, 60, 120, 240, 500].map(num) }, props: ['visibleDataPoints'] },
   { id: 'maxZoom', group: 'View', label: 'Max zoom-out', hint: 'maxZoom caps how many candles the user can zoom out to.', control: { kind: 'enum', options: opts(['auto', 'Auto'], ['50', '50'], ['200', '200']) }, props: ['maxZoom'] },
@@ -111,6 +112,7 @@ export const LAB_CAPABILITIES: LabCapability[] = [
   { id: 'hour12', group: 'View', label: '12-hour clock', control: { kind: 'bool' }, props: ['hour12'] },
   { id: 'grid', group: 'View', label: 'Grid lines', control: { kind: 'bool' }, props: ['showGrid'] },
   { id: 'hud', group: 'View', label: 'OHLC HUD + crosshair', hint: 'showOhlcHud. Hover or touch the chart.', control: { kind: 'bool' }, props: ['showOhlcHud', 'onCrosshairChange'] },
+  { id: 'sparkline', group: 'View', label: 'Sparkline mode', hint: 'sparkline: compact area for lists of small charts. No axes, panels or crosshair; does not capture scrolling.', control: { kind: 'bool' }, props: ['sparkline'] },
   { id: 'size', group: 'View', label: 'Chart size', hint: 'width / height: fill the area, a fixed box, or a tiny one.', control: { kind: 'enum', options: opts(['fill', 'Fill'], ['compact', 'Compact'], ['tiny', 'Tiny']) }, props: ['width', 'height'] },
   // Overlays
   { id: 'sma', group: 'Overlays', label: 'SMA', control: { kind: 'bool' }, props: ['indicators'] },
@@ -221,6 +223,7 @@ export function labChartProps(s: LabState, data: Candle[]): LabChartProps {
     chartType: s.chartType,
     scrollToLatestTrigger: s.latest,
     hour12: s.hour12,
+    sparkline: s.sparkline,
     maxZoom: s.maxZoom === 'auto' ? undefined : Number(s.maxZoom),
     showGrid: s.grid,
   };

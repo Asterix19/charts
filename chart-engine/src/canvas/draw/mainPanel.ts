@@ -9,7 +9,7 @@
  */
 
 import type { CandleBar, Point } from '../../index';
-import { fillPolygon, strokeSmoothPath } from './path';
+import { fillPolygon, fillSmoothArea, strokeSmoothPath } from './path';
 
 /** Draws candle bodies and wicks from geometry produced by `buildCandleGeometry`. */
 export function drawCandles(ctx: CanvasRenderingContext2D, bars: CandleBar[]): void {
@@ -35,8 +35,14 @@ export function drawLineSeries(
   ctx: CanvasRenderingContext2D,
   pts: Point[],
   color: string,
+  lineWidth = 2,
 ): void {
-  strokeSmoothPath(ctx, pts, { color, lineWidth: 2 });
+  strokeSmoothPath(ctx, pts, { color, lineWidth });
+}
+
+/** The gradient fill under a close-price line (`chartType: 'area'`): `color` fading to transparent down to `baseY`. */
+export function drawAreaFill(ctx: CanvasRenderingContext2D, pts: Point[], baseY: number, color: string): void {
+  fillSmoothArea(ctx, pts, baseY, { color, topAlpha: 0.4 });
 }
 
 /** Fills the polygon between a `top` and `bottom` point series (see `buildShadedAreaPoints`). */

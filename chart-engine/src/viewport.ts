@@ -80,6 +80,17 @@ export function computeLayout(
   return { padding, chartWidth, panelGap, innerHeight, rsiPanelHeight, macdPanelHeight, volumePanelHeight, customPanelHeight, mainChartHeight, mainCanvasHeight };
 }
 
+/** Layout for `sparkline` mode: the plot fills the whole box (2 px breathing room), no axis gutters and no sub-panels. */
+export function computeSparklineLayout(width: number, height: number): ChartLayout {
+  const padding: ChartPadding = { top: 2, right: 2, bottom: 2, left: 2 };
+  const chartWidth = Math.max(1, width - padding.left - padding.right);
+  const mainChartHeight = Math.max(1, height - padding.top - padding.bottom);
+  return {
+    padding, chartWidth, panelGap: 0, innerHeight: mainChartHeight, rsiPanelHeight: 0, macdPanelHeight: 0, volumePanelHeight: 0,
+    customPanelHeight: 0, mainChartHeight, mainCanvasHeight: height,
+  };
+}
+
 // ─── Time window / viewport ───────────────────────────────────────────────
 
 export interface ViewportWindow {

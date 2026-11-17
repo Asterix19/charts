@@ -119,8 +119,8 @@ export interface CustomPanel {
 /** Named built-in theme presets. */
 export type ChartTheme = 'light' | 'dark';
 
-/** How the price series is rendered in the main panel. */
-export type ChartType = 'candle' | 'line';
+/** How the price series is rendered in the main panel. `area` is the smooth close-price line with a gradient fill underneath. */
+export type ChartType = 'candle' | 'line' | 'area';
 
 /** Describes how the latest candle changed since the previous render. */
 export type LiveUpdateMode = 'none' | 'mutate-last-candle' | 'append-new-candle';
@@ -160,8 +160,14 @@ export interface ChartProps {
   showMacdPanel?: boolean;
   /** Show a volume sub-panel below the main chart. Requires `data[].volume`. Default: false. */
   showVolumePanel?: boolean;
-  /** `'candle'` (default) or `'line'` (close-price line). */
+  /** `'candle'` (default), `'line'` (close-price line) or `'area'` (the line with a gradient fill underneath, in the theme's `lineChart` colour). */
   chartType?: ChartType;
+  /**
+   * Compact mode for lists of many small charts (stock tickers, table cells): no axis labels, grid, price gutter, sub-panels,
+   * crosshair or tooltip, and the chart does not capture touch, wheel or pointer events, so a page full of them still scrolls.
+   * Draws the whole dataset as an `area` unless `chartType` says otherwise. Use with a small `width` / `height` (e.g. 120 × 36).
+   */
+  sparkline?: boolean;
   /** Increment this value to jump the viewport to the latest candle. */
   scrollToLatestTrigger?: number;
   /** Called with the inspected candle while the crosshair is active, and with `null` when it is released. Requires `showOhlcHud`. */

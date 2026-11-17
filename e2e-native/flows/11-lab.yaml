@@ -256,6 +256,20 @@ appId: com.anonymous.demo
     id: package-banner
 - takeScreenshot: lab-chartType-line
 
+- openLink: demo://lab?reset=1&preset=rich&set=chartType=area
+- extendedWaitUntil:
+    visible: "Open in.*"
+    timeout: 4000
+    optional: true
+- tapOn:
+    text: "Open"
+    optional: true
+- assertVisible:
+    id: candle-count
+- assertVisible:
+    id: package-banner
+- takeScreenshot: lab-chartType-area
+
 - openLink: demo://lab?reset=1&preset=rich&set=theme=light
 - extendedWaitUntil:
     visible: "Open in.*"
@@ -465,6 +479,20 @@ appId: com.anonymous.demo
 - assertVisible:
     id: package-banner
 - takeScreenshot: lab-hud-false
+
+- openLink: demo://lab?reset=1&preset=rich&set=sparkline=true
+- extendedWaitUntil:
+    visible: "Open in.*"
+    timeout: 4000
+    optional: true
+- tapOn:
+    text: "Open"
+    optional: true
+- assertVisible:
+    id: candle-count
+- assertVisible:
+    id: package-banner
+- takeScreenshot: lab-sparkline-true
 
 - openLink: demo://lab?reset=1&preset=rich&set=size=compact
 - extendedWaitUntil:

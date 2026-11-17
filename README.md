@@ -28,7 +28,7 @@
 - **Same props everywhere.** A snippet for React works in React Native and Angular with trivial changes.
 - **Hard to break.** Dirty feeds (NaN, Infinity, duplicates, unsorted, null entries) never blank the chart; invalid indicator periods return no data instead of throwing.
 - **Built for LLMs.** A validated, closed-enum `ChartConfig` plus a JSON Schema, so a model's output either compiles or fails with an itemised error it can fix. See [`llms.txt`](./llms.txt) and [Generate charts with an LLM](./docs/chartconfig-llm.md).
-- **Tested like people depend on it** (they do): one 35-scenario catalogue (feature, edge, stress, live) runs on every platform, with performance budgets and a backward-compatibility oracle against the published versions. See [Testing](./docs/testing.md).
+- **Tested like people depend on it** (they do): one 37-scenario catalogue (feature, edge, stress, live) runs on every platform, with performance budgets and a backward-compatibility oracle against the published versions. See [Testing](./docs/testing.md).
 
 ## Pick your package
 

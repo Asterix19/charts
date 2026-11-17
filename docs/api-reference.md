@@ -111,6 +111,11 @@ clampViewport(viewport: CandleViewport, dataLength: number, minVisibleCandles: n
 Clamp a CandleViewport so it stays within the available data and the visible range stays between minVisibleCandles and dataLength.
 
 ```ts
+closesToCandles(closes: readonly number[], opts?: { endTs?: number; intervalMs?: number; }): Candle[]
+```
+Turn a plain list of prices (oldest first) into chart data, for static data such as a stock list's last 30 closes. Each point becomes a flat candle (open = high = low = close), `intervalMs` apart, ending at `endTs` (default: now). Non-finite values are skipped.
+
+```ts
 compileChartConfig(config: ChartConfig, data: Candle[]): CompiledChart
 ```
 Compile a ChartConfig + raw candle data into ChartProps ready for ChartCanvas.
@@ -154,6 +159,11 @@ Lowest `low` and highest `high` of the given candles. Returns `{ priceMin: 0, pr
 computeScrollBounds(bufferStartTs: number, firstDataTs: number, lastDataTs: number, timeWindow: number, intervalMs: number, slotWidth: number): { minTranslateX: number; maxTranslateX: number; latestStart: number; }
 ```
 Computes the scroll translate X bounds so the user cannot drag into empty space beyond the first or last candle.
+
+```ts
+computeSparklineLayout(width: number, height: number): ChartLayout
+```
+Layout for `sparkline` mode: the plot fills the whole box (2 px breathing room), no axis gutters and no sub-panels.
 
 ```ts
 computeTimeShift(dx: number, timeWindow: number, chartWidth: number, effectiveStart: number): number
@@ -465,7 +475,8 @@ Space reserved around the plot area (right = price-axis gutter, bottom = time-ax
 | `rsiPeriod` | `number` | no | RSI lookback period. Default: 14. Only used when showRsiPanel is true. |
 | `showMacdPanel` | `boolean` | no | Show a MACD(12,26,9) sub-panel (lines + histogram). Needs at least ~35 candles of data, otherwise it is omitted. Default: false. |
 | `showVolumePanel` | `boolean` | no | Show a volume sub-panel below the main chart. Requires `data[].volume`. Default: false. |
-| `chartType` | `ChartType` | no | `'candle'` (default) or `'line'` (close-price line). |
+| `chartType` | `ChartType` | no | `'candle'` (default), `'line'` (close-price line) or `'area'` (the line with a gradient fill underneath, in the theme's `lineChart` colour). |
+| `sparkline` | `boolean` | no | Compact mode for lists of many small charts (stock tickers, table cells): no axis labels, grid, price gutter, sub-panels, crosshair or tooltip, and the chart does not capture touch, wheel or pointer events, so a page full of them still scrolls. Draws the whole dataset as an `area` unless `chartType` says otherwise. Use with a small `width` / `height` (e.g. 120 × 36). |
 | `scrollToLatestTrigger` | `number` | no | Increment this value to jump the viewport to the latest candle. |
 | `onCrosshairChange` | `(candle: Candle \| null) => void` | no | Called with the inspected candle while the crosshair is active, and with `null` when it is released. Requires `showOhlcHud`. |
 | `bufferRatio` | `number` | no |  |
@@ -712,7 +723,7 @@ VWAP has no configurable parameters.
 - `export type ChartConfigVersion = typeof CHART_CONFIG_VERSION;`
 - `export type ChartInterval = '1m' | '5m' | '15m' | '30m' | '1h' | '4h' | '1d' | '1w';` — Named time intervals. Use these instead of raw millisecond numbers. The compiler maps them to millisecond values via INTERVAL_MS.
 - `export type ChartTheme = 'light' | 'dark';` — Named built-in theme presets.
-- `export type ChartType = 'candle' | 'line';` — How the price series is rendered in the main panel.
+- `export type ChartType = 'candle' | 'line' | 'area';` — How the price series is rendered in the main panel. `area` is the smooth close-price line with a gradient fill underneath.
 - `export type CompiledChart = Omit<ChartProps, 'width' | 'height'>;` — ChartProps without layout dimensions — those come from the container at runtime.
 - `export type LiveUpdateMode = 'none' | 'mutate-last-candle' | 'append-new-candle';` — Describes how the latest candle changed since the previous render.
 - `export type MarkerKind = 'entry-long' | 'exit-long' | 'entry-short' | 'exit-short' | 'stop-loss' | 'take-profit';` — Closed union of supported trade-marker kinds — same convention as OverlayType/ChartType.
@@ -721,7 +732,7 @@ VWAP has no configurable parameters.
 - `export type OverlayConfig = SmaOverlay | EmaOverlay | BollingerOverlay | VwapOverlay;`
 - `export type OverlayType = 'sma' | 'ema' | 'bollinger_bands' | 'vwap';` — All valid overlay type discriminators.
 - `export type PaletteColor = 'blue' | 'orange' | 'green' | 'red' | 'purple' | 'yellow' | 'cyan' | 'pink' | 'white' | 'gray';` — Named color tokens. Use these instead of raw hex strings. The compiler resolves each token to an exact hex value via PALETTE.
-- `export type PriceDisplay = 'candle' | 'line';` — How the price series is rendered in the main panel.
+- `export type PriceDisplay = 'candle' | 'line' | 'area';` — How the price series is rendered in the main panel.
 - `export type RsiPoint = { timestamp: number; value: number; };` — One RSI value (0–100) aligned to a candle timestamp.
 - `export type SubPanelConfig = RsiPanelConfig | MacdPanelConfig | VolumePanelConfig;` — Union of all sub-panel types.
 - `export type SubPanelType = 'rsi' | 'macd' | 'volume';` — All valid sub-panel type discriminators.
@@ -790,7 +801,7 @@ drawCustomPanel(ctx: CanvasRenderingContext2D, opts: { series: { color: string; 
 Draws a `CustomPanel`'s series, fixed or auto y-range and reference lines into its own sub-panel.
 
 ```ts
-drawLineSeries(ctx: CanvasRenderingContext2D, pts: Point[], color: string): void
+drawLineSeries(ctx: CanvasRenderingContext2D, pts: Point[], color: string, lineWidth?: number): void
 ```
 Strokes a smooth Catmull-Rom curve through the points (used for line charts and indicator overlays).
 
@@ -962,6 +973,7 @@ Also re-exports everything from `@stacklatte/chart-engine` (see above).
 | `showMacdPanel` | `boolean \| undefined` | Show a MACD(12,26,9) sub-panel. |
 | `showVolumePanel` | `boolean \| undefined` | Show a volume sub-panel (needs `volume` on the candles). |
 | `showGrid` | `boolean \| undefined` | Background grid lines. Default true. |
+| `sparkline` | `boolean \| undefined` | Compact mode for lists of small charts: no axes, panels, crosshair or event capture. Draws the whole dataset as an area. |
 | `hour12` | `boolean \| undefined` | 12-hour time labels on the x-axis. Default false. |
 | `maxZoom` | `number \| undefined` | Maximum candles visible when zoomed out. |
 | `scrollToLatestTrigger` | `number \| undefined` | Increment to jump the viewport to the latest candle. |

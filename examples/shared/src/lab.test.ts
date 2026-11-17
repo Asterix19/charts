@@ -8,7 +8,7 @@ import type { LabKey, LabState } from './lab';
 const PROP_KEYS = {
   data: 1, indicators: 1, shadedAreas: 1, markers: 1, customPanels: 1, width: 1, height: 1, intervalMs: 1, visibleDataPoints: 1, theme: 1,
   showOhlcHud: 1, showRsiPanel: 1, rsiPeriod: 1, showMacdPanel: 1, showVolumePanel: 1, chartType: 1, scrollToLatestTrigger: 1, onCrosshairChange: 1,
-  bufferRatio: 1, hour12: 1, maxZoom: 1, showGrid: 1,
+  bufferRatio: 1, hour12: 1, maxZoom: 1, showGrid: 1, sparkline: 1,
 } satisfies Record<keyof ChartProps, 1>;
 
 describe('Lab coverage', () => {

@@ -29,7 +29,7 @@ export type ChartConfigVersion = typeof CHART_CONFIG_VERSION;
 export type ThemePreset = 'dark' | 'light';
 
 /** How the price series is rendered in the main panel. */
-export type PriceDisplay = 'candle' | 'line';
+export type PriceDisplay = 'candle' | 'line' | 'area';
 
 /**
  * Named time intervals. Use these instead of raw millisecond numbers.

@@ -753,3 +753,19 @@ describe('filterByWindow with unordered input', () => {
     expect(filterByWindow(ordered, 2, 3)).toEqual([{ timestamp: 2 }, { timestamp: 3 }]);
   });
 });
+
+import { computeSparklineLayout } from './viewport';
+describe('computeSparklineLayout', () => {
+  it('uses the whole box: no price gutter, no sub-panels, 2px breathing room', () => {
+    const L = computeSparklineLayout(120, 36);
+    expect(L.chartWidth).toBe(116);
+    expect(L.mainChartHeight).toBe(32);
+    expect(L.mainCanvasHeight).toBe(36);
+    expect(L.rsiPanelHeight + L.macdPanelHeight + L.volumePanelHeight + L.customPanelHeight).toBe(0);
+  });
+  it('never goes negative for a tiny box', () => {
+    const L = computeSparklineLayout(2, 2);
+    expect(L.chartWidth).toBeGreaterThanOrEqual(1);
+    expect(L.mainChartHeight).toBeGreaterThanOrEqual(1);
+  });
+});

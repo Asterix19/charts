@@ -56,6 +56,60 @@ appId: com.anonymous.demo
     id: chart-host
 - takeScreenshot: scenario-line
 
+# ── area (feature) ──
+- openLink: demo://scenarios?id=area
+- extendedWaitUntil:
+    visible: "Open in.*"
+    timeout: 4000
+    optional: true
+- tapOn:
+    text: "Open"
+    optional: true
+- extendedWaitUntil:
+    visible: ".*scenario=area candles=500 .*"
+    timeout: 30000
+- assertVisible:
+    id: title
+- assertVisible: "Area"
+- swipe:
+    start: 30%, 55%
+    end: 80%, 55%
+    duration: 400
+- swipe:
+    start: 80%, 55%
+    end: 20%, 55%
+    duration: 400
+- assertVisible:
+    id: chart-host
+- takeScreenshot: scenario-area
+
+# ── sparkline (feature) ──
+- openLink: demo://scenarios?id=sparkline
+- extendedWaitUntil:
+    visible: "Open in.*"
+    timeout: 4000
+    optional: true
+- tapOn:
+    text: "Open"
+    optional: true
+- extendedWaitUntil:
+    visible: ".*scenario=sparkline candles=120 .*"
+    timeout: 30000
+- assertVisible:
+    id: title
+- assertVisible: "Sparkline"
+- swipe:
+    start: 30%, 55%
+    end: 80%, 55%
+    duration: 400
+- swipe:
+    start: 80%, 55%
+    end: 20%, 55%
+    duration: 400
+- assertVisible:
+    id: chart-host
+- takeScreenshot: scenario-sparkline
+
 # ── indicators (feature) ──
 - openLink: demo://scenarios?id=indicators
 - extendedWaitUntil:

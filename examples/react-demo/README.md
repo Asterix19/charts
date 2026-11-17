@@ -2,7 +2,7 @@
 
 A Vite + React app exercising [`@stacklatte/chart-react`](../../chart-react).
 
-The home page is **the Lab**: a coloured banner names the package and version under test, and **every capability is a visible control**, grouped (Data, View, Overlays, Panels, Markers, Custom theme colours, Actions): candle count up to 50k, live feed down to 100 ms, dirty feed, no data, chart type, theme + six custom colours, zoom, max zoom, interval, 12 h clock, grid, OHLC HUD / crosshair, chart size, SMA / EMA / Bollinger / VWAP with periods, RSI / MACD / volume / custom panels, trade markers, the +5K stress button. The controls are drawn from one schema shared with the Angular and React Native demos (`examples/shared/src/lab.ts`), and a test fails if a `ChartProps` field has no control. The second page, **35 scenarios**, is the shared catalogue (`/#/scenarios/<id>`).
+The home page is **the Lab**: a coloured banner names the package and version under test, and **every capability is a visible control**, grouped (Data, View, Overlays, Panels, Markers, Custom theme colours, Actions): candle count up to 50k, live feed down to 100 ms, dirty feed, no data, chart type, theme + six custom colours, zoom, max zoom, interval, 12 h clock, grid, OHLC HUD / crosshair, chart size, SMA / EMA / Bollinger / VWAP with periods, RSI / MACD / volume / custom panels, trade markers, the +5K stress button. The controls are drawn from one schema shared with the Angular and React Native demos (`examples/shared/src/lab.ts`), and a test fails if a `ChartProps` field has no control. The second page, **37 scenarios**, is the shared catalogue (`/#/scenarios/<id>`).
 
 ## Run
 

@@ -4,7 +4,7 @@ People depend on these packages, so every platform is tested against the **same 
 
 ## The scenario catalogue
 
-`examples/shared` (`@stacklatte/chart-examples`) defines 35 reproducible scenarios with seeded data — identical on every run and every platform:
+`examples/shared` (`@stacklatte/chart-examples`) defines 37 reproducible scenarios with seeded data — identical on every run and every platform:
 
 | Kind | Scenarios |
 |---|---|

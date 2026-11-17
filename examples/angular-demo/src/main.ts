@@ -1,7 +1,7 @@
 import '@angular/compiler';
 import { ChangeDetectionStrategy, Component, ViewEncapsulation, signal, provideZonelessChangeDetection } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
-import { DEMO_PACKAGES, isScenarioRoute } from '@stacklatte/chart-examples';
+import { DEMO_PACKAGES, SCENARIOS, isScenarioRoute } from '@stacklatte/chart-examples';
 
 import { LabComponent } from './lab.component';
 import { ScenariosComponent } from './scenarios.component';
@@ -34,7 +34,7 @@ import { ScenariosComponent } from './scenarios.component';
         <span class="demo-meta">${DEMO_PACKAGES.angular.renderer} · engine v{{ engine }}</span>
         <nav>
           <a href="#/" [attr.aria-current]="scenarios() ? null : 'page'" data-testid="nav-lab">Lab: every capability</a>
-          <a href="#/scenarios/basic" [attr.aria-current]="scenarios() ? 'page' : null" data-testid="nav-scenarios">35 scenarios</a>
+          <a href="#/scenarios/basic" [attr.aria-current]="scenarios() ? 'page' : null" data-testid="nav-scenarios">{{ scenarioCount }} scenarios</a>
         </nav>
       </header>
       <div class="demo-content">
@@ -44,6 +44,7 @@ import { ScenariosComponent } from './scenarios.component';
   `,
 })
 class RootComponent {
+  readonly scenarioCount = SCENARIOS.length;
   readonly version = __PKG_VERSION__;
   readonly engine = __ENGINE_VERSION__;
   readonly scenarios = signal(isScenarioRoute(location.hash));

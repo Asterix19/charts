@@ -145,7 +145,7 @@ const COVERAGE = {
   indicators: 'scenario', shadedAreas: 'scenario', markers: 'scenario', customPanels: 'scenario',
   intervalMs: 'scenario', visibleDataPoints: 'scenario', theme: 'scenario', showOhlcHud: 'scenario',
   showRsiPanel: 'scenario', rsiPeriod: 'scenario', showMacdPanel: 'scenario', showVolumePanel: 'scenario',
-  chartType: 'scenario', scrollToLatestTrigger: 'scenario', hour12: 'scenario', maxZoom: 'scenario', showGrid: 'scenario',
+  chartType: 'scenario', scrollToLatestTrigger: 'scenario', hour12: 'scenario', maxZoom: 'scenario', showGrid: 'scenario', sparkline: 'scenario',
   onCrosshairChange: { elsewhere: 'every demo wires it to data-crosshair; the e2e hover test asserts it' },
   bufferRatio: { deprecated: 'accepted for backwards compatibility; no renderer reads it' },
 } satisfies Record<keyof ChartProps, How>;
@@ -163,7 +163,7 @@ describe('ChartProps coverage', () => {
     for (const k of ['entry-long', 'exit-long', 'entry-short', 'exit-short', 'stop-loss', 'take-profit']) expect(kinds.has(k as never), k).toBe(true);
     const themes = new Set<string>(props.map((p) => (typeof p.theme === 'object' ? 'custom' : p.theme ?? 'default')));
     for (const t of ['dark', 'light', 'custom']) expect(themes.has(t), t).toBe(true);
-    expect(new Set(props.map((p) => p.chartType ?? 'candle'))).toEqual(new Set(['candle', 'line']));
+    expect(new Set(props.map((p) => p.chartType ?? 'candle'))).toEqual(new Set(['candle', 'line', 'area']));
     expect(props.some((p) => p.showRsiPanel && p.showMacdPanel && p.showVolumePanel && p.customPanels?.length)).toBe(true);
   });
 

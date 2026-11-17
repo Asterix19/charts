@@ -156,6 +156,10 @@
     "kind": "value"
   },
   {
+    "name": "closesToCandles",
+    "kind": "value"
+  },
+  {
     "name": "compileChartConfig",
     "kind": "value"
   },
@@ -193,6 +197,10 @@
   },
   {
     "name": "computeScrollBounds",
+    "kind": "value"
+  },
+  {
+    "name": "computeSparklineLayout",
     "kind": "value"
   },
   {

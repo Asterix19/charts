@@ -83,6 +83,8 @@ export class SlChartComponent implements OnChanges, OnDestroy {
   @Input() showVolumePanel?: boolean;
   /** Background grid lines. Default true. */
   @Input() showGrid?: boolean;
+  /** Compact mode for lists of small charts: no axes, panels, crosshair or event capture. Draws the whole dataset as an area. */
+  @Input() sparkline?: boolean;
   /** 12-hour time labels on the x-axis. Default false. */
   @Input() hour12?: boolean;
   /** Maximum candles visible when zoomed out. */
@@ -143,6 +145,7 @@ export class SlChartComponent implements OnChanges, OnDestroy {
       showMacdPanel: this.showMacdPanel,
       showVolumePanel: this.showVolumePanel,
       showGrid: this.showGrid,
+      sparkline: this.sparkline,
       hour12: this.hour12,
       maxZoom: this.maxZoom,
       scrollToLatestTrigger: this.scrollToLatestTrigger,

@@ -49,6 +49,48 @@ export function strokeSmoothPath(
   ctx.restore();
 }
 
+/** `rgba()` of a CSS colour at the given alpha. Handles #rgb, #rrggbb, #rrggbbaa and rgb()/rgba(); anything else is returned as is. */
+export function withAlpha(color: string, alpha: number): string {
+  const hex = /^#([0-9a-f]{3,8})$/i.exec(color.trim());
+  if (hex) {
+    let h = hex[1];
+    if (h.length === 3 || h.length === 4) h = h.split('').map((c) => c + c).join('');
+    if (h.length === 6 || h.length === 8) {
+      const n = (i: number) => parseInt(h.slice(i, i + 2), 16);
+      return `rgba(${n(0)}, ${n(2)}, ${n(4)}, ${alpha})`;
+    }
+  }
+  const rgb = /^rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/i.exec(color.trim());
+  if (rgb) return `rgba(${rgb[1]}, ${rgb[2]}, ${rgb[3]}, ${alpha})`;
+  return color;
+}
+
+/**
+ * Fills the region between a smooth curve (same Catmull-Rom path as `strokeSmoothPath`) and the horizontal line `baseY`
+ * with a vertical gradient: `color` at `topAlpha` under the highest point, fading to transparent at the baseline.
+ */
+export function fillSmoothArea(
+  ctx: CanvasRenderingContext2D,
+  pts: Point[],
+  baseY: number,
+  opts: { color: string; topAlpha?: number },
+): void {
+  if (pts.length < 2) return;
+  ctx.save();
+  ctx.beginPath();
+  traceSmoothPath(ctx, pts);
+  ctx.lineTo(pts[pts.length - 1].x, baseY);
+  ctx.lineTo(pts[0].x, baseY);
+  ctx.closePath();
+  const top = Math.min(...pts.map((p) => p.y));
+  const gradient = ctx.createLinearGradient(0, top, 0, baseY);
+  gradient.addColorStop(0, withAlpha(opts.color, opts.topAlpha ?? 0.4));
+  gradient.addColorStop(1, withAlpha(opts.color, 0));
+  ctx.fillStyle = gradient;
+  ctx.fill();
+  ctx.restore();
+}
+
 /** Fills a closed polygon through the given points. */
 export function fillPolygon(
   ctx: CanvasRenderingContext2D,
