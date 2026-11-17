@@ -34,6 +34,8 @@ const hasPublished = existsSync(oldWeb) && existsSync(oldCore);
 
 /** Scenarios whose output is EXPECTED to differ, and why. */
 const INTENTIONAL: Record<string, string> = {
+  area: "chartType 'area' is new in 1.1.0: the published 1.3.2 draws it as a plain line, without the gradient fill",
+  sparkline: 'sparkline mode is new in 1.1.0: the published 1.3.2 ignores it and draws a full chart with axes',
   'edge-dirty': 'NaN / Infinity / null candles are now dropped (the old chart went blank)',
   'edge-bad-period': 'a negative RSI period made the published chart throw (React unmounts it); it now yields an empty panel',
   'edge-unsorted-markers': 'markers supplied out of order are now sorted instead of silently dropped',

@@ -93,7 +93,18 @@ for (const s of SCENARIOS) {
       if (s.data().length > 0) await expect.poll(() => paintedPixels(page)).toBeGreaterThan(20);
     });
 
-    if (s.data().length >= 20) {
+    if (s.props(s.data()).sparkline) {
+      // A sparkline is for lists of many small charts: it must NOT hijack scrolling, so it ignores wheel / drag by design.
+      test('is inert: it does not capture the wheel, so the page scrolls', async ({ page }) => {
+        await open(page, s);
+        const prevented = await page.getByTestId('chart-host').locator('canvas').first().evaluate((el) => {
+          const e = new WheelEvent('wheel', { deltaY: 100, bubbles: true, cancelable: true });
+          el.dispatchEvent(e);
+          return e.defaultPrevented;
+        });
+        expect(prevented).toBe(false);
+      });
+    } else if (s.data().length >= 20) {
       test('responds to drag-pan and wheel-zoom', async ({ page }) => {
         test.skip(!!s.live, 'live scenarios repaint on their own, so a pixel diff would prove nothing');
         await open(page, s);

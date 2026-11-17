@@ -41,7 +41,7 @@ import type { Candle } from '@stacklatte/chart-angular';
             [data]="data()" [width]="width()" [height]="scenario().height"
             [intervalMs]="p().intervalMs" [visibleDataPoints]="p().visibleDataPoints" [theme]="p().theme" [chartType]="p().chartType"
             [showOhlcHud]="!!p().showOhlcHud" [showRsiPanel]="p().showRsiPanel" [rsiPeriod]="p().rsiPeriod"
-            [showMacdPanel]="p().showMacdPanel" [showVolumePanel]="p().showVolumePanel" [showGrid]="p().showGrid"
+            [showMacdPanel]="p().showMacdPanel" [showVolumePanel]="p().showVolumePanel" [showGrid]="p().showGrid" [sparkline]="p().sparkline"
             [indicators]="p().indicators" [shadedAreas]="p().shadedAreas" [markers]="p().markers" [customPanels]="p().customPanels"
             [scrollToLatestTrigger]="toLatest()" (crosshairChange)="crosshair.set($event ? $event.timestamp : null)" />
         }
