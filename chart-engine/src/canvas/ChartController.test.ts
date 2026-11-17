@@ -164,6 +164,42 @@ describe('ChartController', () => {
     });
   });
 
+  describe('trackpad pinch', () => {
+    const candlesDrawn = () => contexts.at(-1)!.fillRect.mock.calls.length;
+
+    it('a ctrl+wheel pinch (Chrome, Firefox) zooms about 10x more than the same wheel delta without ctrl', async () => {
+      mount({ data: makeCandles(300), visibleDataPoints: 120 });
+      await frame();
+      const canvas = host.querySelector('canvas')!;
+      canvas.dispatchEvent(new WheelEvent('wheel', { deltaY: -40, clientX: 200, bubbles: true, cancelable: true }));
+      await frame();
+      const plain = candlesDrawn();
+      controller!.destroy(); host.innerHTML = '';
+      mount({ data: makeCandles(300), visibleDataPoints: 120 });
+      await frame();
+      host.querySelector('canvas')!.dispatchEvent(new WheelEvent('wheel', { deltaY: -40, ctrlKey: true, clientX: 200, bubbles: true, cancelable: true }));
+      await frame();
+      expect(candlesDrawn()).toBeLessThan(plain); // fewer, wider candles: it zoomed in further
+    });
+
+    it("Safari's gesturestart/gesturechange/gestureend zoom the chart and are cancelled so the page does not zoom", async () => {
+      mount({ data: makeCandles(300), visibleDataPoints: 120 });
+      await frame();
+      const before = candlesDrawn();
+      const canvas = host.querySelector('canvas')!;
+      const gesture = (type: string, extra: Record<string, number> = {}) => {
+        const e = Object.assign(new Event(type, { bubbles: true, cancelable: true }), extra);
+        canvas.dispatchEvent(e);
+        return e;
+      };
+      expect(gesture('gesturestart', { scale: 1, clientX: 200 }).defaultPrevented).toBe(true);
+      expect(gesture('gesturechange', { scale: 2.5, clientX: 200 }).defaultPrevented).toBe(true);
+      await frame();
+      expect(candlesDrawn()).toBeLessThan(before); // pinch out of the fingers = zoom in
+      expect(gesture('gestureend', { scale: 2.5 }).defaultPrevented).toBe(true);
+    });
+  });
+
   it('wheel events are preventDefault-ed so the page does not scroll', async () => {
     mount();
     const event = new WheelEvent('wheel', { deltaY: 100, bubbles: true, cancelable: true });

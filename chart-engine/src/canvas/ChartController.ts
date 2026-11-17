@@ -348,8 +348,22 @@ export class ChartController {
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
       this.pinchStart = this.viewport;
-      zoom(Math.exp(-e.deltaY * 0.001), localX(e.clientX));
+      // A trackpad pinch arrives in Chrome/Firefox as a wheel event with ctrlKey and tiny deltas (a few units, versus ~100 per
+      // mouse-wheel notch), so it gets 10x the sensitivity or pinching would barely move the chart.
+      zoom(Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.001)), localX(e.clientX));
     };
+
+    // Safari reports a trackpad pinch as non-standard gesture events (with a cumulative `scale`), not as ctrl+wheel.
+    const onGestureStart = (e: Event) => {
+      e.preventDefault();
+      this.pinchStart = this.viewport;
+    };
+    const onGestureChange = (e: Event) => {
+      e.preventDefault();
+      const g = e as Event & { scale?: number; clientX?: number };
+      zoom(g.scale ?? 1, localX(g.clientX ?? canvas.getBoundingClientRect().left + this.geo.chartWidth / 2));
+    };
+    const onGestureEnd = (e: Event) => e.preventDefault();
 
     target.addEventListener('pointerdown', onDown);
     target.addEventListener('pointermove', onMove);
@@ -357,6 +371,9 @@ export class ChartController {
     target.addEventListener('pointercancel', onUp);
     target.addEventListener('pointerleave', onLeave);
     target.addEventListener('wheel', onWheel, { passive: false });
+    target.addEventListener('gesturestart', onGestureStart, { passive: false });
+    target.addEventListener('gesturechange', onGestureChange, { passive: false });
+    target.addEventListener('gestureend', onGestureEnd, { passive: false });
     this.detachGestures = () => {
       target.removeEventListener('pointerdown', onDown);
       target.removeEventListener('pointermove', onMove);
@@ -364,6 +381,9 @@ export class ChartController {
       target.removeEventListener('pointercancel', onUp);
       target.removeEventListener('pointerleave', onLeave);
       target.removeEventListener('wheel', onWheel);
+      target.removeEventListener('gesturestart', onGestureStart);
+      target.removeEventListener('gesturechange', onGestureChange);
+      target.removeEventListener('gestureend', onGestureEnd);
     };
   }
 
