@@ -1,9 +1,10 @@
 #!/usr/bin/env node
-// Drives the SAME React Native demo app three ways on the booted iOS simulator and compares the rendered chart pixels:
+// Drives the SAME React Native demo app two ways on the booted iOS simulator and compares the rendered chart pixels:
 //
-//   native          this repo's @stacklatte/chart-native                         (baseline)
-//   core-shim       this repo's @stacklatte/chart-core, the re-export that existing 2.x users upgrade to
-//   core-published  the actually published @stacklatte/chart-core@2.3.3 (what people have installed today)
+//   native          this repo's @stacklatte/chart-native                                        (baseline)
+//   core-published  the last published @stacklatte/chart-core@2.3.3, now deprecated (what people still have installed)
+//
+// The new package must render every static scenario exactly like the old one, so moving off chart-core changes nothing visually.
 //
 // Requirements: a booted iPhone simulator with the demo's dev client installed (`npx expo run:ios --no-bundler`).
 //   node e2e-native/compare-chart-core.mjs
@@ -20,7 +21,7 @@ const { PNG } = createRequire(import.meta.url)('playwright-core/lib/utilsBundle'
 const EXCLUDE = ['edge-dirty', 'edge-bad-period', 'edge-unsorted-markers'];
 // `--variants=core-published --keep` re-runs just one variant against the screenshots kept from an earlier run.
 const arg = (n) => process.argv.find((a) => a.startsWith(`--${n}=`))?.split('=')[1];
-const VARIANTS = (arg('variants') ?? 'native,core-shim,core-published').split(',');
+const VARIANTS = (arg('variants') ?? 'native,core-published').split(',');
 const KEEP = process.argv.includes('--keep');
 
 // 1. the published package
@@ -99,7 +100,7 @@ function diff(a, b) {
 const base = shots('native');
 let failed = false;
 console.log(`\nscenarios captured on the baseline: ${base.size}`);
-for (const other of ['core-shim', 'core-published']) {
+for (const other of ['core-published']) {
   const s = shots(other);
   const rows = [];
   for (const [name, file] of base) {

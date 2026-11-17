@@ -9,7 +9,7 @@ import { join } from 'node:path';
 
 // chart-angular publishes from ng-packagr's dist/ folder, not the package root.
 const PACKAGES = [
-  ['chart-engine'], ['chart-native'], ['chart-react'], ['chart-web'], ['chart-core'], ['chart-angular', 'chart-angular/dist'],
+  ['chart-engine'], ['chart-native'], ['chart-react'], ['chart-mcp'], ['chart-angular', 'chart-angular/dist'],
 ];
 const root = new URL('..', import.meta.url).pathname;
 const work = mkdtempSync(join(tmpdir(), 'stacklatte-smoke-'));
@@ -31,9 +31,8 @@ import { createRequire } from 'node:module';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
 import * as engine from '@stacklatte/chart-engine';
-import * as coreShim from '@stacklatte/chart-core/core';
+import * as lab from '@stacklatte/chart-engine/lab';
 import * as web from '@stacklatte/chart-react';
-import * as legacyWeb from '@stacklatte/chart-web';
 import * as canvas from '@stacklatte/chart-engine/canvas';
 const require = createRequire(import.meta.url);
 
@@ -42,21 +41,28 @@ const config = { version: '1', theme: 'dark', priceDisplay: 'candle', interval: 
   overlays: [{ type: 'ema', id: 'e', params: { period: 9 }, color: 'cyan' }], shadedAreas: [],
   subPanels: [{ type: 'rsi', params: { period: 14 } }], viewport: { visibleCandles: 30, followLive: true }, hud: { showOhlcHud: true } };
 
-assert.deepEqual(Object.keys(coreShim).sort(), Object.keys(engine).sort(), 'chart-core/core must mirror chart-engine');
+assert.equal(typeof engine.closesToCandles, 'function', 'closesToCandles (static price lists -> chart data) is exported');
+assert.equal(engine.closesToCandles([1, 2, 3]).length, 3, 'closesToCandles works');
 assert.ok(engine.calcRSI(candles, 14).length > 0, 'RSI computes');
 assert.equal(typeof engine.buildChartPipeline(config, candles), 'object', 'valid config compiles');
 for (const bad of [{ ...config, theme: 'neon' }, { ...config, interval: '2h' }, { ...config, sparkles: 1 }]) {
   assert.throws(() => engine.buildChartPipeline(bad, candles), /Invalid ChartConfig/, 'invalid config must throw');
 }
 assert.equal(typeof web.SLChart, 'function', 'chart-react exports SLChart');
-assert.deepEqual(Object.keys(legacyWeb).sort(), Object.keys(web).sort(), 'the legacy chart-web shim exposes exactly what chart-react does');
-assert.equal(legacyWeb.SLChart, web.SLChart, 'chart-web re-exports the same SLChart');
+// The Lab entry: the configurator's schema and the code / ChartConfig / prompt generator.
+const generated = lab.generateChart({ ...lab.DEFAULT_LAB_STATE, rsi: true, chartType: 'area' }, 'react');
+assert.ok(generated.code.includes('SLChart') && generated.code.includes('showRsiPanel'), 'generateChart produces React code');
+assert.equal(engine.validateChartConfig(generated.chartConfig).valid, true, 'the generated ChartConfig is valid');
+assert.ok(generated.prompt.includes('https://stacklatte.com/llms.txt'), 'the generated prompt points at the docs');
 assert.equal(typeof canvas.drawCandles, 'function', 'chart-engine/canvas exports its drawing primitives');
 // The chart paints on a <canvas> in the browser; on the server it renders only its sized container (no DOM APIs touched).
 assert.match(renderToString(React.createElement(web.SLChart, { data: candles, width: 400, height: 300 })), /<div[^>]*width:400px/, 'chart-react SSR renders its container without throwing');
 assert.ok('definitions' in require('@stacklatte/chart-engine/ChartConfig.schema.json'), 'JSON Schema is resolvable');
 assert.ok(require.resolve('@stacklatte/chart-native').includes('chart-native'), 'chart-native resolves');
-assert.ok(require.resolve('@stacklatte/chart-core').includes('chart-core'), 'chart-core shim resolves');
+// The MCP server package loads and exposes its factory (its dependencies were installed from the tarball's manifest).
+const mcp = await import('@stacklatte/chart-mcp');
+assert.equal(typeof mcp.createServer, 'function', 'chart-mcp exports createServer');
+assert.ok(import.meta.resolve('@stacklatte/chart-mcp').includes('chart-mcp'), 'chart-mcp resolves');
 // Angular: the ng-packagr output must load and expose the component plus the re-exported engine.
 await import('@angular/compiler'); // partial-compiled library code is linked at runtime in Node
 const ng = await import('@stacklatte/chart-angular');

@@ -16,9 +16,9 @@ npm run test:native
 ## Comparing against the published `chart-core`
 
 ```sh
-npm run test:native:compat   # ~20 min: chart-native vs the new chart-core shim vs the published chart-core 2.3.3
+npm run test:native:compat   # ~15 min: chart-native vs the last published (deprecated) chart-core 2.3.3
 ```
 
-It drives the same demo three ways (a Metro switch, `CHART_IMPL`, swaps what `@stacklatte/chart-native` resolves to) and pixel-compares the chart area of every static scenario.
+It drives the same demo two ways (a Metro switch, `CHART_IMPL`, swaps what `@stacklatte/chart-native` resolves to) and pixel-compares the chart area of every static scenario.
 
 Requires [Maestro](https://maestro.mobile.dev) (`brew install maestro`). Screenshots land in `e2e-native/screenshots/`.

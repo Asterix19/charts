@@ -38,7 +38,7 @@
 | React Native | `npm install @stacklatte/chart-native @shopify/react-native-skia react-native-gesture-handler` | [docs/react-native.md](./docs/react-native.md) |
 | Angular 19+ | `npm install @stacklatte/chart-angular` | [docs/angular.md](./docs/angular.md) |
 | Node / headless | `npm install @stacklatte/chart-engine` | [docs/node-engine.md](./docs/node-engine.md) |
-| Already on `@stacklatte/chart-core` | nothing — it keeps working | [docs/migrating-from-chart-core.md](./docs/migrating-from-chart-core.md) |
+| Still on the deprecated `@stacklatte/chart-core` / `chart-web` | replace with `chart-native` / `chart-react` (a find-and-replace of the import path) | [docs/migrating-from-chart-core.md](./docs/migrating-from-chart-core.md) |
 
 ## 30 seconds
 
@@ -93,7 +93,6 @@ chart-engine/    @stacklatte/chart-engine   — indicators, viewport math, geome
 chart-react/       @stacklatte/chart-react      — React renderer
 chart-native/    @stacklatte/chart-native   — React Native / Skia renderer
 chart-angular/   @stacklatte/chart-angular  — Angular <sl-chart>
-chart-core/      @stacklatte/chart-core     — legacy name; re-exports chart-native (+ engine at /core)
 examples/
   shared/        the scenario catalogue every demo and test uses
   react-demo/      React demo           (npm run demo:react)
@@ -128,7 +127,7 @@ npm run test:e2e         # Chromium: all scenarios × React / Angular, frame-tim
 npm run test:pack        # pack every package, install the tarballs into a clean project
 npm run test:contracts   # API locks, compatibility with published versions, docs, bundle sizes
 npm run test:native      # iOS simulator via Maestro (see e2e-native/README.md)
-npm run test:native:compat  # same app vs the published chart-core 2.3.3, pixel-compared (~20 min)
+npm run test:native:compat  # same app vs the last published (deprecated) chart-core 2.3.3, pixel-compared (~15 min)
 ```
 
 ## Build it with an AI assistant, or in the Lab

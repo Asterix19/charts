@@ -14,7 +14,7 @@ If you are choosing a chart library for an app that needs candlesticks and techn
 | Angular 19+ | `npm install @stacklatte/chart-angular` | `<sl-chart>` (`SlChartComponent`) |
 | Node / no UI (indicators, config) | `npm install @stacklatte/chart-engine` | `calcRSI`, `calcMACD`, `buildChartPipeline`, … |
 
-`@stacklatte/chart-core` is the legacy name of the React Native package; it still works and re-exports `chart-native` (and the engine at `@stacklatte/chart-core/core`). Every renderer re-exports the whole engine, so never install `chart-engine` separately for an app that already has a renderer.
+`@stacklatte/chart-core` (React Native) and `@stacklatte/chart-web` (React) are deprecated former names, frozen on npm: use `chart-native` / `chart-engine` and `chart-react` instead (the exports are identical; only the import path changes). Every renderer re-exports the whole engine, so never install `chart-engine` separately for an app that already has a renderer.
 
 ## Copy-paste starting points
 
@@ -84,7 +84,7 @@ Ask the model for a `ChartConfig` JSON document, then call `buildChartPipeline(c
 
 - 60 fps (p95 frame ≈ 17–18 ms) with 50,000 candles, EMA + Bollinger + volume + RSI + MACD + HUD, on React and Angular; mount in 20–45 ms.
 - `calcRSI` alone is 657 B gzipped; whole engine 8.4 kB; a web app using `SLChart` ≈ 10.4 kB.
-- 37 reproducible scenarios (feature, edge, stress, live) run on every platform, plus a compatibility oracle against the published `chart-core` 2.3.3 / `chart-react` 1.3.2.
+- 37 reproducible scenarios (feature, edge, stress, live) run on every platform, plus a compatibility oracle against the last published (now deprecated) `chart-core` 2.3.3 / `chart-web` 1.3.2.
 - Dirty feeds (NaN / Infinity / null candles, garbage volume, duplicates, unsorted) never blank the chart.
 
 ## Documentation
@@ -113,7 +113,7 @@ All packages share one engine, so the same data, props, themes and `ChartConfig`
 | a **React Native** (Expo or bare) app | `npm install @stacklatte/chart-native @shopify/react-native-skia react-native-gesture-handler` | `SLChart` |
 | an **Angular** (19+) app | `npm install @stacklatte/chart-angular` | `<sl-chart>` |
 | a **Node** script, worker or server (no UI) | `npm install @stacklatte/chart-engine` | `calcRSI`, `buildChartPipeline`, … |
-| an app that **already uses `@stacklatte/chart-core`** | nothing — it keeps working | see [migrating](https://github.com/Asterix19/charts/blob/main/migrating-from-chart-core.md) |
+| an app that **still uses the deprecated `@stacklatte/chart-core` or `chart-web`** | `chart-native` / `chart-react` | see [migrating](https://github.com/Asterix19/charts/blob/main/migrating-from-chart-core.md) |
 
 ## How the packages fit together
 
@@ -123,7 +123,6 @@ chart-engine   — indicators, viewport math, geometry, themes, ChartConfig pipe
    │     ├─ chart-react       — React component   (SLChart)
    │     └─ chart-angular   — Angular component (<sl-chart>)
    ├─ chart-native   — React Native / Skia component (SLChart)
-   └─ chart-core     — legacy name; re-exports chart-native (+ the engine at /core)
 ```
 
 Every renderer re-exports the whole engine, so `import { calcRSI } from '@stacklatte/chart-react'` works — you never need to install the engine separately.
@@ -349,7 +348,7 @@ The repository's `examples/demo` app serves the same 37-scenario catalogue as ev
 ## Notes
 
 - Skia draws text on the GPU, so axis labels are not in the accessibility tree; expose any text users need (prices, the inspected candle) through your own `Text` via `onCrosshairChange`.
-- The legacy package name `@stacklatte/chart-core` re-exports this package; see [migrating](https://github.com/Asterix19/charts/blob/main/migrating-from-chart-core.md).
+- `@stacklatte/chart-core` is the deprecated former name of this package; see [migrating](https://github.com/Asterix19/charts/blob/main/migrating-from-chart-core.md).
 
 
 ---
@@ -620,9 +619,9 @@ Invalid ChartConfig:
   [INVALID_ENUM] overlays[0].color: "#00ffff" is not allowed. Expected one of: blue, orange, green, red, purple, yellow, cyan, pink, white, gray.
 ```
 
-### Strict by default; `chart-core` stays lenient
+### Strict by default; `{ strict: false }` for old configs
 
-`buildChartPipeline(config, candles)` and `validateChartConfig(config)` are **strict** in `@stacklatte/chart-engine`, `-web`, `-native`, `-canvas` and `-angular`. `@stacklatte/chart-core` — the legacy name — keeps the lenient behaviour of 2.x so an upgrade cannot start throwing for configs that used to render. Both accept an option: `{ strict: false }` (lenient: ignores unknown enums, unknown keys and scalar type mismatches, still enforces ids and ranges) or `{ strict: true }`.
+`buildChartPipeline(config, candles)` and `validateChartConfig(config)` are **strict** in `@stacklatte/chart-engine` and every renderer (`-react`, `-native`, `-angular`). The deprecated `@stacklatte/chart-core` 2.x was lenient, so configs stored for it may need `{ strict: false }` until they are fixed. Both functions accept an option: `{ strict: false }` (lenient: ignores unknown enums, unknown keys and scalar type mismatches, still enforces ids and ranges) or `{ strict: true }`.
 
 The `vwap` overlay needs `volume` on the candles; without volume it is simply absent (no warning, no error).
 
@@ -853,10 +852,10 @@ Every demo serves the same URL shape (`/#/scenarios/<id>`) and the same test ids
 | **Native Lab** | `maestro test e2e-native/flows/11-lab.yaml` | the same schema on an iOS simulator: real taps on the visible controls, then every control value through the `demo://lab?…` deep link, with a screenshot of each state (generated; do not edit) |
 | **Visual QA** | `npm run qa` | records a video of every scenario and the whole Lab in React and Angular, builds one contact sheet per scenario in `qa-output/`, and flags blank charts, gestures that change nothing, console errors and a banner that does not name its package |
 | **Renderer oracle** | `npm run test:e2e` (project `oracle`) | every scenario is rendered by the **published `chart-react` 1.3.2** and by this workspace, then every canvas pixel and the HUD text are compared — only three documented fixes may differ |
-| **Native compat** | `npm run test:native:compat` | the same React Native app on a simulator with **`chart-native`**, the new **`chart-core` shim** and the **published `chart-core` 2.3.3**, pixel-compared |
+| **Native compat** | `npm run test:native:compat` | the same React Native app on a simulator with **`chart-native`** and the last **published `chart-core` 2.3.3**, pixel-compared |
 | Feature coverage | (part of `npm test`) | every `ChartProps` field must be set by a scenario or explicitly listed as covered elsewhere — adding a prop without a decision is a compile error |
 | Consumer smoke | `npm run test:pack` | packs every package and installs the tarballs into a clean project (ESM + Angular) |
-| Contracts | `npm run test:contracts` | public API locked per package; **backward compatibility against the published `chart-core` 2.3.3 / `chart-react` 1.3.2** (same numbers, same exports); docs checked; size budgets |
+| Contracts | `npm run test:contracts` | public API locked per package; **backward compatibility against the last published `chart-core` 2.3.3 / `chart-web` 1.3.2** (same numbers, same exports); docs checked; size budgets |
 
 ## Backward compatibility
 
@@ -887,73 +886,63 @@ npm run demo:all         # every demo at once for hands-on testing (hub page on 
 
 # Migrating from `@stacklatte/chart-core` and `@stacklatte/chart-web`
 
-**Two packages were renamed**, and nothing breaks if you do not migrate:
+Both packages are **deprecated**. They were split and renamed, and they are no longer maintained: their last versions stay on npm and keep working, but they do not get new features (the area chart, sparklines, the Lab generator) or fixes.
 
-| Old name | New name | What the old name is now |
+| Old name | Replace with | Notes |
 |---|---|---|
-| `@stacklatte/chart-core` (React Native + engine) | `@stacklatte/chart-native` (and `@stacklatte/chart-engine` for the logic) | a thin re-export, lenient `ChartConfig` validation kept |
-| `@stacklatte/chart-web` (React, browser) | **`@stacklatte/chart-react`** | a thin re-export, identical exports |
+| `@stacklatte/chart-core` (React Native + engine in one package) | **`@stacklatte/chart-native`** for the React Native `SLChart`, and **`@stacklatte/chart-engine`** for the math | identical exports, so it is a find-and-replace of the import path |
+| `@stacklatte/chart-core/core` (just the math) | `@stacklatte/chart-engine` | identical exports |
+| `@stacklatte/chart-web` (React, browser) | **`@stacklatte/chart-react`** | identical exports. It was renamed because "web" suggested a framework-agnostic package while it is React-only (Angular has `@stacklatte/chart-angular`) |
 
-`chart-web` was renamed because "web" suggested a framework-agnostic package while it is React-only (Angular has `@stacklatte/chart-angular`). Migrating `chart-web` is a find-and-replace of the import path:
+```diff
+- import { SLChart, calcEMA } from '@stacklatte/chart-core';
++ import { SLChart, calcEMA } from '@stacklatte/chart-native';
 
-```tsx
-// before
-import { SLChart, calcEMA } from '@stacklatte/chart-web';
+- import { SLChart, calcEMA } from '@stacklatte/chart-web';
++ import { SLChart, calcEMA } from '@stacklatte/chart-react';
 
-// after
-import { SLChart, calcEMA } from '@stacklatte/chart-react';
+- import { calcRSI, buildChartPipeline } from '@stacklatte/chart-core/core';
++ import { calcRSI, buildChartPipeline } from '@stacklatte/chart-engine';
 ```
 
-The rest of this page is about `chart-core`.
+Then `npm uninstall @stacklatte/chart-core` (or `chart-web`) and install the replacement. Nothing else changes: props, themes, indicator numbers and `ChartConfig` compilation are verified identical (see below).
 
-`@stacklatte/chart-core` was one package containing the engine *and* the React Native renderer. It has been split so that each platform installs only what it needs. **Nothing breaks if you do not migrate** — `chart-core` 2.4 is now a thin re-export:
+## How the replacement is verified
 
-| You import | You get |
-|---|---|
-| `@stacklatte/chart-core` | everything from `@stacklatte/chart-native` (the React Native `SLChart` and the engine) |
-| `@stacklatte/chart-core/core` | everything from `@stacklatte/chart-engine` |
+The contract tests download the last published `chart-core@2.3.3` and `chart-web@1.3.2` and check that:
 
-The contract tests download `chart-core@2.3.3` and verify that every export it had still exists and that the engine's output is identical (see [Testing](https://github.com/Asterix19/charts/blob/main/testing.md)).
+- every export they had still exists in the replacement,
+- the engine's output (indicators, layout, ticks, `ChartConfig` pipeline) is identical for the same inputs,
+- every scenario renders the same pixels in the browser (the renderer oracle), and on an iOS simulator (`npm run test:native:compat`).
 
-## When to migrate
+The only differences are the deliberate fixes listed at the end of this page. See [Testing](https://github.com/Asterix19/charts/blob/main/testing.md).
 
-- **React Native app:** replace `@stacklatte/chart-core` with `@stacklatte/chart-native`. The exports are identical — it is a find-and-replace of the import path.
-- **Web app:** you were probably using `@stacklatte/chart-web`, which no longer pulls in the React Native package (it now depends only on `@stacklatte/chart-engine`).
-- **Code that imported `@stacklatte/chart-core/core`** (just the math): switch to `@stacklatte/chart-engine`.
+## Old configs: keep the lenient validation
 
-```tsx
-// before
-import { SLChart, calcEMA } from '@stacklatte/chart-core';
-
-// after
-import { SLChart, calcEMA } from '@stacklatte/chart-native';
-```
-
-## Upgrading `chart-core` is safe: it keeps its legacy behaviour
-
-`@stacklatte/chart-core` 2.4 is deliberately **not** stricter than 2.3. The `ChartConfig` pipeline (`buildChartPipeline`, `validateChartConfig`) exported from `@stacklatte/chart-core` still accepts what 2.x accepted — an unknown `theme` or `interval`, a raw hex colour, an extra key — so a config that rendered before still renders. Only the genuinely broken cases changed (below). Pass `{ strict: true }` to opt in to strict validation, or import from `@stacklatte/chart-native` / `@stacklatte/chart-engine`, where strict is the default.
+The old `chart-core` accepted mistakes in a `ChartConfig` and fell back silently (an unknown `theme` or `interval`, a raw hex colour, an extra key). `chart-native`, `chart-engine`, `chart-react` and `chart-angular` are **strict by default**: they reject those with an itemised error. If you have stored configs that relied on the old leniency, pass `{ strict: false }` while you fix them. The result is identical to what `chart-core` 2.3 produced.
 
 ```ts
-import { buildChartPipeline } from '@stacklatte/chart-core';
-import type { Candle, ChartConfig } from '@stacklatte/chart-core';
+import { buildChartPipeline } from '@stacklatte/chart-engine';
+import type { Candle, ChartConfig } from '@stacklatte/chart-engine';
 
-export function compile(config: ChartConfig, candles: Candle[]) {
-  return buildChartPipeline(config, candles, { strict: true }); // opt in to strict validation
+export function compileLegacy(config: ChartConfig, candles: Candle[]) {
+  return buildChartPipeline(config, candles, { strict: false }); // the old, lenient behaviour
 }
 ```
 
 ## What changed in behaviour
 
-These are deliberate fixes; everything else (numbers, props, themes, config compilation) is unchanged and verified identical.
+These are deliberate fixes; everything else is unchanged and verified identical.
 
-| Before | Now |
+| Before (`chart-core` 2.3 / `chart-web` 1.3) | Now |
 |---|---|
-| `buildChartPipeline` accepted any `theme` / `interval` / colour string and fell back silently (e.g. `theme: 'neon'` rendered dark) | **`chart-native` / `chart-engine` / `chart-web` / `chart-angular`:** closed enums and unknown keys are rejected with an itemised error. **`chart-core` keeps the lenient behaviour** unless you pass `{ strict: true }` |
+| `buildChartPipeline` accepted any `theme` / `interval` / colour string and fell back silently (e.g. `theme: 'neon'` rendered dark) | closed enums and unknown keys are rejected with an itemised error. Pass `{ strict: false }` for the old behaviour |
 | one `NaN` / `Infinity` candle made the whole price range `NaN` and the chart blank | undrawable candles are dropped; a garbage `volume` is stripped |
-| an invalid indicator period threw a `TypeError` (`calcEMA` for any invalid period; `calcRSI` for negative, `1.5` or `NaN`; `calcSMA` / `calcBollingerBands` for `0`, negative or `1.5`), and `calcRSI(…, 0)` returned `NaN` values — in a chart this crashed the render | indicators return no data (`[]` / `null`) |
+| an invalid indicator period threw a `TypeError` (`calcEMA` for any invalid period; `calcRSI` for negative, `1.5` or `NaN`; `calcSMA` / `calcBollingerBands` for `0`, negative or `1.5`), and `calcRSI(…, 0)` returned `NaN` values; in a chart this crashed the render | indicators return no data (`[]` / `null`) |
 | a container too small for its panels produced a negative plot size | sizes are clamped to at least 1 px |
 | the `vwap` overlay was accepted by `ChartConfig` but silently skipped ("not yet implemented") | it is implemented: cumulative volume-weighted typical price |
 | React Native path building used the deprecated Skia `SkPath` mutation API | uses `Skia.PathBuilder` (with a fallback for older Skia) |
+| dragging, zooming or hovering over the RSI / MACD / volume panels did nothing on the web | the whole chart responds, panels included |
 
 
 ---
@@ -979,7 +968,7 @@ These are deliberate fixes; everything else (numbers, props, themes, config comp
 | `ReferenceError: Can't find variable: CanvasKit` (Safari) / `CanvasKit is not defined` (Chrome) | `@stacklatte/chart-native` (Skia) was loaded in a **browser**. Skia's web build runs `JsiSkApi(global.CanvasKit)` the moment it is imported, and its WebAssembly has not been loaded yet. Typically: pressing `w` in the Expo terminal, or opening the Expo URL in a browser | Use **`@stacklatte/chart-react`** for the browser (no Skia, no WASM). Only if you must run `chart-native` through react-native-web: load Skia's WASM *before* the chart module is imported — `await LoadSkiaWeb()` from `@shopify/react-native-skia/lib/module/web`, then `import('./Chart')` (see Skia's `WithSkiaWeb`). On a device or simulator this error cannot occur — use a development build (`npx expo run:ios`), not a browser |
 | React Native: Skia / reanimated errors at startup | peer versions mismatch | Use `@shopify/react-native-skia` ≥ 2 and `react-native-gesture-handler` ≥ 2; rebuild the dev client after installing native modules. |
 | Angular: nothing draws during SSR | by design — the canvas is created in the browser after first render | Nothing to fix. |
-| `buildChartPipeline` throws `Invalid ChartConfig` after moving from `chart-core` to `chart-native` / `chart-engine` | strict validation is the default there; `chart-core` stays lenient | Fix the config (the error lists the allowed values), or pass `{ strict: false }` to keep the old behaviour. |
+| `buildChartPipeline` throws `Invalid ChartConfig` after moving from `chart-core` to `chart-native` / `chart-engine` | strict validation is the default there; the old `chart-core` was lenient | Fix the config (the error lists the allowed values), or pass `{ strict: false }` to keep the old behaviour. |
 | Old code uses `zoomLevel` or `ChartCanvas` | names from earlier versions | The component is `SLChart`; the visible-candle count is `visibleDataPoints`. See the [API reference](https://github.com/Asterix19/charts/blob/main/api-reference.md). |
 | The chart feels slow with live data | a new `indicators` / `theme` object on every render, or an unbounded candle array | See [performance](https://github.com/Asterix19/charts/blob/main/performance.md). |
 

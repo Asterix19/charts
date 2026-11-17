@@ -8,7 +8,7 @@ All packages share one engine, so the same data, props, themes and `ChartConfig`
 | a **React Native** (Expo or bare) app | `npm install @stacklatte/chart-native @shopify/react-native-skia react-native-gesture-handler` | `SLChart` |
 | an **Angular** (19+) app | `npm install @stacklatte/chart-angular` | `<sl-chart>` |
 | a **Node** script, worker or server (no UI) | `npm install @stacklatte/chart-engine` | `calcRSI`, `buildChartPipeline`, … |
-| an app that **already uses `@stacklatte/chart-core`** | nothing — it keeps working | see [migrating](./migrating-from-chart-core.md) |
+| an app that **still uses the deprecated `@stacklatte/chart-core` or `chart-web`** | `chart-native` / `chart-react` | see [migrating](./migrating-from-chart-core.md) |
 
 ## How the packages fit together
 
@@ -18,7 +18,6 @@ chart-engine   — indicators, viewport math, geometry, themes, ChartConfig pipe
    │     ├─ chart-react       — React component   (SLChart)
    │     └─ chart-angular   — Angular component (<sl-chart>)
    ├─ chart-native   — React Native / Skia component (SLChart)
-   └─ chart-core     — legacy name; re-exports chart-native (+ the engine at /core)
 ```
 
 Every renderer re-exports the whole engine, so `import { calcRSI } from '@stacklatte/chart-react'` works — you never need to install the engine separately.

@@ -1,0 +1,158 @@
+[
+  {
+    "name": "BASE_TS",
+    "kind": "value"
+  },
+  {
+    "name": "CODEGEN_TARGETS",
+    "kind": "value"
+  },
+  {
+    "name": "CodegenTarget",
+    "kind": "type"
+  },
+  {
+    "name": "createLab",
+    "kind": "value"
+  },
+  {
+    "name": "createRng",
+    "kind": "value"
+  },
+  {
+    "name": "DEFAULT_LAB_STATE",
+    "kind": "value"
+  },
+  {
+    "name": "describeChart",
+    "kind": "value"
+  },
+  {
+    "name": "generateCandles",
+    "kind": "value"
+  },
+  {
+    "name": "generateChart",
+    "kind": "value"
+  },
+  {
+    "name": "generateCode",
+    "kind": "value"
+  },
+  {
+    "name": "GeneratedChart",
+    "kind": "type"
+  },
+  {
+    "name": "GenerateOptions",
+    "kind": "type"
+  },
+  {
+    "name": "generatePrompt",
+    "kind": "value"
+  },
+  {
+    "name": "LAB_CAPABILITIES",
+    "kind": "value"
+  },
+  {
+    "name": "LAB_EXCLUDED_PROPS",
+    "kind": "value"
+  },
+  {
+    "name": "LAB_GROUPS",
+    "kind": "value"
+  },
+  {
+    "name": "LAB_PRESETS",
+    "kind": "value"
+  },
+  {
+    "name": "LabActionId",
+    "kind": "type"
+  },
+  {
+    "name": "labApply",
+    "kind": "value"
+  },
+  {
+    "name": "LabCapability",
+    "kind": "type"
+  },
+  {
+    "name": "labChartProps",
+    "kind": "value"
+  },
+  {
+    "name": "LabChartProps",
+    "kind": "type"
+  },
+  {
+    "name": "LabChoice",
+    "kind": "type"
+  },
+  {
+    "name": "LabControl",
+    "kind": "type"
+  },
+  {
+    "name": "labCustomPanel",
+    "kind": "value"
+  },
+  {
+    "name": "LabGroup",
+    "kind": "type"
+  },
+  {
+    "name": "LabKey",
+    "kind": "type"
+  },
+  {
+    "name": "labMarkers",
+    "kind": "value"
+  },
+  {
+    "name": "LabModel",
+    "kind": "type"
+  },
+  {
+    "name": "LabPreset",
+    "kind": "type"
+  },
+  {
+    "name": "labSelected",
+    "kind": "value"
+  },
+  {
+    "name": "labSize",
+    "kind": "value"
+  },
+  {
+    "name": "LabState",
+    "kind": "type"
+  },
+  {
+    "name": "makeDirty",
+    "kind": "value"
+  },
+  {
+    "name": "MINUTE",
+    "kind": "value"
+  },
+  {
+    "name": "nextCandle",
+    "kind": "value"
+  },
+  {
+    "name": "tickLast",
+    "kind": "value"
+  },
+  {
+    "name": "toChartConfig",
+    "kind": "value"
+  },
+  {
+    "name": "visibleCapabilities",
+    "kind": "value"
+  }
+]

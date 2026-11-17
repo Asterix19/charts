@@ -42,21 +42,6 @@ describe('cross-package consistency', () => {
     }
   });
 
-  it('chart-core (legacy) still exposes everything chart-native does, and /core exposes the engine', () => {
-    const native = names('chart-native');
-    const core = names('chart-core', 'chart-core/dist/index.d.ts');
-    expect([...native].filter((n) => !core.has(n))).toEqual([]);
-    const engine = names('chart-engine');
-    const coreSub = names('chart-core', 'chart-core/dist/core.d.ts');
-    expect([...engine].filter((n) => !coreSub.has(n))).toEqual([]);
-  });
-
-  it('the legacy names (chart-core, chart-web) expose everything their replacements do', () => {
-    const react = names('chart-react');
-    const web = names('chart-web');
-    expect([...react].filter((n) => !web.has(n)), 'chart-web is missing chart-react exports').toEqual([]);
-  });
-
   it('every renderer exposes SLChart or its framework equivalent; the engine /canvas entry carries the shared Canvas 2D renderer', () => {
     expect(names('chart-native').has('SLChart')).toBe(true);
     expect(names('chart-react').has('SLChart')).toBe(true);

@@ -10,8 +10,9 @@ import { SCENARIOS } from '@stacklatte/chart-examples';
 import { PACKAGES, ROOT, abs, listExports } from './exports';
 
 /**
- * People have @stacklatte/chart-core 2.x and @stacklatte/chart-web 1.x installed. These tests download the
- * versions that are actually published and prove the new code is a drop-in replacement:
+ * People still have the deprecated @stacklatte/chart-core 2.x and @stacklatte/chart-web 1.x installed (those packages are
+ * frozen on npm and no longer in this repo). These tests download the last published versions and prove the replacements
+ * (chart-native / chart-engine and chart-react) are a drop-in for them, so migrating is only a change of import path:
  *   1. every export that existed still exists,
  *   2. constants are identical,
  *   3. the old and new engine produce the same numbers for the same inputs.
@@ -54,32 +55,23 @@ const names = (file: string) => new Set(listExports(file).map((e) => e.name));
 const eng = engine as unknown as Record<string, any>;
 
 describe('every previously-published export still exists', () => {
-  it(`${OLD_CORE.name}@${OLD_CORE.version} index`, online(() => {
-    const have = names(abs('chart-core/dist/index.d.ts'));
+  it(`${OLD_CORE.name}@${OLD_CORE.version} index → chart-native keeps every export`, online(() => {
+    const have = names(abs(PACKAGES['chart-native'].dts[0]));
     const missing = [...names(join(oldCore!, 'dist/index.d.ts'))].filter((n) => !have.has(n));
-    expect(missing, 'exports removed since 2.3.3').toEqual([]);
+    expect(missing, 'exports chart-native lacks compared with chart-core 2.3.3').toEqual([]);
   }));
 
-  it(`${OLD_CORE.name}@${OLD_CORE.version} /core`, online(() => {
-    const have = names(abs('chart-core/dist/core.d.ts'));
+  it(`${OLD_CORE.name}@${OLD_CORE.version} /core → chart-engine keeps every export`, online(() => {
+    const have = names(abs(PACKAGES['chart-engine'].dts[0]));
     const missing = [...names(join(oldCore!, 'dist/core.d.ts'))].filter((n) => !have.has(n));
-    expect(missing).toEqual([]);
+    expect(missing, 'exports chart-engine lacks compared with chart-core 2.3.3/core').toEqual([]);
   }));
 
-  it(`${OLD_WEB.name}@${OLD_WEB.version} → the new chart-web shim AND chart-react both keep every export`, () => {
+  it(`${OLD_WEB.name}@${OLD_WEB.version} → chart-react keeps every export`, () => {
     if (!oldWeb) return console.warn('skipped: published packages unavailable (offline?)');
     const old = [...names(join(oldWeb, 'dist/index.d.ts'))];
-    for (const pkg of ['chart-web', 'chart-react']) {
-      const have = names(abs(PACKAGES[pkg].dts[0]));
-      expect(old.filter((n) => !have.has(n)), `exports removed from ${pkg} since chart-web 1.3.2`).toEqual([]);
-    }
-  });
-
-  it('the chart-web shim is the same module as chart-react at runtime (same exports, same functions)', async () => {
-    const shim = (await import('@stacklatte/chart-web')) as Record<string, unknown>;
-    const real = (await import('@stacklatte/chart-react')) as Record<string, unknown>;
-    expect(Object.keys(shim).sort()).toEqual(Object.keys(real).sort());
-    for (const key of Object.keys(real)) expect(shim[key], key).toBe(real[key]);
+    const have = names(abs(PACKAGES['chart-react'].dts[0]));
+    expect(old.filter((n) => !have.has(n)), 'exports removed from chart-react since chart-web 1.3.2').toEqual([]);
   });
 
   it('all 72 runtime exports of the old core.js exist in the new engine', online(() => {
@@ -189,8 +181,8 @@ describe('ChartConfig pipeline gives the same props for every config the old ver
   });
 });
 
-describe('@stacklatte/chart-core keeps its legacy lenient ChartConfig behaviour', () => {
-  /** Configs the published 2.3.3 accepted and compiled — mistakes that "worked" because they fell back silently. */
+describe("the engine's { strict: false } reproduces the legacy lenient ChartConfig behaviour of chart-core 2.3.3", () => {
+  /** Configs the published 2.3.3 accepted and compiled: mistakes that "worked" because they fell back silently. */
   const sloppy: Array<[string, Record<string, unknown>]> = [
     ['unknown theme', { theme: 'neon' }],
     ['unknown interval', { interval: '2h' }],
@@ -200,30 +192,27 @@ describe('@stacklatte/chart-core keeps its legacy lenient ChartConfig behaviour'
   ];
   const data = SCENARIOS.find((x) => x.id === 'basic')!.data();
 
-  it.each(sloppy)('the shim accepts "%s" and compiles to the SAME props as 2.3.3', async (_name, patch) => {
+  it.each(sloppy)('{ strict: false } accepts "%s" and compiles to the SAME props as 2.3.3', (_name, patch) => {
     if (!oldCore) return;
-    const shim = await import('@stacklatte/chart-core/core');
     const cfg = { ...configs0(), ...patch } as never;
     expect(old.validateChartConfig(cfg).valid, '2.3.3 accepted it').toBe(true);
-    expect(shim.validateChartConfig(cfg).valid, 'the shim must too').toBe(true);
-    expect(shim.buildChartPipeline(cfg, data)).toEqual(old.buildChartPipeline(cfg, data));
+    expect(eng.validateChartConfig(cfg, { strict: false }).valid, 'lenient mode must too').toBe(true);
+    expect(eng.buildChartPipeline(cfg, data, { strict: false })).toEqual(old.buildChartPipeline(cfg, data));
   });
 
-  it.each(sloppy)('strict is opt-in on the shim, and the default everywhere else ("%s")', async (_name, patch) => {
-    const shim = await import('@stacklatte/chart-core/core');
+  it.each(sloppy)('strict is the default ("%s")', (_name, patch) => {
     const cfg = { ...configs0(), ...patch } as never;
-    expect(() => shim.buildChartPipeline(cfg, data, { strict: true })).toThrow(/Invalid ChartConfig/);
     expect(() => eng.buildChartPipeline(cfg, data)).toThrow(/Invalid ChartConfig/);
+    expect(() => eng.buildChartPipeline(cfg, data, { strict: true })).toThrow(/Invalid ChartConfig/);
   });
 
-  it('the shim still enforces the semantic rules 2.3.3 enforced', async () => {
-    const shim = await import('@stacklatte/chart-core/core');
-    expect(shim.validateChartConfig({ ...configs0(), overlays: [{ type: 'sma', id: 'a', params: { period: 0 }, color: 'blue' }] } as never).valid).toBe(false);
+  it('lenient mode still enforces the semantic rules 2.3.3 enforced', () => {
+    expect(eng.validateChartConfig({ ...configs0(), overlays: [{ type: 'sma', id: 'a', params: { period: 0 }, color: 'blue' }] } as never, { strict: false }).valid).toBe(false);
   });
 });
 
 describe('behaviour that changed ON PURPOSE since the published versions', () => {
-  it('invalid enum values are now rejected by the strict packages (chart-core stays lenient, see above)', () => {
+  it('invalid enum values are now rejected by the strict packages (pass { strict: false } for the legacy lenient behaviour, see above)', () => {
     if (!oldCore) return;
     const bad = { ...configs0(), theme: 'neon' };
     expect(old.validateChartConfig(bad).valid, 'old accepted it').toBe(true);

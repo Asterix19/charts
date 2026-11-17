@@ -4,9 +4,7 @@
   "workspaces": [
     "chart-engine",
     "chart-native",
-    "chart-core",
     "chart-react",
-    "chart-web",
     "chart-angular",
     "chart-mcp",
     "compat",
@@ -30,7 +28,7 @@
     "test:native": "maestro test e2e-native/flows --test-output-dir e2e-native/screenshots && node e2e-native/compare-screenshots.mjs",
     "demo:angular": "npm run dev --workspace=angular-demo",
     "check:generated": "tsx e2e-native/generate-flows.mjs --check && node scripts/generate-api-docs.mjs --check && node scripts/generate-llms-full.mjs --check",
-    "test:contracts": "npm run build -w @stacklatte/chart-engine -w @stacklatte/chart-native -w @stacklatte/chart-react -w @stacklatte/chart-web -w @stacklatte/chart-core -w @stacklatte/chart-angular && npm test -w @stacklatte/chart-contracts",
+    "test:contracts": "npm run build -w @stacklatte/chart-engine -w @stacklatte/chart-native -w @stacklatte/chart-react -w @stacklatte/chart-angular && npm test -w @stacklatte/chart-contracts",
     "docs:generate": "npm run build && node scripts/generate-api-docs.mjs && node scripts/generate-llms-full.mjs",
     "test:native:compat": "node e2e-native/compare-chart-core.mjs",
     "docs:screenshots": "node scripts/capture-screenshots.mjs",

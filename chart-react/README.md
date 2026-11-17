@@ -27,7 +27,7 @@ This package renders the exact same chart engine as [`@stacklatte/chart-native`]
 - **LLM-safe declarative config.** `buildChartPipeline()` takes a versioned `ChartConfig` document — every color and interval is a closed enum, never a raw string an LLM can typo — and returns validated, ready-to-render props, or throws a precise, itemized error. A generated JSON Schema ships alongside it for structured output / tool-calling. See [`llms.txt`](./llms.txt) for the quick path.
 - **Also available for React Native.** [`@stacklatte/chart-native`](../chart-native) is the same engine, same props, GPU-rendered via Skia on iOS/Android.
 
-| | chart-react / chart-core | General-purpose chart libs (Recharts, Victory) | Web-only trading chart libs |
+| | chart-react | General-purpose chart libs (Recharts, Victory) | Web-only trading chart libs |
 |---|---|---|---|
 | Candlesticks + OHLC | ✅ built in | 🛠 build it yourself | ✅ |
 | RSI / MACD / Bollinger / Volume | ✅ built in | ❌ | varies by plugin |
@@ -259,7 +259,7 @@ const myTheme: ChartThemeColors = {
 
 ## ChartConfig pipeline (LLM-safe declarative config)
 
-`@stacklatte/chart-react` re-exports the same `ChartConfig` → `ChartProps` compiler as chart-core, so a config document produced for one renders identically on the other — describe the chart as data, not JSX:
+`@stacklatte/chart-react` re-exports the same `ChartConfig` → `ChartProps` compiler as `chart-native` and `chart-angular`, so a config document produced for one renders identically on the others — describe the chart as data, not JSX:
 
 ```ts
 import { buildChartPipeline, SLChart } from '@stacklatte/chart-react';
@@ -294,7 +294,7 @@ See [`llms.txt`](./llms.txt) for a condensed reference aimed at coding agents.
 
 ## Props
 
-Same prop contract as `@stacklatte/chart-core`'s `SLChart` — see [chart-core's README](../chart-core/README.md#props) for the full table. `width`/`height` are plain numbers (CSS pixels); there's no `useWindowDimensions` — measure your container however you like (e.g. `ResizeObserver`).
+Same prop contract as `@stacklatte/chart-native`'s `SLChart` — see the [React Native README](../chart-native/README.md) and the [API reference](../docs/api-reference.md) for the full table. `width`/`height` are plain numbers (CSS pixels); there's no `useWindowDimensions` — measure your container however you like (e.g. `ResizeObserver`).
 
 ---
 
@@ -324,10 +324,10 @@ interface Candle {
 | `draw/macdPanel.ts` | MACD sub-panel (line, signal, histogram) |
 | `draw/volumePanel.ts` | Volume sub-panel (bars colored by candle direction) |
 | `draw/crosshair.ts` | Dashed crosshair lines |
-| `draw/path.ts` | Catmull-Rom smooth-path stroking/filling (the Canvas 2D equivalent of chart-core's Skia `pathUtils`) |
+| `draw/path.ts` | Catmull-Rom smooth-path stroking/filling (the Canvas 2D equivalent of chart-native's Skia `pathUtils`) |
 | `components/OhlcHud.tsx` | Draggable OHLC info overlay |
 
-All chart math — layout, viewport clamping, indicator calculation, axis ticks, the `ChartConfig` compiler — comes from `@stacklatte/chart-core/core` and is re-exported from this package, so the two renderers never drift apart on behavior.
+All chart math — layout, viewport clamping, indicator calculation, axis ticks, the `ChartConfig` compiler — comes from `@stacklatte/chart-engine` and is re-exported from this package, so the two renderers never drift apart on behavior.
 
 ---
 

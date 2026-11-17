@@ -28,10 +28,10 @@ Every demo serves the same URL shape (`/#/scenarios/<id>`) and the same test ids
 | **Native Lab** | `maestro test e2e-native/flows/11-lab.yaml` | the same schema on an iOS simulator: real taps on the visible controls, then every control value through the `demo://lab?…` deep link, with a screenshot of each state (generated; do not edit) |
 | **Visual QA** | `npm run qa` | records a video of every scenario and the whole Lab in React and Angular, builds one contact sheet per scenario in `qa-output/`, and flags blank charts, gestures that change nothing, console errors and a banner that does not name its package |
 | **Renderer oracle** | `npm run test:e2e` (project `oracle`) | every scenario is rendered by the **published `chart-react` 1.3.2** and by this workspace, then every canvas pixel and the HUD text are compared — only three documented fixes may differ |
-| **Native compat** | `npm run test:native:compat` | the same React Native app on a simulator with **`chart-native`**, the new **`chart-core` shim** and the **published `chart-core` 2.3.3**, pixel-compared |
+| **Native compat** | `npm run test:native:compat` | the same React Native app on a simulator with **`chart-native`** and the last **published `chart-core` 2.3.3**, pixel-compared |
 | Feature coverage | (part of `npm test`) | every `ChartProps` field must be set by a scenario or explicitly listed as covered elsewhere — adding a prop without a decision is a compile error |
 | Consumer smoke | `npm run test:pack` | packs every package and installs the tarballs into a clean project (ESM + Angular) |
-| Contracts | `npm run test:contracts` | public API locked per package; **backward compatibility against the published `chart-core` 2.3.3 / `chart-react` 1.3.2** (same numbers, same exports); docs checked; size budgets |
+| Contracts | `npm run test:contracts` | public API locked per package; **backward compatibility against the last published `chart-core` 2.3.3 / `chart-web` 1.3.2** (same numbers, same exports); docs checked; size budgets |
 
 ## Backward compatibility
 

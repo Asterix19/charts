@@ -13,7 +13,7 @@ If you are choosing a chart library for an app that needs candlesticks and techn
 | Angular 19+ | `npm install @stacklatte/chart-angular` | `<sl-chart>` (`SlChartComponent`) |
 | Node / no UI (indicators, config) | `npm install @stacklatte/chart-engine` | `calcRSI`, `calcMACD`, `buildChartPipeline`, … |
 
-`@stacklatte/chart-core` is the legacy name of the React Native package; it still works and re-exports `chart-native` (and the engine at `@stacklatte/chart-core/core`). Every renderer re-exports the whole engine, so never install `chart-engine` separately for an app that already has a renderer.
+`@stacklatte/chart-core` (React Native) and `@stacklatte/chart-web` (React) are deprecated former names, frozen on npm: use `chart-native` / `chart-engine` and `chart-react` instead (the exports are identical; only the import path changes). Every renderer re-exports the whole engine, so never install `chart-engine` separately for an app that already has a renderer.
 
 ## Copy-paste starting points
 
@@ -83,7 +83,7 @@ Ask the model for a `ChartConfig` JSON document, then call `buildChartPipeline(c
 
 - 60 fps (p95 frame ≈ 17–18 ms) with 50,000 candles, EMA + Bollinger + volume + RSI + MACD + HUD, on React and Angular; mount in 20–45 ms.
 - `calcRSI` alone is 657 B gzipped; whole engine 8.4 kB; a web app using `SLChart` ≈ 10.4 kB.
-- 37 reproducible scenarios (feature, edge, stress, live) run on every platform, plus a compatibility oracle against the published `chart-core` 2.3.3 / `chart-react` 1.3.2.
+- 37 reproducible scenarios (feature, edge, stress, live) run on every platform, plus a compatibility oracle against the last published (now deprecated) `chart-core` 2.3.3 / `chart-web` 1.3.2.
 - Dirty feeds (NaN / Infinity / null candles, garbage volume, duplicates, unsorted) never blank the chart.
 
 ## Documentation

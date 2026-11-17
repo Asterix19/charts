@@ -25,7 +25,7 @@ export function PriceChart({ candles }: { candles: Candle[] }) {
 }
 ```
 
-The legacy name `@stacklatte/chart-core` re-exports this package.
+`@stacklatte/chart-core` is the deprecated former name of this package (frozen on npm); migrate by changing the import path.
 
 ## Rules for correct code
 

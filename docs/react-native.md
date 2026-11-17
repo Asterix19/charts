@@ -78,4 +78,4 @@ The repository's `examples/demo` app serves the same 37-scenario catalogue as ev
 ## Notes
 
 - Skia draws text on the GPU, so axis labels are not in the accessibility tree; expose any text users need (prices, the inspected candle) through your own `Text` via `onCrosshairChange`.
-- The legacy package name `@stacklatte/chart-core` re-exports this package; see [migrating](./migrating-from-chart-core.md).
+- `@stacklatte/chart-core` is the deprecated former name of this package; see [migrating](./migrating-from-chart-core.md).
